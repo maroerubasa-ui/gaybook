@@ -109,7 +109,7 @@ function initSplashScreen() {
         '15342376.gif',
         '22600551.gif',
         'ezgif-41da2e0cfde01e78.gif',
-        'ezgif-40091d8e4a279186.gif'
+        'ezgif-40091d8e4a279186.gif',
         'ezgif-4a9992fb19cc015a (1).gif'
     ];
 
