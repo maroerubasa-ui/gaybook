@@ -102,7 +102,19 @@ function initSplashScreen() {
 
     // Clean Slate Implementation: 
     // We pick the GIF via JS and apply it as inline style to override class cache.
-    const backgrounds = [
+
+ const backgrounds = [
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40091d8e4a279186.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a (1).gif'
+    ];
+ 
+ /*   const backgrounds = [
         'yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
         'ezgif-40db559a86d35875.gif',
         'ezgif-4b575af810db3037.gif',
@@ -112,7 +124,7 @@ function initSplashScreen() {
         'ezgif-40091d8e4a279186.gif',
         'ezgif-4a9992fb19cc015a (1).gif'
     ];
-
+*/
     const randomIdx = Math.floor(Math.random() * backgrounds.length);
     const selectedImg = backgrounds[randomIdx];
 
