@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+        <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,53 +8,352 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1a1a1a; --accent: #25d366; --bg: #f8f9fa; --white: #ffffff; --border: #e0e0e0; --text-muted: #6c757d; --danger: #dc3545; --secondary: #6c5ce7; }
+        @import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&display=swap');
+
+        /* Enhanced Typography Content Reading Frame Wrapper */
+        .reader-text-engine {
+            font-family: 'Literata', serif;
+            font-size: 22px; /* Increased to reduce eye strain on mobile */
+            line-height: 1.7;
+            background: #F8F6F1; /* Warm off-white highlight */
+            color: #1A1A1A; /* Obsidian charcoal ink clarity */
+            padding: 18px 22px;
+            border-radius: 8px;
+            border: none;
+            max-width: 720px; /* Constraints structure directly to reading golden width */
+            width: 100%;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.7);
+            resize: vertical;
+        }
+
+        :root { 
+            --bg-gradient: radial-gradient(circle at top right, #11141a, #07080b);
+            --glass-bg: rgba(10, 12, 16, 0.8);
+            --glass-panel: rgba(18, 22, 28, 0.55);
+            --glass-card: rgba(26, 32, 40, 0.4);
+            --glass-input: rgba(5, 6, 8, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            
+            --primary-text: #e2e8f0;
+            --text-muted: #64748b;
+            --accent: #8a99ad; 
+            --accent-bg-active: rgba(255, 255, 255, 0.07);
+            --danger: #ef4444; 
+            --blur: 20px;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Source Sans Pro', sans-serif; background: var(--bg); color: var(--primary); line-height: 1.6; padding-bottom: 100px; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-gradient); 
+            color: var(--primary-text); 
+            line-height: 1.6; 
+            padding-bottom: 60px;
+            min-height: 100vh;
+            background-attachment: fixed;
+            letter-spacing: -0.2px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
         #auth-container, #admin-panel { display: none; }
-        header { background: var(--white); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
-        .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 99; }
-        .nav-tab { padding: 15px 20px; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; font-weight: 600; font-size: 14px; }
-        .nav-tab.active { border-color: var(--accent); color: var(--accent); }
-        .view-section { display: none; }
+
+        header { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            padding: 16px 32px; 
+            border-bottom: 1px solid var(--glass-border); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+
+        header h1, header b {
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: -0.3px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 24px; 
+        }
+
+        #view-editor {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+
+        .nav-tabs { 
+            display: flex; 
+            overflow-x: auto; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border-bottom: 1px solid var(--glass-border); 
+            position: sticky; 
+            top: 68px; 
+            z-index: 99; 
+            padding: 0 24px;
+        }
+
+        .nav-tab { 
+            padding: 16px 20px; 
+            cursor: pointer; 
+            border-bottom: 2px solid transparent; 
+            white-space: nowrap; 
+            font-weight: 500; 
+            font-size: 13px; 
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab:hover { color: #fff; }
+        .nav-tab.active { 
+            border-color: #fff; 
+            color: #fff; 
+            background: var(--accent-bg-active);
+        }
+
+        .view-section { display: none; animation: fadeIn 0.25s ease forwards; }
         .view-section.active { display: block; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .stat-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-        .card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; margin-bottom: 15px; font-family: inherit; }
-        label { font-weight: 600; font-size: 13px; color: var(--text-muted); text-transform: uppercase; }
-        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .lib-item { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; position: relative; }
-        .lib-item img { width: 100%; height: 100px; object-fit: cover; }
-        .lib-info { padding: 10px; font-size: 12px; }
-        .lib-del { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.7); color: white; border: none; padding: 5px; border-radius: 5px; cursor: pointer; }
-        .chapter-box { background: #f1f3f5; border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid #dee2e6; }
-        .block-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; position: relative; border: 1px solid var(--border); }
-        .block-type-label { font-size: 10px; font-weight: bold; background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; display: inline-block; }
-        .btn-del { color: var(--danger); cursor: pointer; font-size: 14px; }
-        .post-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 30px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 450px; }
-        .btn-main { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        .milestone-container { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
-        .milestone-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
-        .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .leaderboard-table th { text-align: left; color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--border); }
-        .leaderboard-table td { padding: 8px; border-bottom: 1px solid #f9f9f9; }
-        .grand-total-bar { display: flex; justify-content: space-around; background: var(--primary); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
-        .grand-total-bar div b { display: block; font-size: 18px; color: var(--accent); }
-        .upload-btn { background: #e9ecef; border: 1px solid #ced4da; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        .upload-btn:hover { background: #dee2e6; }
-        .drag-handle { cursor: grab; color: #ccc; padding-right: 10px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0; }
+        
+        .stat-card { 
+            background: var(--glass-panel); 
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            padding: 20px; 
+            border-radius: 10px; 
+            border: 1px solid var(--glass-border); 
+        }
+
+        .card { 
+            background: var(--glass-panel); 
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            padding: 24px; 
+            border-radius: 12px; 
+            border: 1px solid var(--glass-border); 
+            margin-bottom: 24px; 
+        }
+
+        input, textarea, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 6px; 
+            background: var(--glass-input);
+            border: 1px solid var(--glass-border); 
+            border-radius: 6px; 
+            font-size: 14px; 
+            margin-bottom: 16px; 
+            font-family: inherit; 
+            color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.15);
+            background: #000;
+        }
+
+        label { font-weight: 500; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        
+        .lib-item { 
+            background: var(--glass-card); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            position: relative; 
+            transition: border-color 0.2s;
+        }
+        .lib-item:hover { border-color: rgba(255,255,255,0.15); }
+        .lib-item img { width: 100%; height: 120px; object-fit: cover; border-bottom: 1px solid var(--glass-border); filter: grayscale(30%); }
+        .lib-info { padding: 12px; font-size: 12px; }
+        .lib-del { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+        .lib-del:hover { background: var(--danger); }
+
+        .chapter-box { 
+            background: var(--glass-panel); 
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border-radius: 12px; 
+            padding: 24px; 
+            margin-bottom: 32px; 
+            border: 1px solid var(--glass-border); 
+        }
+
+        .block-item { 
+            background: var(--glass-card); 
+            padding: 16px; 
+            border-radius: 8px; 
+            margin-bottom: 12px; 
+            position: relative; 
+            border: 1px solid var(--glass-border); 
+        }
+
+        .block-type-label { font-size: 9px; font-weight: 600; background: rgba(255,255,255,0.06); color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px; }
+        .btn-del { color: var(--text-muted); cursor: pointer; font-size: 14px; transition: color 0.15s; }
+        .btn-del:hover { color: var(--danger); }
+
+        .post-row { 
+            background: var(--glass-card); 
+            padding: 16px 20px; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid var(--glass-border); 
+        }
+        .post-row:hover {
+            border-color: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.01);
+        }
+
+        .fab { 
+            position: fixed; 
+            bottom: 24px; 
+            right: 24px; 
+            width: 52px; 
+            height: 52px; 
+            border-radius: 8px; 
+            background: #fff; 
+            color: #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 18px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
+            cursor: pointer; 
+            z-index: 100; 
+            transition: transform 0.15s;
+        }
+        .fab:hover { transform: translateY(-2px); background: #f0f3f6; }
+
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.75); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+            overflow-y: auto; 
+        }
+        .modal-content { 
+            background: #11141a; 
+            border: 1px solid var(--glass-border);
+            padding: 24px; 
+            border-radius: 12px; 
+            width: 100%; 
+            max-width: 450px; 
+        }
+
+        .btn-main { 
+            background: #fff; 
+            color: #000; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 14px;
+            cursor: pointer; 
+            width: 100%; 
+            transition: background 0.15s;
+        }
+        .btn-main:hover { background: #e2e8f0; }
+        .btn-main:disabled {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .milestone-container { background: rgba(0,0,0,0.15); padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--glass-border); }
+        .milestone-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+        
+        .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+        .leaderboard-table th { text-align: left; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--glass-border); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+        .leaderboard-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.01); }
+
+        .grand-total-bar { 
+            display: flex; 
+            justify-content: space-around; 
+            background: var(--glass-card); 
+            color: white; 
+            padding: 16px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            border: 1px solid var(--glass-border);
+        }
+        .grand-total-bar div b { display: block; font-size: 20px; color: #fff; margin-top: 2px; }
+        .grand-total-bar div small { color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; }
+
+        .upload-btn { 
+            background: rgba(255,255,255,0.04); 
+            border: 1px solid var(--glass-border); 
+            color: #fff;
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: 500; 
+            margin-bottom: 12px; 
+            display: inline-block; 
+        }
+        .upload-btn:hover { background: rgba(255,255,255,0.08); }
+        
+        .drag-handle { cursor: grab; color: var(--text-muted); padding-right: 10px; font-size: 14px; }
         .drag-handle:active { cursor: grabbing; }
-        .sortable-ghost { opacity: 0.3; background: #e0e0e0; border: 2px dashed #999; }
+        .sortable-ghost { opacity: 0.15; background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2); }
+        
         .block-controls { display: flex; align-items: center; gap: 12px; }
-        .move-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
-        .move-btn:hover { color: var(--primary); }
+        .move-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; }
+        .move-btn:hover { color: #fff; }
+
+        button:not(.btn-main):not(.upload-btn):not(.move-btn):not(.lib-del) {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--primary-text);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+        button:not(.btn-main):not(.upload-btn):not(.move-btn):not(.lib-del):hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+        }
     </style>
 </head>
 <body>
@@ -78,7 +378,7 @@
             <div class="nav-tab" onclick="switchView(event, 'manage')">Stories</div>
             <div class="nav-tab" onclick="switchView(event, 'affiliates')">Affiliate Lib</div>
             <div class="nav-tab" onclick="switchView(event, 'ads')">Ads Lib</div>
-            <div class="nav-tab" onclick="switchView(event, 'editor')" style="color: var(--secondary);">+ New Story</div>
+            <div class="nav-tab" onclick="switchView(event, 'editor')">+ New Story</div>
         </div>
 
         <div class="container">
@@ -106,7 +406,7 @@
             <section id="view-ads" class="view-section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <h3>Ad Inventory</h3>
-                    <button onclick="openLibModal('ad')" style="padding:8px 15px; border-radius:6px; background:var(--secondary); border:none; color:white;">+ Add Ad Slot</button>
+                    <button onclick="openLibModal('ad')" style="padding:8px 15px; border-radius:6px; background:var(--accent); border:none; color:white;">+ Add Ad Slot</button>
                 </div>
                 <div id="ads-list" class="library-grid"></div>
             </section>
@@ -127,7 +427,7 @@
                 </div>
                 <div id="chapters-canvas"></div>
                 <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="addChapter()" style="width:100%; padding:15px; background:white; border:1px solid var(--primary); border-radius:8px; margin-bottom:10px; font-weight:bold;">+ ADD CHAPTER</button>
+                    <button onclick="addChapter()" style="width:100%; padding:15px; background:white; border:1px solid var(--primary); border-radius:8px; margin-bottom:10px; font-weight:bold; color:#000;">+ ADD CHAPTER</button>
                     <button onclick="saveFullPost()" id="save-btn" style="width:100%; padding:18px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; font-size:18px;">PUBLISH TO LIVE SITE</button>
                 </div>
             </section>
@@ -140,8 +440,8 @@
             <select id="target-chap-select" style="margin-bottom:20px;"></select>
             <button onclick="addBlock('paragraph')" class="btn-main" style="margin-bottom:10px; background:#f8f9fa; color:#333; border:1px solid #ddd;">Text Paragraph</button>
             <button onclick="addBlock('image')" class="btn-main" style="margin-bottom:10px; background:#f8f9fa; color:#333; border:1px solid #ddd;">Chapter Image</button>
-            <button onclick="addBlock('ad-slot')" class="btn-main" style="margin-bottom:10px; background:var(--secondary);">Saved Ad Slot</button>
-            <button onclick="addBlock('affiliate-cta')" class="btn-main" style="background:var(--accent);">Affiliate Product</button>
+            <button onclick="addBlock('ad-slot')" class="btn-main" style="margin-bottom:10px; background:var(--glass-card); color:#fff;">Saved Ad Slot</button>
+            <button onclick="addBlock('affiliate-cta')" class="btn-main" style="background:var(--accent); color:#fff;">Affiliate Product</button>
         </div>
     </div>
 
@@ -165,366 +465,381 @@
 
     <div class="fab" onclick="openBlockModal()"><i class="fas fa-plus"></i></div>
 
-    <script>
-        const SUPABASE_URL = 'https://jdazvxuxvqrplncmdhzy.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYXp2eHV4dnFycGxuY21kaHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjIxNTQsImV4cCI6MjA4MjY5ODE1NH0.wYRXeLZgl-al86GWgwYScv7Psc8LzpaoKhIB-CpV4QE';
-        var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+    const SUPABASE_URL = 'https://jdazvxuxvqrplncmdhzy.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYXp2eHV4dnFycGxuY21kaHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjIxNTQsImV4cCI6MjA4MjY5ODE1NH0.wYRXeLZgl-al86GWgwYScv7Psc8LzpaoKhIB-CpV4QE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let chapters = [];
-        let editId = null;
-        let libraryType = 'affiliate';
-        let cachedAffiliates = [];
-        let cachedAds = [];
+    let chapters = [];
+    let editId = null;
+    let libraryType = 'affiliate';
+    let cachedAffiliates = [];
+    let cachedAds = [];
 
-        async function uploadToBunny(file) {
-            const { data: settings, error } = await supabase.from('storage_settings').select('*').eq('service_name', 'bunny_main').single();
-            if (error || !settings) { alert("Could not fetch Bunny credentials."); return null; }
-            const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-            const storageUrl = `https://storage.bunnycdn.com/${settings.storage_user}/${fileName}`;
-            const response = await fetch(storageUrl, {
-                method: 'PUT',
-                headers: { 'AccessKey': settings.storage_pass, 'Content-Type': 'application/octet-stream' },
-                body: file
-            });
-            if (response.ok) return `${settings.pull_zone_url}/${fileName}`;
-            else { alert("Upload failed."); return null; }
-        }
+    // Upgraded Core Asset Pipeline to Native Supabase Public Bucket
+    async function uploadToSupabase(file) {
+        const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+        const { data, error } = await supabase.storage
+            .from('Assets')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
-        async function deleteFromBunny(fileUrl) {
-            if (!fileUrl || !fileUrl.includes('bunnycdn.com')) return;
-            const { data: settings } = await supabase.from('storage_settings').select('*').eq('service_name', 'bunny_main').single();
-            if (!settings) return;
-            const fileName = fileUrl.split('/').pop();
-            const storageUrl = `https://storage.bunnycdn.com/${settings.storage_user}/${fileName}`;
-            try { await fetch(storageUrl, { method: 'DELETE', headers: { 'AccessKey': settings.storage_pass } }); } catch (err) { console.error("Bunny Delete Error:", err); }
-        }
+        if (error) { alert("Upload failed: " + error.message); return null; }
 
-        async function triggerUpload(targetId, isChapter = false, cIdx = null, bIdx = null) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const url = await uploadToBunny(file);
-                if (url) {
-                    if (targetId) document.getElementById(targetId).value = url;
-                    else if (isChapter && bIdx !== null) chapters[cIdx].blocks[bIdx].url = url;
-                    else if (isChapter) chapters[cIdx].image_url = url;
-                    renderEditor();
-                }
-            };
-            input.click();
-        }
+        const { data: publicUrlData } = supabase.storage.from('Assets').getPublicUrl(fileName);
+        return publicUrlData.publicUrl;
+    }
 
-        function moveBlock(cIdx, bIdx, direction) {
-            const blocks = chapters[cIdx].blocks;
-            if (direction === 'up' && bIdx > 0) { [blocks[bIdx], blocks[bIdx - 1]] = [blocks[bIdx - 1], blocks[bIdx]]; } 
-            else if (direction === 'down' && bIdx < blocks.length - 1) { [blocks[bIdx], blocks[bIdx + 1]] = [blocks[bIdx + 1], blocks[bIdx]]; }
-            renderEditor();
-        }
+    async function deleteFromSupabase(fileUrl) {
+        if (!fileUrl || !fileUrl.includes('supabase.co/storage/v1/object/public/')) return;
+        const fileName = fileUrl.split('/').pop();
+        try { 
+            const { error } = await supabase.storage.from('Assets').remove([fileName]);
+            if (error) console.error("Asset Deletion Error:", error.message);
+        } catch (err) { console.error("Storage Fault Context:", err); }
+    }
 
-        function initDraggable() {
-            chapters.forEach((_, cIdx) => {
-                const el = document.getElementById(`block-list-${cIdx}`);
-                if (!el) return;
-                Sortable.create(el, {
-                    animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost',
-                    onEnd: (evt) => {
-                        const [movedItem] = chapters[cIdx].blocks.splice(evt.oldIndex, 1);
-                        chapters[cIdx].blocks.splice(evt.newIndex, 0, movedItem);
-                        renderEditor();
-                    }
-                });
-            });
-        }
-
-        async function handleBlockDelete(cIdx, bIdx) {
-            const block = chapters[cIdx].blocks[bIdx];
-            if(confirm("Permanently delete this block and associated image?")) {
-                if(block.type === 'image' && block.url) await deleteFromBunny(block.url);
-                chapters[cIdx].blocks.splice(bIdx, 1);
+    async function triggerUpload(targetId, isChapter = false, cIdx = null, bIdx = null) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const url = await uploadToSupabase(file);
+            if (url) {
+                if (targetId) document.getElementById(targetId).value = url;
+                else if (isChapter && bIdx !== null) chapters[cIdx].blocks[bIdx].url = url;
+                else if (isChapter) chapters[cIdx].image_url = url;
                 renderEditor();
             }
-        }
-
-        function generateSlug(text) {
-            if (editId) return;
-            const slug = text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
-            document.getElementById('post-slug').value = slug;
-        }
-
-        window.onload = async () => {
-            const { data } = await supabase.auth.getSession();
-            if(data.session) initDashboard(); else document.getElementById('auth-container').style.display = 'block';
         };
+        input.click();
+    }
 
-        async function initDashboard() {
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('admin-panel').style.display = 'block';
-            loadPosts(); loadAffiliateLibrary(); loadAdLibrary();
-        }
+    function moveBlock(cIdx, bIdx, direction) {
+        const blocks = chapters[cIdx].blocks;
+        if (direction === 'up' && bIdx > 0) { [blocks[bIdx], blocks[bIdx - 1]] = [blocks[bIdx - 1], blocks[bIdx]]; } 
+        else if (direction === 'down' && bIdx < blocks.length - 1) { [blocks[bIdx], blocks[bIdx + 1]] = [blocks[bIdx + 1], blocks[bIdx]]; }
+        renderEditor();
+    }
 
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-            if(error) alert(error.message); else location.reload();
-        }
+    function initDraggable() {
+        chapters.forEach((_, cIdx) => {
+            const el = document.getElementById(`block-list-${cIdx}`);
+            if (!el) return;
+            Sortable.create(el, {
+                animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost',
+                onEnd: (evt) => {
+                    const [movedItem] = chapters[cIdx].blocks.splice(evt.oldIndex, 1);
+                    chapters[cIdx].blocks.splice(evt.newIndex, 0, movedItem);
+                    renderEditor();
+                }
+            });
+        });
+    }
 
-        function openLibModal(type) {
-            libraryType = type;
-            document.getElementById('lib-modal-title').innerText = type === 'affiliate' ? 'Add Affiliate Product' : 'Add Ad Slot';
-            document.getElementById('affiliate-fields').style.display = type === 'affiliate' ? 'block' : 'none';
-            document.getElementById('ad-fields').style.display = type === 'ad' ? 'block' : 'none';
-            document.getElementById('lib-entry-modal').style.display = 'flex';
-        }
-
-        async function saveLibraryItem() {
-            if(libraryType === 'affiliate') {
-                const item = {
-                    product_id: document.getElementById('lib-prod-id').value, title: document.getElementById('lib-title').value,
-                    description: document.getElementById('lib-desc').value, image_url: document.getElementById('lib-img').value, link: document.getElementById('lib-link').value
-                };
-                await supabase.from('affiliate_products').insert([item]); loadAffiliateLibrary();
-            } else {
-                const ad = { name: document.getElementById('ad-name').value, code: document.getElementById('ad-code').value };
-                await supabase.from('ad_inventory').insert([ad]); loadAdLibrary();
-            }
-            document.getElementById('lib-entry-modal').style.display = 'none';
-        }
-
-        async function loadAffiliateLibrary() {
-            const { data } = await supabase.from('affiliate_products').select('*');
-            cachedAffiliates = data || [];
-            const list = document.getElementById('affiliate-list');
-            list.innerHTML = cachedAffiliates.map(item => `
-                <div class="lib-item">
-                    <button class="lib-del" onclick="deleteAffiliate('${item.id}')">×</button>
-                    <img src="${item.image_url || 'https://via.placeholder.com/150'}">
-                    <div class="lib-info"><b>${item.title}</b><br><small>ID: ${item.product_id}</small></div>
-                </div>
-            `).join('');
-        }
-
-        async function loadAdLibrary() {
-            const { data } = await supabase.from('ad_inventory').select('*').order('name');
-            cachedAds = data || [];
-            const list = document.getElementById('ads-list');
-            document.getElementById('st-ads').innerText = cachedAds.length;
-            list.innerHTML = cachedAds.map((ad) => `
-                <div class="lib-item" style="padding:10px; background:#f0f0f0;">
-                    <button class="lib-del" onclick="deleteAd('${ad.id}')">×</button>
-                    <div class="lib-info"><b>${ad.name}</b><br><code style="font-size:10px; display:block; height:40px; overflow:hidden;">${ad.code}</code></div>
-                </div>
-            `).join('');
-        }
-
-        async function deleteAffiliate(id) { if(confirm("Delete affiliate product?")) { await supabase.from('affiliate_products').delete().eq('id', id); loadAffiliateLibrary(); } }
-        async function deleteAd(id) { if(confirm("Delete this ad slot?")) { await supabase.from('ad_inventory').delete().eq('id', id); loadAdLibrary(); } }
-
-        function addChapter() { chapters.push({ title: '', image_url: '', commentary: [], blocks: [] }); renderEditor(); }
-        function addMilestone(cIdx) { if(!chapters[cIdx].commentary) chapters[cIdx].commentary = []; chapters[cIdx].commentary.push({ percent: 50, emoji: '🔥', text: '' }); renderEditor(); }
-
-        function openBlockModal() {
-            if(chapters.length === 0) return alert("Add a chapter first!");
-            const sel = document.getElementById('target-chap-select');
-            sel.innerHTML = chapters.map((c, i) => `<option value="${i}">Chapter: ${c.title || (i+1)}</option>`).join('');
-            document.getElementById('block-modal').style.display = 'flex';
-        }
-
-        function addBlock(type) {
-            const idx = document.getElementById('target-chap-select').value;
-            const block = { type, id: Date.now() };
-            if(type==='paragraph') block.text = '';
-            if(type==='ad-slot') block.text = cachedAds.length > 0 ? cachedAds[0].code : '';
-            if(type==='affiliate-cta') { block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : ''; block.text = 'Buy Now'; }
-            if(type==='image') block.url = '';
-            chapters[idx].blocks.push(block);
-            document.getElementById('block-modal').style.display = 'none';
+    async function handleBlockDelete(cIdx, bIdx) {
+        const block = chapters[cIdx].blocks[bIdx];
+        if(confirm("Permanently delete this block and associated image?")) {
+            if(block.type === 'image' && block.url) await deleteFromSupabase(block.url);
+            chapters[cIdx].blocks.splice(bIdx, 1);
             renderEditor();
         }
+    }
 
-        function renderEditor() {
-            const canvas = document.getElementById('chapters-canvas');
-            canvas.innerHTML = '';
-            chapters.forEach((chap, cIdx) => {
-                let html = `
-                <div class="chapter-box">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <b>CHAPTER ${cIdx+1}</b>
-                        <span onclick="chapters.splice(${cIdx},1);renderEditor()" style="color:red; cursor:pointer; font-size:12px;">DELETE CHAPTER</span>
-                    </div>
-                    <input type="text" placeholder="Chapter Title" value="${chap.title}" oninput="chapters[${cIdx}].title=this.value">
-                    <label>Chapter Header Image</label>
-                    <div style="display:flex; gap:5px; align-items:flex-start;">
-                        <input type="text" placeholder="URL" value="${chap.image_url||''}" oninput="chapters[${cIdx}].image_url=this.value">
-                        <button class="upload-btn" style="margin-top:5px;" onclick="triggerUpload(null, true, ${cIdx})">Upload</button>
-                    </div>
-                    <div class="milestone-container">
-                        <label style="color:var(--secondary); font-size:11px;">Chapter Milestones</label>
-                        <div id="milestones-${cIdx}">
-                            ${(chap.commentary || []).map((m, mIdx) => `
-                                <div class="milestone-row">
-                                    <input type="number" placeholder="%" value="${m.percent}" style="width:65px; margin:0;" oninput="chapters[${cIdx}].commentary[${mIdx}].percent=this.value">
-                                    <input type="text" placeholder="Emoji" value="${m.emoji}" style="width:60px; margin:0; text-align:center;" oninput="chapters[${cIdx}].commentary[${mIdx}].emoji=this.value">
-                                    <input type="text" placeholder="Message" value="${m.text}" style="margin:0;" oninput="chapters[${cIdx}].commentary[${mIdx}].text=this.value">
-                                    <button onclick="chapters[${cIdx}].commentary.splice(${mIdx},1);renderEditor()" style="background:none; border:none; color:red; cursor:pointer;"><i class="fas fa-times"></i></button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button onclick="addMilestone(${cIdx})" style="width:100%; padding:8px; background:#f8f9fa; border:1px dashed #ccc; border-radius:6px; font-size:12px; cursor:pointer; margin-top:5px;">+ Add Fly-out Milestone</button>
-                    </div>
-                    <div id="block-list-${cIdx}">`;
+    function generateSlug(text) {
+        if (editId) return;
+        const slug = text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+        document.getElementById('post-slug').value = slug;
+    }
 
-                chap.blocks.forEach((block, bIdx) => {
-                    html += `
-                    <div class="block-item" data-id="${block.id}">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <div style="display:flex; align-items:center;">
-                                <i class="fas fa-grip-vertical drag-handle"></i>
-                                <span class="block-type-label">${block.type.toUpperCase()}</span>
-                            </div>
-                            <div class="block-controls">
-                                <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'up')"><i class="fas fa-arrow-up"></i></button>
-                                <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'down')"><i class="fas fa-arrow-down"></i></button>
-                                <i class="fas fa-trash btn-del" onclick="handleBlockDelete(${cIdx}, ${bIdx})"></i>
-                            </div>
-                        </div>`;
-                    if(block.type === 'paragraph') { html += `<textarea oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value" placeholder="Write story text here...">${block.text||''}</textarea>`; } 
-                    else if(block.type === 'affiliate-cta') {
-                        html += `
-                        <label>Choose Product</label>
-                        <select onchange="chapters[${cIdx}].blocks[${bIdx}].product_id=this.value">
-                            ${cachedAffiliates.map(a => `<option value="${a.product_id}" ${block.product_id === a.product_id ? 'selected':''}>${a.title}</option>`).join('')}
-                        </select>
-                        <input type="text" value="${block.text}" placeholder="Button Text" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value">`;
-                    } else if(block.type === 'ad-slot') {
-                        html += `
-                        <label>Choose Ad Slot</label>
-                        <select onchange="chapters[${cIdx}].blocks[${bIdx}].text=this.value">
-                            ${cachedAds.map(ad => `<option value="${ad.code}" ${block.text === ad.code ? 'selected':''}>${ad.name}</option>`).join('')}
-                        </select>`;
-                    } else if(block.type === 'image') {
-                        html += `
-                        <div style="display:flex; gap:5px; align-items:flex-start;">
-                            <input type="text" placeholder="Image URL" value="${block.url||''}" oninput="chapters[${cIdx}].blocks[${bIdx}].url=this.value">
-                            <button class="upload-btn" style="margin-top:5px;" onclick="triggerUpload(null, true, ${cIdx}, ${bIdx})">Upload</button>
-                        </div>`;
-                    }
-                    html += `</div>`;
-                });
-                canvas.innerHTML += html + `</div></div>`;
-            });
-            initDraggable();
+    window.onload = async () => {
+        const { data } = await supabase.auth.getSession();
+        if(data.session) initDashboard(); else document.getElementById('auth-container').style.display = 'block';
+    };
+
+    async function initDashboard() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        loadPosts(); loadAffiliateLibrary(); loadAdLibrary();
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        if(error) alert(error.message); else location.reload();
+    }
+
+    function openLibModal(type) {
+        libraryType = type;
+        document.getElementById('lib-modal-title').innerText = type === 'affiliate' ? 'Add Affiliate Product' : 'Add Ad Slot';
+        document.getElementById('affiliate-fields').style.display = type === 'affiliate' ? 'block' : 'none';
+        document.getElementById('ad-fields').style.display = type === 'ad' ? 'block' : 'none';
+        document.getElementById('lib-entry-modal').style.display = 'flex';
+    }
+
+    async function saveLibraryItem() {
+        if(libraryType === 'affiliate') {
+            const item = {
+                product_id: document.getElementById('lib-prod-id').value, title: document.getElementById('lib-title').value,
+                description: document.getElementById('lib-desc').value, image_url: document.getElementById('lib-img').value, link: document.getElementById('lib-link').value
+            };
+            await supabase.from('affiliate_products').insert([item]); loadAffiliateLibrary();
+        } else {
+            const ad = { name: document.getElementById('ad-name').value, code: document.getElementById('ad-code').value };
+            await supabase.from('ad_inventory').insert([ad]); loadAdLibrary();
         }
+        document.getElementById('lib-entry-modal').style.display = 'none';
+    }
 
-        async function saveFullPost() {
-            const saveBtn = document.getElementById('save-btn');
-            const originalText = saveBtn.innerText;
-            saveBtn.innerText = "UPLOADING..."; saveBtn.disabled = true;
-            try {
-                const postData = {
-                    title: document.getElementById('post-title').value, slug: document.getElementById('post-slug').value,
-                    summary: document.getElementById('post-summary').value, thumbnail_url: document.getElementById('post-thumb').value,
-                    exoclick_id: document.getElementById('post-exoclick').value, tags: document.getElementById('post-tags').value, is_published: true
-                };
-                let postId;
-                if(editId) { await supabase.from('posts').update(postData).eq('id', editId); postId = editId; await supabase.from('chapters').delete().eq('post_id', postId); } 
-                else { const { data } = await supabase.from('posts').insert([postData]).select().single(); postId = data.id; }
-                for(let i=0; i<chapters.length; i++) {
-                    const c = chapters[i];
-                    const { data: chapData } = await supabase.from('chapters').insert([{ post_id: postId, title: c.title, chapter_image_url: c.image_url, commentary: c.commentary || [], order: i + 1 }]).select().single();
-                    if(c.blocks && c.blocks.length > 0) {
-                        for(let j=0; j<c.blocks.length; j++) {
-                            const b = c.blocks[j];
-                            await supabase.from('content_blocks').insert([{ chapter_id: chapData.id, type: b.type, text: b.text || '', url: b.url || '', product_id: b.product_id || null, order: j + 1 }]);
+    async function loadAffiliateLibrary() {
+        const { data } = await supabase.from('affiliate_products').select('*');
+        cachedAffiliates = data || [];
+        const list = document.getElementById('affiliate-list');
+        list.innerHTML = cachedAffiliates.map(item => `
+            <div class="lib-item">
+                <button class="lib-del" onclick="deleteAffiliate('${item.id}')">×</button>
+                <img src="${item.image_url || 'https://via.placeholder.com/150'}">
+                <div class="lib-info"><b>${item.title}</b><br><small>ID: ${item.product_id}</small></div>
+            </div>
+        `).join('');
+    }
+
+    async function loadAdLibrary() {
+        const { data } = await supabase.from('ad_inventory').select('*').order('name');
+        cachedAds = data || [];
+        const list = document.getElementById('ads-list');
+        document.getElementById('st-ads').innerText = cachedAds.length;
+        list.innerHTML = cachedAds.map((ad) => `
+            <div class="lib-item" style="padding:10px; background:#f0f0f0; color:#111;">
+                <button class="lib-del" onclick="deleteAd('${ad.id}')">×</button>
+                <div class="lib-info"><b>${ad.name}</b><br><code style="font-size:10px; display:block; height:40px; overflow:hidden;">${ad.code}</code></div>
+            </div>
+        `).join('');
+    }
+
+    async function deleteAffiliate(id) { if(confirm("Delete affiliate product?")) { await supabase.from('affiliate_products').delete().eq('id', id); loadAffiliateLibrary(); } }
+    async function deleteAd(id) { if(confirm("Delete this ad slot?")) { await supabase.from('ad_inventory').delete().eq('id', id); loadAdLibrary(); } }
+
+    function addChapter() { chapters.push({ title: '', image_url: '', commentary: [], blocks: [] }); renderEditor(); }
+    function addMilestone(cIdx) { if(!chapters[cIdx].commentary) chapters[cIdx].commentary = []; chapters[cIdx].commentary.push({ percent: 50, emoji: '🔥', text: '' }); renderEditor(); }
+
+    function openBlockModal() {
+        if(chapters.length === 0) return alert("Add a chapter first!");
+        const sel = document.getElementById('target-chap-select');
+        sel.innerHTML = chapters.map((c, i) => `<option value="${i}">Chapter: ${c.title || (i+1)}</option>`).join('');
+        document.getElementById('block-modal').style.display = 'flex';
+    }
+
+    function addBlock(type) {
+        const idx = document.getElementById('target-chap-select').value;
+        const block = { type, id: Date.now() };
+        if(type==='paragraph') block.text = '';
+        if(type==='ad-slot') block.text = cachedAds.length > 0 ? cachedAds[0].code : '';
+        if(type==='affiliate-cta') { block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : ''; block.text = 'Buy Now'; }
+        if(type==='image') block.url = '';
+        chapters[idx].blocks.push(block);
+        document.getElementById('block-modal').style.display = 'none';
+        renderEditor();
+    }
+
+    function renderEditor() {
+        const canvas = document.getElementById('chapters-canvas');
+        canvas.innerHTML = '';
+        chapters.forEach((chap, cIdx) => {
+            let html = `
+            <div class="chapter-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <b>CHAPTER ${cIdx+1}</b>
+                    <span onclick="chapters.splice(${cIdx},1);renderEditor()" style="color:red; cursor:pointer; font-size:12px;">DELETE CHAPTER</span>
+                </div>
+                <input type="text" placeholder="Chapter Title" value="${chap.title}" oninput="chapters[${cIdx}].title=this.value">
+                <label>Chapter Header Image</label>
+                <div style="display:flex; gap:5px; align-items:flex-start;">
+                    <input type="text" placeholder="URL" value="${chap.image_url||''}" oninput="chapters[${cIdx}].image_url=this.value">
+                    <button class="upload-btn" style="margin-top:5px;" onclick="triggerUpload(null, true, ${cIdx})">Upload</button>
+                </div>
+                <div class="milestone-container">
+                    <label style="color:var(--secondary); font-size:11px;">Chapter Milestones</label>
+                    <div id="milestones-${cIdx}">
+                        ${(chap.commentary || []).map((m, mIdx) => `
+                            <div class="milestone-row">
+                                <input type="number" placeholder="%" value="${m.percent}" style="width:65px; margin:0;" oninput="chapters[${cIdx}].commentary[${mIdx}].percent=this.value">
+                                <input type="text" placeholder="Emoji" value="${m.emoji}" style="width:60px; margin:0; text-align:center;" oninput="chapters[${cIdx}].commentary[${mIdx}].emoji=this.value">
+                                <input type="text" placeholder="Message" value="${m.text}" style="margin:0;" oninput="chapters[${cIdx}].commentary[${mIdx}].text=this.value">
+                                <button onclick="chapters[${cIdx}].commentary.splice(${mIdx},1);renderEditor()" style="background:none; border:none; color:red; cursor:pointer;"><i class="fas fa-times"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="addMilestone(${cIdx})" style="width:100%; padding:8px; background:#f8f9fa; border:1px dashed #ccc; border-radius:6px; font-size:12px; cursor:pointer; margin-top:5px; color:#111;">+ Add Fly-out Milestone</button>
+                </div>
+                <div id="block-list-${cIdx}">`;
+
+            chap.blocks.forEach((block, bIdx) => {
+                html += `
+                <div class="block-item" data-id="${block.id}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div style="display:flex; align-items:center;">
+                            <i class="fas fa-grip-vertical drag-handle"></i>
+                            <span class="block-type-label">${block.type.toUpperCase()}</span>
+                        </div>
+                        <div class="block-controls">
+                            <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'up')"><i class="fas fa-arrow-up"></i></button>
+                            <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'down')"><i class="fas fa-arrow-down"></i></button>
+                            <i class="fas fa-trash btn-del" onclick="handleBlockDelete(${cIdx}, ${bIdx})"></i>
+                        </div>
+                    </div>`;
+                if(block.type === 'paragraph') { 
+                    html += `<textarea class="reader-text-engine" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value" placeholder="Write story text here...">${block.text || ''}</textarea>`; 
+                } 
+                else if(block.type === 'affiliate-cta') {
+                    html += `
+                    <label>Choose Product</label>
+                    <select onchange="chapters[${cIdx}].blocks[${bIdx}].product_id=this.value">
+                        ${cachedAffiliates.map(a => `<option value="${a.product_id}" ${block.product_id === a.product_id ? 'selected':''}>${a.title}</option>`).join('')}
+                    </select>
+                    <input type="text" value="${block.text}" placeholder="Button Text" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value">`;
+                } else if(block.type === 'ad-slot') {
+                    html += `
+                    <label>Choose Ad Slot</label>
+                    <select onchange="chapters[${cIdx}].blocks[${bIdx}].text=this.value">
+                        ${cachedAds.map(ad => `<option value="${ad.code}" ${block.text === ad.code ? 'selected':''}>${ad.name}</option>`).join('')}
+                    </select>`;
+                } else if(block.type === 'image') {
+                    html += `
+                    <div style="display:flex; gap:5px; align-items:flex-start;">
+                        <input type="text" placeholder="Image URL" value="${block.url||''}" oninput="chapters[${cIdx}].blocks[${bIdx}].url=this.value">
+                        <button class="upload-btn" style="margin-top:5px;" onclick="triggerUpload(null, true, ${cIdx}, ${bIdx})">Upload</button>
+                    </div>`;
+                }
+                html += `</div>`;
+            });
+            canvas.innerHTML += html + `</div></div>`;
+        });
+        initDraggable();
+    }
+
+    async function saveFullPost() {
+        const saveBtn = document.getElementById('save-btn');
+        const originalText = saveBtn.innerText;
+        saveBtn.innerText = "UPLOADING..."; saveBtn.disabled = true;
+        try {
+            const postData = {
+                title: document.getElementById('post-title').value, slug: document.getElementById('post-slug').value,
+                summary: document.getElementById('post-summary').value, thumbnail_url: document.getElementById('post-thumb').value,
+                exoclick_id: document.getElementById('post-exoclick').value, tags: document.getElementById('post-tags').value, is_published: true
+            };
+            let postId;
+            if(editId) { await supabase.from('posts').update(postData).eq('id', editId); postId = editId; await supabase.from('chapters').delete().eq('post_id', postId); } 
+            else { const { data } = await supabase.from('posts').insert([postData]).select().single(); postId = data.id; }
+            for(let i=0; i<chapters.length; i++) {
+                const c = chapters[i];
+                const { data: chapData } = await supabase.from('chapters').insert([{ post_id: postId, title: c.title, chapter_image_url: c.image_url, commentary: c.commentary || [], order: i + 1 }]).select().single();
+                if(c.blocks && c.blocks.length > 0) {
+                    for(let j=0; j<c.blocks.length; j++) {
+                        const b = c.blocks[j];
+                        
+                        let formattedText = b.text || '';
+                        if(b.type === 'paragraph') {
+                            formattedText = formattedText.replace(/<br\s*\/?>/gi, '\n');
+                            // Formats linebreaks down into a sleek single break tag standard
+                            formattedText = formattedText.replace(/\n+/g, '<br>');
                         }
+
+                        await supabase.from('content_blocks').insert([{ chapter_id: chapData.id, type: b.type, text: formattedText, url: b.url || '', product_id: b.product_id || null, order: j + 1 }]);
                     }
                 }
-                alert("Story successfully published!"); location.reload();
-            } catch (err) { console.error(err); alert("Error: " + err.message); saveBtn.innerText = originalText; saveBtn.disabled = false; }
-        }
+            }
+            alert("Story successfully published!"); location.reload();
+        } catch (err) { console.error(err); alert("Error: " + err.message); saveBtn.innerText = originalText; saveBtn.disabled = false; }
+    }
 
-        // FIX: MAPPING SLUGS TO UUIDS FOR LEADERBOARD
-        async function loadPosts() {
-            const { data: posts } = await supabase.from('posts').select('*').order('created_at', {ascending: false});
-            const { data: stats } = await supabase.from('post_stats').select('*');
-            
-            // Create the slug lookup map
-            const slugLookup = {};
-            if (posts) posts.forEach(p => slugLookup[p.id] = p.slug);
+    async function loadPosts() {
+        const { data: posts } = await supabase.from('posts').select('*').order('created_at', {ascending: false});
+        const { data: stats } = await supabase.from('post_stats').select('*');
+        
+        const slugLookup = {};
+        if (posts) posts.forEach(p => slugLookup[p.id] = p.slug);
 
-            const statsMap = {};
-            if(stats) stats.forEach(s => statsMap[s.post_id] = s);
-            
-            document.getElementById('st-total').innerText = posts ? posts.length : 0;
-            const list = document.getElementById('posts-list');
-            list.innerHTML = (posts || []).map(p => {
-                const s = statsMap[p.id] || { views_total: 0, views_today: 0 };
-                return `
-                <div class="post-row">
-                    <div style="flex:1"><b>${p.title}</b><br><small style="color:var(--accent)">Views: ${s.views_total} | Today: ${s.views_today}</small></div>
-                    <div>
-                        <button onclick="fetchStory('${p.id}')" style="padding:5px 10px; margin-right:5px; border:none; border-radius:4px;">Edit</button>
-                        <button onclick="deleteStory('${p.id}')" style="padding:5px 10px; color:var(--danger); border:none; background:none;">Del</button>
-                    </div>
-                </div>`;
-            }).join('');
-            
-            if(stats) renderLeaderboard(stats, slugLookup);
-        }
-
-        function renderLeaderboard(stats, slugLookup) {
-            const overallTotal = stats.reduce((acc, s) => acc + (s.views_total || 0), 0);
-            const overallToday = stats.reduce((acc, s) => acc + (s.views_today || 0), 0);
-            const sorted = [...stats].sort((a, b) => b.views_total - a.views_total).slice(0, 5);
-            const container = document.getElementById('leaderboard-container');
-            container.innerHTML = `
-            <h3 style="margin-top:20px;">Site Performance</h3>
-            <div class="grand-total-bar">
-                <div><small>ALL TIME VIEWS</small><b>${overallTotal.toLocaleString()}</b></div>
-                <div style="border-left: 1px solid #444;"><small>TODAY'S VIEWS</small><b>${overallToday.toLocaleString()}</b></div>
-            </div>
-            <h3 style="margin-top:20px;">Top Stories</h3>
-            <div class="card" style="padding:10px;">
-                <table class="leaderboard-table">
-                    <thead><tr><th>Slug</th><th>Today</th><th>Total</th></tr></thead>
-                    <tbody>
-                        ${sorted.map(s => `<tr><td>${slugLookup[s.post_id] || 'N/A'}</td><td>${s.views_today}</td><td><b>${s.views_total}</b></td></tr>`).join('')}
-                    </tbody>
-                </table>
+        const statsMap = {};
+        if(stats) stats.forEach(s => statsMap[s.post_id] = s);
+        
+        document.getElementById('st-total').innerText = posts ? posts.length : 0;
+        const list = document.getElementById('posts-list');
+        list.innerHTML = (posts || []).map(p => {
+            const s = statsMap[p.id] || { views_total: 0, views_today: 0 };
+            return `
+            <div class="post-row">
+                <div style="flex:1"><b>${p.title}</b><br><small style="color:var(--accent)">Views: ${s.views_total} | Today: ${s.views_today}</small></div>
+                <div>
+                    <button onclick="fetchStory('${p.id}')" style="padding:5px 10px; margin-right:5px; border:none; border-radius:4px; color:#111;">Edit</button>
+                    <button onclick="deleteStory('${p.id}')" style="padding:5px 10px; color:var(--danger); border:none; background:none;">Del</button>
+                </div>
             </div>`;
-        }
+        }).join('');
+        
+        if(stats) renderLeaderboard(stats, slugLookup);
+    }
 
-        async function fetchStory(id) {
-            editId = id;
-            const { data: post } = await supabase.from('posts').select('*').eq('id', id).single();
-            const { data: chaps } = await supabase.from('chapters').select('*, content_blocks(*)').eq('post_id', id).order('order', {ascending: true});
-            document.getElementById('post-title').value = post.title || '';
-            document.getElementById('post-slug').value = post.slug || '';
-            document.getElementById('post-summary').value = post.summary || '';
-            document.getElementById('post-thumb').value = post.thumbnail_url || '';
-            document.getElementById('post-exoclick').value = post.exoclick_id || '';
-            document.getElementById('post-tags').value = post.tags || '';
-            chapters = (chaps || []).map(c => ({
-                title: c.title, image_url: c.chapter_image_url, commentary: c.commentary || [],
-                blocks: (c.content_blocks || []).sort((a,b) => a.order - b.order).map(b => ({ ...b }))
-            }));
-            switchView(null, 'editor'); renderEditor();
-        }
+    function renderLeaderboard(stats, slugLookup) {
+        const overallTotal = stats.reduce((acc, s) => acc + (s.views_total || 0), 0);
+        const overallToday = stats.reduce((acc, s) => acc + (s.views_today || 0), 0);
+        const sorted = [...stats].sort((a, b) => b.views_total - a.views_total).slice(0, 5);
+        const container = document.getElementById('leaderboard-container');
+        container.innerHTML = `
+        <h3 style="margin-top:20px;">Site Performance</h3>
+        <div class="grand-total-bar">
+            <div><small>ALL TIME VIEWS</small><b>${overallTotal.toLocaleString()}</b></div>
+            <div style="border-left: 1px solid #444;"><small>TODAY'S VIEWS</small><b>${overallToday.toLocaleString()}</b></div>
+        </div>
+        <h3 style="margin-top:20px;">Top Stories</h3>
+        <div class="card" style="padding:10px;">
+            <table class="leaderboard-table">
+                <thead><tr><th>Slug</th><th>Today</th><th>Total</th></tr></thead>
+                <tbody>
+                    ${sorted.map(s => `<tr><td>${slugLookup[s.post_id] || 'N/A'}</td><td>${s.views_today}</td><td><b>${s.views_total}</b></td></tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+    }
 
-        async function deleteStory(id) { if(confirm("Are you sure?")) { await supabase.from('posts').delete().eq('id', id); loadPosts(); } }
+    async function fetchStory(id) {
+        editId = id;
+        const { data: post } = await supabase.from('posts').select('*').eq('id', id).single();
+        const { data: chaps } = await supabase.from('chapters').select('*, content_blocks(*)').eq('post_id', id).order('order', {ascending: true});
+        document.getElementById('post-title').value = post.title || '';
+        document.getElementById('post-slug').value = post.slug || '';
+        document.getElementById('post-summary').value = post.summary || '';
+        document.getElementById('post-thumb').value = post.thumbnail_url || '';
+        document.getElementById('post-exoclick').value = post.exoclick_id || '';
+        document.getElementById('post-tags').value = post.tags || '';
+        
+        chapters = (chaps || []).map(c => ({
+            title: c.title, image_url: c.chapter_image_url, commentary: c.commentary || [],
+            blocks: (c.content_blocks || []).sort((a,b) => a.order - b.order).map(b => {
+                let processedText = b.text || '';
+                if (b.type === 'paragraph') {
+                    processedText = processedText.replace(/<br\s*\/?>/gi, '\n');
+                    processedText = processedText.replace(/\n{3,}/g, '\n\n');
+                }
+                return { ...b, text: processedText };
+            })
+        }));
+        switchView(null, 'editor'); renderEditor();
+    }
 
-        function switchView(e, view) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('view-'+view).classList.add('active');
-            if (e && e.target) e.target.classList.add('active');
-            else { const tabs = document.querySelectorAll('.nav-tab'); if(view === 'editor') tabs[4].classList.add('active'); }
-        }
+    async function deleteStory(id) { if(confirm("Are you sure?")) { await supabase.from('posts').delete().eq('id', id); loadPosts(); } }
 
-        async function handleLogout() { await supabase.auth.signOut(); location.reload(); }
-    </script>
+    function switchView(e, view) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('view-'+view).classList.add('active');
+        if (e && e.target) e.target.classList.add('active');
+        else { const tabs = document.querySelectorAll('.nav-tab'); if(view === 'editor') tabs[4].classList.add('active'); }
+    }
+
+    async function handleLogout() { await supabase.auth.signOut(); location.reload(); }
+</script>
 </body>
 </html>
