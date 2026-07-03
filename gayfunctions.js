@@ -1,4 +1,4 @@
- if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('Service Worker registered!'))
@@ -32,6 +32,34 @@ const fallbackMessages = {
     95: { emoji: '🤐', text: "Are you holding your breath? Because I definitely am." },
     100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
 };
+
+/* --- UTILITY FUNCTIONS --- */
+
+// Formatting utility for stats (e.g., 1000 -> 1k, 1500000 -> 1.5m)
+function formatCompactNumber(number) {
+    if (number === undefined || number === null) return '0';
+    return new Intl.NumberFormat('en-US', {
+        notation: 'compact',
+        maximumFractionDigits: 1
+    }).format(number).toLowerCase();
+}
+
+// Calculates accurate read time by counting words across all content blocks
+function calculateReadTime(chapters, wpm = 225) {
+    if (!chapters || chapters.length === 0) return 7; 
+    
+    let totalWords = 0;
+    chapters.forEach(chapter => {
+        const blocks = chapter.content_blocks || chapter.content || [];
+        blocks.forEach(block => {
+            if (block.type === 'paragraph' && block.text) {
+                totalWords += block.text.trim().split(/\s+/).length;
+            }
+        });
+    });
+
+    return Math.max(1, Math.ceil(totalWords / wpm));
+}
 
 /* --- UI ELEMENTS --- */
 const searchContainer = document.getElementById('searchContainer');
@@ -96,39 +124,23 @@ function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
 
-    // Increment visit counter
     let visits = parseInt(localStorage.getItem('gb_visits') || '0');
     localStorage.setItem('gb_visits', (visits + 1).toString());
 
-    // Clean Slate Implementation: 
-    // We pick the GIF via JS and apply it as inline style to override class cache.
-
- const backgrounds = [
+    const backgrounds = [
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40091d8e4a279186%20(1).gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40db559a86d35875%20(1).gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78%20(1).gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a%20(1).gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037%20(1).gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif'
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40091d8e4a279186.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a (1).gif'
     ];
- 
- /*   const backgrounds = [
-        'yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
-        'ezgif-40db559a86d35875.gif',
-        'ezgif-4b575af810db3037.gif',
-        '15342376.gif',
-        '22600551.gif',
-        'ezgif-41da2e0cfde01e78.gif',
-        'ezgif-40091d8e4a279186.gif',
-        'ezgif-4a9992fb19cc015a (1).gif'
-    ];
-*/
+
     const randomIdx = Math.floor(Math.random() * backgrounds.length);
     const selectedImg = backgrounds[randomIdx];
 
-    // Resetting and applying fresh URL
     bgContainer.style.backgroundImage = 'none';
     bgContainer.style.backgroundImage = `url('${selectedImg}')`;
 }
@@ -142,7 +154,6 @@ async function hideSplashScreen() {
         splash.classList.add('splash-hidden');
         initialLoadDone = true;
         
-        // Cleanup: Null the background after fade so the next load starts empty
         setTimeout(() => {
             if(bgContainer) bgContainer.style.backgroundImage = 'none';
         }, 1000);
@@ -159,23 +170,27 @@ async function handleRoute() {
     postPage.classList.toggle('visible', !isHome);
     body.classList.toggle('is-post-page', !isHome);
     
-    if (isHome) {
-        searchContainer.classList.remove('active');
-        memory.cachedStats = {}; 
-        await loadHomePage(searchInput.value, true); 
-        document.title = 'Free uncensored Gay & BL Stories';
-        
-        let metaDesc = document.querySelector('meta[name="description"]');
-        if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
-        metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
-        
-    } else {
-        await loadPostPage(route.slug, route.chapterNum);
-        searchContainer.classList.remove('active');
+    try {
+        if (isHome) {
+            searchContainer.classList.remove('active');
+            memory.cachedStats = {}; 
+            await loadHomePage(searchInput.value, true); 
+            document.title = 'Free uncensored Gay & BL Stories';
+            
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
+            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            
+        } else {
+            await loadPostPage(route.slug, route.chapterNum);
+            searchContainer.classList.remove('active');
+        }
+    } catch (globalError) {
+        console.error("Routing execution error encountered:", globalError);
+    } finally {
+        hideSplashScreen();
+        window.scrollTo(0, 0);
     }
-    
-    hideSplashScreen();
-    window.scrollTo(0, 0);
 }
 
 async function loadPostPage(slug, chapterNum) {
@@ -202,14 +217,11 @@ async function createGalleryItem(post) {
     const imgUrl = post.thumbnail_url || 'https://via.placeholder.com/320x300?text=No+Image';
     const adId = post.exoclick_id || '5048227';
     
-    // --- UPDATED DYNAMIC MATH (CHAPTERS * 1500 / 225) ---
-    const chapterCount = post.chapters ? post.chapters.length : 0;
-    const wordsPerChapter = 1500;
-    const wpm = 225;
-    const calculatedTime = Math.max(7, Math.ceil((chapterCount * wordsPerChapter) / wpm));
+    const calculatedTime = calculateReadTime(post.chapters);
 
     const stats = await getPostStats(post.id, post.slug);
     const trendingIcon = stats.todayCount > 5 ? `<span style="color: #ff4d4d;"><i class="fas fa-fire"></i></span>` : '';
+    const formattedViews = formatCompactNumber(stats.viewCount);
 
     return `
         <div class="gallery-item" onclick="navigateToPost('${identifier}', '${adId}')">
@@ -219,33 +231,34 @@ async function createGalleryItem(post) {
                 <p class="item-summary">${summary}</p>
                 <div class="item-stats">
                     <span><i class="fas fa-clock"></i> ${calculatedTime} min read</span>
-                    <span><i class="fas fa-eye"></i> ${stats.viewCount.toLocaleString()} views</span>
+                    <span><i class="fas fa-eye"></i> ${formattedViews} views</span>
                 </div>
             </div>
         </div>`;
 }
 
-/* --- DATA FETCHING (FETCHING CHAPTER IDS FOR MATH) --- */
+/* --- DATA FETCHING (FIXED RELATIONSHIP PARENTHESES FOR POSTGREST) --- */
 async function fetchGalleryItems(query = '', offset = 0) {
     let supabaseQuery = supabase
         .from('posts')
-        .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, chapters (id)') 
+        .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, chapters(id, content_blocks(type, text))') 
         .eq('is_published', true) 
         .order('created_at', { ascending: false })
         .range(offset, offset + ITEMS_PER_LOAD - 1);
     if (query) { supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,tags.ilike.%${query}%`); }
     const { data, error } = await supabaseQuery;
     if (error) return { data: [], hasMore: false };
-    return { data, hasMore: data.length === ITEMS_PER_LOAD };
+    return { data: data || [], hasMore: data?.length === ITEMS_PER_LOAD };
 }
 
+/* --- DATA FETCHING (FIXED RE-ADDITION OF ISUUID DECLARATION) --- */
 async function fetchPost(identifier) {
     if (memory.postsContent[identifier]) return memory.postsContent[identifier];
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; // Simple check
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
     const isUuid = uuidRegex.test(identifier);
     let query = supabase.from('posts').select(`
             id, title, thumbnail_url, summary, commentary, exoclick_id, slug,
-            chapters:chapters (id, title, chapter_image_url, commentary, order, content_blocks:content_blocks (*))
+            chapters:chapters(id, title, chapter_image_url, commentary, order, content_blocks:content_blocks(*))
         `);
     if (isUuid) query = query.eq('id', identifier);
     else query = query.eq('slug', identifier);
@@ -273,9 +286,11 @@ function navigateToPost(identifier, adId) {
 
 async function renderGallery(items, append = false) {
     if (!append) homeGallery.innerHTML = '';
-    if (items.length === 0 && !append) {
-         homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">No books found. Try a different search.</p>';
-         loadMoreContainer.style.display = 'none';
+    if (!items || items.length === 0) {
+         if (!append) {
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
+             loadMoreContainer.style.display = 'none';
+         }
          return;
     }
     const itemHtmls = await Promise.all(items.map(item => createGalleryItem(item)));
@@ -326,14 +341,14 @@ function updateSEOData(post, chapterNum, chapter) {
     const seoLink = document.getElementById('seo-link');
     const currentNum = parseInt(chapterNum);
     if (currentNum === 1) {
-        seoText.textContent = post.summary;
-        seoImg.src = post.thumbnail_url;
+        if(seoText) seoText.textContent = post.summary;
+        if(seoImg) seoImg.src = post.thumbnail_url;
     } else if (chapter) {
         const firstParagraph = chapter.content.find(block => block.type === 'paragraph');
-        seoText.textContent = firstParagraph?.text || `Chapter ${chapterNum}`;
-        seoImg.src = chapter.chapter_image_url || post.thumbnail_url;
+        if(seoText) seoText.textContent = firstParagraph?.text || `Chapter ${chapterNum}`;
+        if(seoImg) seoImg.src = chapter.chapter_image_url || post.thumbnail_url;
     }
-    seoLink.href = window.location.href;
+    if(seoLink) seoLink.href = window.location.href;
     window.renderComplete = true; 
 }
 
@@ -346,7 +361,7 @@ function updateSchemaMarkup(post, chapterNum, chapter) {
         "headline": `${post.title} - Chapter ${chapterNum}`,
         "description": post.summary,
         "image": chapter?.chapter_image_url || post.thumbnail_url,
-        "author": { "@type": "Person", "name": "Maro Akpovwovwo Erubasa" }
+        "author": { "@type": "Person", "name": "Maro Alero Erubasa" }
     };
     const script = document.createElement('script');
     script.id = 'dynamic-schema'; script.type = 'application/ld+json'; script.text = JSON.stringify(schemaData);
@@ -433,7 +448,7 @@ async function loadHomePage(query = '', reset = true) {
     }
     if (reset) {
         memory.currentOffset = 0;
-        homeGallery.innerHTML = '<div class="spa-loader">Loading library...</div>';
+        homeGallery.innerHTML = '<div class="spa-loader">Summoning the books... they are pretending they did not see you coming....</div>';
     }
     const { data, hasMore } = await fetchGalleryItems(query, memory.currentOffset);
     if (query === '') {
@@ -443,7 +458,7 @@ async function loadHomePage(query = '', reset = true) {
     await renderGallery(data, !reset);
     memory.hasMore = hasMore;
     loadMoreContainer.style.display = hasMore ? 'block' : 'none';
-    if (hasMore) memory.currentOffset += data.length;
+    if (hasMore && data) memory.currentOffset += data.length;
     currentSearchQuery = query;
     window.renderComplete = true;
 }
@@ -461,31 +476,31 @@ const closeShareModal = document.getElementById('closeShareModal');
 const shareLinkDisplay = document.getElementById('shareLinkDisplay');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
 
-whatsappBtn.addEventListener('click', (e) => { e.stopPropagation(); whatsappModal.classList.add('active'); });
-closeWhatsappModal.addEventListener('click', () => { whatsappModal.classList.remove('active'); });
-coffeeBtn.addEventListener('click', (e) => { e.stopPropagation(); coffeeModal.classList.add('active'); });
-closeCoffeeModal.addEventListener('click', () => { coffeeModal.classList.remove('active'); });
-shareBtn.addEventListener('click', (e) => { e.stopPropagation(); shareLinkDisplay.textContent = window.location.href; shareModal.classList.add('active'); });
-closeShareModal.addEventListener('click', () => { shareModal.classList.remove('active'); });
-copyLinkBtn.addEventListener('click', () => {
+if(whatsappBtn) whatsappBtn.addEventListener('click', (e) => { e.stopPropagation(); whatsappModal.classList.add('active'); });
+if(closeWhatsappModal) closeWhatsappModal.addEventListener('click', () => { whatsappModal.classList.remove('active'); });
+if(coffeeBtn) coffeeBtn.addEventListener('click', (e) => { e.stopPropagation(); coffeeModal.classList.add('active'); });
+if(closeCoffeeModal) closeCoffeeModal.addEventListener('click', () => { coffeeModal.classList.remove('active'); });
+if(shareBtn) shareBtn.addEventListener('click', (e) => { e.stopPropagation(); if(shareLinkDisplay) shareLinkDisplay.textContent = window.location.href; shareModal.classList.add('active'); });
+if(closeShareModal) closeShareModal.addEventListener('click', () => { shareModal.classList.remove('active'); });
+if(copyLinkBtn) copyLinkBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(shareLinkDisplay.textContent).then(() => { copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copied!'; setTimeout(() => { copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Link'; }, 2000); });
 });
 
 window.addEventListener('popstate', handleRoute); 
 window.onscroll = updateProgress;
 
-brandNameLink.addEventListener('click', (e) => {
+if(brandNameLink) brandNameLink.addEventListener('click', (e) => {
     e.preventDefault();
     if (window.location.pathname !== '/') { fireExoclickAd('5048227', '/'); }
 });
 
-closeIconWrapper.addEventListener('click', () => {
+if(closeIconWrapper) closeIconWrapper.addEventListener('click', () => {
     const route = getRouteInfo();
     if (route.slug) { fireExoclickAd('5048227', '/'); }
     else if (searchContainer.classList.contains('active')) { toggleSearch(false); }
 });
 
-searchIcon.addEventListener('click', () => {
+if(searchIcon) searchIcon.addEventListener('click', () => {
     if (searchInput.value.length > 0) {
         searchInput.value = '';
         searchIconI.className = 'fas fa-search';
@@ -499,12 +514,12 @@ function toggleSearch(expand) {
     else { loadHomePage(''); }
 }
 
-searchInput.addEventListener('input', (e) => {
+if(searchInput) searchInput.addEventListener('input', (e) => {
     if (e.target.value.length > 0) { searchIconI.className = 'fas fa-times-circle'; }
     else { searchIconI.className = 'fas fa-search'; }
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => { loadHomePage(e.target.value, true); }, 600);
 });
 
-loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
+if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 document.addEventListener('DOMContentLoaded', handleRoute);
