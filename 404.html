@@ -1,180 +1,1412 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaybook.site</title>
-    <link rel="stylesheet" href="gaybook.site/Gaybook.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="gaystyles.css">
- 
-    <script>
-        function fireExoclickAd(adId, postPath) {
-            console.log(`Firing Exoclick Interstitial Ad: ${adId}`);
-            setTimeout(() => {
-                if(postPath === '/') { window.history.replaceState({}, '', postPath); }
-                else { window.history.pushState({}, '', postPath); }
-                window.dispatchEvent(new PopStateEvent('popstate')); 
-            }, 300); 
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <style>
+   /* ---------------------------------
+       1. CSS Root Variables & Global Styles 
+    --------------------------------- */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    :root {
+        --bg-color-gallery: transparent; 
+        --text-color-gallery: #ffffff; 
+        --glass-bg: rgba(255, 255, 255, 0.1); 
+        --glass-border: rgba(255, 255, 255, 0.1);
+        
+        --color-primary: #d1d1d1; 
+        --color-secondary: #eeeeee; 
+        --color-background: #000000; 
+        --color-accent: #333333; 
+        --color-whatsapp: #25d366; 
+        --color-whatsapp-dark: #128c7e; 
+        --font-body: 'Lora', serif; 
+        --font-heading: 'Source Sans Pro', sans-serif; 
+        --font-comic: 'Comic Neue', cursive; 
+        --font-size-base: 1.25rem; 
+        --line-height-base: 1.8; 
+        --max-text-width: 750px; 
+        --padding-page: 40px; 
+        --gallery-gap: 30px; 
+        
+        --color-button-bg: #333;
+        --color-button-text: #fff;
+        --color-link-footer: #ffcc00; 
+    }
+
+    body {
+        font-family: var(--font-body);
+        color: var(--color-primary); 
+        background-color: var(--color-background); 
+        min-height: 100vh;
+        padding-top: 80px; 
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- SPLASH SCREEN STYLES (CLEAN SLATE UPDATES) --- */
+    #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000; /* Ensuring black start */
+        transition: opacity 0.8s ease, visibility 0.8s;
+    }
+
+    #splash-bg-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-color: #000; /* Fallback */
+        z-index: 1;
+    }
+
+    /* Removed .bg-v1 to .bg-v5 classes to prevent cache flickering */
+
+    .splash-glass {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(7px) saturate(160%);
+        -webkit-backdrop-filter: blur(25px) saturate(160%);
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 2;
+    }
+
+    .splash-content {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+    }
+
+    .logo-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+
+    .splash-text-logo {
+        font-family: var(--font-comic);
+        font-size: 3.2rem;
+        font-weight: 700;
+        color: #fff;
+        transform: rotate(-3deg);
+        text-shadow: 4px 4px 0px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255,255,255,0.3);
+        display: block;
+    }
+
+    .adult-badge {
+        position: absolute;
+        right: -12px;
+        top: -5px;
+        background: #ff4d4d;
+        color: white;
+        font-size: 0.75rem;
+        font-family: var(--font-heading);
+        font-weight: 800;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        transform: rotate(12deg);
+        box-shadow: 0 0 12px rgba(255, 77, 77, 0.6);
+    }
+
+    .loading-dots {
+        font-family: var(--font-comic);
+        color: #fff;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        margin-top: 10px;
+    }
+
+    .loading-dots span { animation: blink 1.4s infinite both; }
+    .loading-dots span:nth-child(2) { animation-delay: .2s; }
+    .loading-dots span:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes blink {
+        0% { opacity: .2; }
+        20% { opacity: 1; }
+        100% { opacity: .2; }
+    }
+
+    @media (min-width: 769px) {
+        #splash-bg-container, .splash-glass { display: none !important; }
+        #splash-screen { background: #000 !important; }
+    }
+
+    .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .gallery, .book-container {
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05));
+    }
+
+    .spa-loader {
+        text-align: center;
+        padding: 100px 20px;
+        font-family: var(--font-comic);
+        font-size: 1.4rem;
+        color: var(--color-secondary);
+        width: 100%;
+    }
+    
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed; 
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100; 
+        padding: 20px; 
+        background-color: transparent; 
+    }
+
+    @keyframes rainbowFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .brand-name {
+        font-family: 'none', serif; 
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 8px 15px;
+        border-radius: 1px;
+        color: #fff;
+        background: linear-gradient(-45deg, rgba(255,0,0,0.2), rgba(255,165,0,0.2), rgba(255,255,0,0.2), rgba(0,128,0,0.2), rgba(0,0,255,0.2), rgba(75,0,130,0.2), rgba(238,130,238,0.2));
+        background-size: 400% 400%;
+        animation: rainbowFlow 15s ease infinite;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px); 
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        display: inline-flex; 
+        align-items: center;
+        text-decoration: none; 
+    }
+    
+    .search-container {
+        display: flex;
+        align-items: center;
+        position: relative;
+        width: 44px; 
+        transition: width 0.4s ease-in-out;
+        gap: 8px;
+    }
+
+    .search-container.active {
+        width: 100%; 
+        max-width: 400px;
+    }
+    
+    #coffeeBtn i { color: #e74c3c; }
+    #whatsappBtn i { color: #25d366; }
+
+    .search-icon, .close-icon-wrapper, .coffee-icon-wrapper, .share-icon-wrapper, .whatsapp-icon-wrapper {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.1rem;
+        cursor: pointer; 
+        padding: 10px;
+        z-index: 2; 
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px); 
+        border: 1px solid var(--glass-border);
+        border-radius: 8px; 
+        height: 40px; 
+        width: 40px;
+        display: flex; 
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .coffee-icon-wrapper, .share-icon-wrapper, .whatsapp-icon-wrapper, .close-icon-wrapper {
+        display: none; 
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 0;
+        transition: color 0.3s ease;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 15px;
+        border: 0.5px solid var(--glass-border);
+        border-radius: 5px;
+        font-size: 1rem;
+        background: var(--glass-bg);
+        color: #fff;
+        outline: none; 
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .search-container.active .search-input {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    @media (max-width: 768px) {
+        body.is-post-page .close-icon-wrapper {
+            display: flex !important;
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            z-index: 3000 !important;
         }
-    </script>
-</head>
-<body>
 
-    <div id="splash-screen">
-        <div id="splash-bg-container"></div>
-        <div class="splash-glass"></div>
-        <div class="splash-content">
-            <div class="logo-wrapper">
-                <span class="splash-text-logo">Gaybook</span>
-                <div class="adult-badge">18+</div>
-            </div>
-            <div class="loading-dots">
-                Loading<span>.</span><span>.</span><span>.</span>
+        body.is-post-page .coffee-icon-wrapper,
+        body.is-post-page .share-icon-wrapper,
+        body.is-post-page .whatsapp-icon-wrapper {
+            display: flex !important;
+            position: fixed !important;
+            right: 15px !important;
+            left: auto !important;
+            z-index: 2100 !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+        }
+
+        body.is-post-page .coffee-icon-wrapper { margin-top: -60px !important; }
+        body.is-post-page .share-icon-wrapper { margin-top: 0px !important; }
+        body.is-post-page .whatsapp-icon-wrapper { margin-top: 60px !important; }
+    }
+
+    body.is-post-page .search-container { width: auto; }
+    body.is-post-page .search-icon { display: none; }
+    body.is-post-page .search-input { display: none; }
+
+    .progress-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: rgba(255,255,255,0.05);
+        z-index: 1000;
+        display: none;
+    }
+
+    body.is-post-page .progress-container { display: block; }
+
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        background: #ffffff; 
+        transition: width 0.1s ease;
+        position: relative;
+    }
+
+    .scroll-counter {
+        position: fixed;
+        bottom: 12px;
+        right: 20px;
+        background: #fff;
+        color: #000;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-family: var(--font-comic);
+        font-weight: bold;
+        z-index: 1001;
+        display: none;
+    }
+
+    body.is-post-page .scroll-counter { display: block; }
+
+    .fly-out-container {
+        position: fixed;
+        bottom: 60px;
+        right: 20px;
+        pointer-events: none;
+        z-index: 2500;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; 
+        opacity: 0;
+        max-width: 80vw; 
+    }
+
+    .fly-out-container.animate {
+        animation: flyAway 3.8s ease-out forwards;
+    }
+
+    .fly-emoji {
+        font-size: 40px;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        margin-right: 10px;
+    }
+
+    .fly-text {
+        font-family: var(--font-comic);
+        background: #222;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 12px;
+        border: 1px solid #444;
+        margin-top: 8px;
+        white-space: normal;
+        word-wrap: break-word;
+        text-align: right;
+        font-weight: bold;
+        font-size: 0.95rem;
+        box-shadow: 4px 4px 0px rgba(255,255,255,0.1);
+        max-width: 240px; 
+    }
+
+    @keyframes flyAway {
+        0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 0; }
+        15% { transform: translateY(-20px) scale(1) rotate(-5deg); opacity: 1; }
+        85% { transform: translateY(-100px) scale(1) rotate(5deg); opacity: 1; }
+        100% { transform: translateY(-150px) scale(0.8) rotate(10deg); opacity: 0; }
+    }
+
+    .coffee-modal, .share-modal, .whatsapp-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.4); 
+        backdrop-filter: blur(8px); 
+        -webkit-backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .coffee-modal.active, .share-modal.active, .whatsapp-modal.active { display: flex; }
+
+    .modal-content {
+        background-color: #1a1a1a;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        border: 1px solid #333;
+        color: #fff;
+    }
+
+    .modal-content h3 { margin-bottom: 15px; font-family: var(--font-heading); }
+    .modal-content p { margin-bottom: 20px; font-size: 1rem; line-height: 1.5; color: #bbb; }
+
+    .buy-coffee-btn, .copy-link-btn, .whatsapp-channel-btn {
+        background-color: #fff;
+        color: #000;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        display: inline-block;
+        transition: transform 0.2s;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .whatsapp-channel-btn { background-color: var(--color-whatsapp); color: white; margin-bottom: 10px; }
+    .buy-coffee-btn:hover, .copy-link-btn:hover, .whatsapp-channel-btn:hover { transform: scale(1.02); }
+
+    .share-link-box {
+        background: #222;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        word-break: break-all;
+        margin-bottom: 15px;
+        border: 1px solid #444;
+        color: #ccc;
+    }
+
+    .gallery {
+        display: grid;
+        grid-template-columns: 1fr; 
+        gap: 20px; 
+        padding: 30px 20px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    @media (min-width: 900px) {
+        .gallery { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .gallery-item {
+        width: 100%; 
+        border-radius: 0;
+        overflow: hidden;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        background-color: transparent; 
+        display: flex;
+        flex-direction: row; 
+        align-items: flex-start;
+    }
+
+    .gallery-item:hover { opacity: 0.8; }
+
+    .gallery-item img {
+        width: 200px !important; 
+        height: 300px !important; 
+        min-width: 200px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .item-details {
+        padding: 0 15px; 
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .item-title {
+        font-family: var(--font-heading);
+        font-size: 0.95rem; 
+        font-weight: 800; 
+        color: #fff;
+        margin: 0;
+        line-height: 1.2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+    }
+
+    .item-summary {
+        font-family: var(--font-body);
+        font-size: 0.85rem;
+        color: #999;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .item-stats {
+        display: flex;
+        gap: 12px;
+        font-size: 0.75rem;
+        color: #777;
+        font-family: var(--font-heading);
+        margin-top: 5px;
+    }
+    .item-stats i { margin-right: 4px; }
+
+    .load-more-container { text-align: center; padding: 20px; }
+    
+    .load-more-button {
+        background-color: #222;
+        color: #fff;
+        border: 1px solid #444;
+        padding: 12px 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .page-content { display: none; }
+    .page-content.visible { display: block; }
+
+    h1, h2, h3, h4 {
+        font-family: var(--font-heading);
+        color: #fff;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    
+    .page-title {
+        font-size: 3.0rem; 
+        margin-bottom: 80px; 
+        border-bottom: 1px solid #333;
+    }
+
+    .chapter-title {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-top: 50px; 
+        margin-bottom: 30px; 
+    }
+    
+    .post-paragraph {
+        margin-bottom: 2.0em; 
+        text-align: left;
+        font-family: var(--font-body); 
+        font-weight: 400;
+        padding: 5px; 
+        line-height: var(--line-height-base);
+        color: var(--color-primary); 
+    }
+    
+    .post-paragraph strong, .post-paragraph b { font-weight: 700; color: #fff; }
+
+    .book-container {
+        max-width: var(--max-text-width); 
+        margin: 0 auto; 
+        padding: var(--padding-page); 
+    }
+
+    .image-slot {
+        height: 250px;
+        background-color: #111; 
+        color: #555; 
+        border: 1px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 40px 0; 
+        font-size: 1.2rem;
+        text-align: center;
+        overflow: hidden; 
+    }
+    
+    .chapter-illustration {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .chapter-pagination-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 50px;
+        padding: 20px 0;
+        border-top: 1px solid #333;
+    }
+
+    .chapter-numbers {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 5px;
+        scrollbar-width: none; 
+    }
+    .chapter-numbers::-webkit-scrollbar { display: none; }
+
+    .nav-num-btn {
+        min-width: 42px;
+        height: 42px;
+        border: 1px solid #444;
+        background: #222; 
+        color: #fff;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-num-btn.active {
+        background: #fff;
+        color: #000;
+        border-color: #fff;
+        transform: scale(1.1);
+    }
+
+    .nav-icon-btn {
+        width: 45px;
+        height: 45px;
+        background: #222; 
+        border: 1px solid #444;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .nav-icon-btn.disabled { opacity: 0.15; cursor: not-allowed; }
+
+    .product-card { display: flex; flex-direction: row; text-decoration: none; color: #fff; background-color: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; padding: 15px; }
+    .product-image-wrapper { width: 120px; flex-shrink: 0; margin-right: 15px; }
+    .product-image { width: 100%; height: auto; max-height: 100px; object-fit: contain; }
+  /* --- UPDATED GLASSY FOOTER --- */
+.site-footer {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    color: #888;
+    padding: 60px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 80px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.footer-content {
+    max-width: var(--max-text-width);
+    margin: 0 auto;
+}
+
+.footer-brand {
+    font-family: var(--font-comic);
+    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 20px;
+    display: block;
+    opacity: 0.9;
+}
+
+.footer-links {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.site-footer a {
+    color: #bbb;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.2s;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+}
+
+.site-footer a:hover {
+    color: var(--color-link-footer);
+    transform: translateY(-2px);
+}
+
+.adult-disclaimer {
+    font-weight: 700;
+    color: #ff4d4d;
+    margin: 30px auto 0;
+    display: inline-block;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    background: rgba(255, 77, 77, 0.05);
+}
+
+.copyright-text {
+    margin-top: 30px;
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
+
+    @media (max-width: 768px) { 
+        :root { --font-size-base: 1.15rem; --padding-page: 20px; } 
+        .page-title { font-size: 2.2rem; }
+        .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
+    }
+    
+    #homePageContainer, #postPage { display: none !important; }
+    #homePageContainer.visible, #postPage.visible { display: block !important; }
+
+
+      </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gaybook.site</title>
+        <link rel="stylesheet" href="gaybook.site/Gaybook.css">
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="gaystyles.css">
+     
+        <script>
+            function fireExoclickAd(adId, postPath) {
+                console.log(`Firing Exoclick Interstitial Ad: ${adId}`);
+                setTimeout(() => {
+                    if(postPath === '/') { window.history.replaceState({}, '', postPath); }
+                    else { window.history.pushState({}, '', postPath); }
+                    window.dispatchEvent(new PopStateEvent('popstate')); 
+                }, 300); 
+            }
+        </script>
+    </head>
+    <body>
+    
+        <div id="splash-screen">
+            <div id="splash-bg-container"></div>
+            <div class="splash-glass"></div>
+            <div class="splash-content">
+                <div class="logo-wrapper">
+                    <span class="splash-text-logo">Gaybook</span>
+                    <div class="adult-badge">18+</div>
+                </div>
+                <div class="loading-dots">
+                    Loading<span>.</span><span>.</span><span>.</span>
+                </div>
             </div>
         </div>
-    </div>
+    
+        <header class="header">
+            <a href="/" class="brand-name" id="brandNameLink">
+                <span class="brand-text">Gaybook.site</span>
+            </a>
+            
+            <div class="search-container" id="searchContainer">
+                <input type="text" class="search-input" id="searchInput" placeholder="search anything...">
+                <button class="search-icon" id="searchIcon"><i class="fas fa-search"></i></button>
+                <div class="coffee-icon-wrapper" id="coffeeBtn"><i class="fas fa-heart"></i></div>
+                <div style="color: #7a9eb1;" class="share-icon-wrapper" id="shareBtn"><i class="fas fa-paper-plane"></i></div>
+                <div class="whatsapp-icon-wrapper" id="whatsappBtn"><i class="fab fa-whatsapp"></i></div>
+                <div class="close-icon-wrapper" id="closeIconWrapper"><i class="fas fa-times close-icon" id="closeIcon"></i></div>
+            </div>
+        </header>
+    
+        <div class="progress-container">
+            <div class="progress-bar" id="readingBar">
+                <div class="star-pointer"><i class="fas fa-star"></i></div>
+            </div>
+        </div>
+        <div class="scroll-counter" id="readingCounter">0%</div>
+        
+        <div class="fly-out-container" id="flyOutContent">
+            <span class="fly-emoji" id="flyEmoji"></span>
+            <span class="fly-text" id="flyText"></span>
+        </div>
+        
+        <div class="whatsapp-modal" id="whatsappModal">
+            <div class="modal-content">
+                <h3>Join our Community</h3>
+                <p>Join our WhatsApp channel for more BL stories and updates.</p>
+                <a href="https://whatsapp.com/channel/0029VbCBehf0Qeakf6S3PG37" target="_blank" class="whatsapp-channel-btn">
+                   <i class="fab fa-whatsapp"></i> Join WhatsApp Channel
+                </a>
+                <br>
+                <button id="closeWhatsappModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            </div>
+        </div>
+    
+        <div class="coffee-modal" id="coffeeModal">
+            <div class="modal-content">
+                <h3>Support Gaybook.site</h3>
+                <p>Click here ↓ to buy me a cup of coffee.</p>
+                <a href="support.html" target="_blank" class="buy-coffee-btn">
+                   <i class="fas fa-user-secret"></i> Support 
+                </a>
+                <br><br>
+                <button id="closeCoffeeModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            </div>
+        </div>
+    
+        <div class="share-modal" id="shareModal">
+            <div class="modal-content">
+                <h3>Share this book</h3>
+                <p>tell your friends about it.</p>
+                <div class="share-link-box" id="shareLinkDisplay"></div>
+                <button id="copyLinkBtn" class="copy-link-btn"><i class="fas fa-copy"></i> Copy Link</button>
+                <br><br>
+                <button id="closeShareModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            </div>
+        </div>
+    
+        <div id="homePageContainer" class="page-content visible">
+            <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+                <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
+                <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
+            </section>
+    
+            <main class="gallery" id="homeGallery"></main>
+            <div class="load-more-container" id="loadMoreContainer" style="display:none;">
+                <button class="load-more-button" id="loadMoreButton">See More↓</button>
+            </div>
+        </div>
+    
+        <article class="book-container page-content" id="postPage">
+            <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+                <p id="seo-text"></p>
+                <img id="seo-image" src="" alt="Post preview image" />
+                <a id="seo-link" href="">Read more</a>
+            </section>
+            <h1 class="page-title" id="postTitle"></h1>
+            <div id="book-content"></div>
+        </article>
+    
+       <footer class="site-footer">
+        <div class="footer-content">
+            <span class="footer-brand">Gaybook.site</span>
+            
+            <div class="footer-links">
+                <a href="about.html">About</a>
+                <a href="sponsorship.html">Sponsorship</a>
+                <a href="terms.html">Terms Of Use</a>
+                        </div>
+    
+            <span class="adult-disclaimer">
+                <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
+            </span>
+    
+            <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('Service Worker registered!'))
+      .catch(err => console.log('Registration failed:', err));
+  });
+}
 
-    <header class="header">
-        <a href="/" class="brand-name" id="brandNameLink">
-            <span class="brand-text">Gaybook.site</span>
+const SUPABASE_URL = 'https://jdazvxuxvqrplncmdhzy.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYXp2eHV4dnFycGxuY21kaHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjIxNTQsImV4cCI6MjA4MjY5ODE1NH0.wYRXeLZgl-al86GWgwYScv7Psc8LzpaoKhIB-CpV4QE'; 
+
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const memory = {
+    galleryItems: [],
+    postsContent: {},
+    currentOffset: 0,
+    hasMore: true,
+    libraryProducts: [],
+    triggeredMilestones: new Set(),
+    cachedStats: {} 
+};
+
+let dynamicMessages = {};
+let initialLoadDone = false; 
+
+const fallbackMessages = {
+    10: { emoji: '😏', text: "Oh? So you’re into this trope too? I see you..." },
+    25: { emoji: '😳', text: "Look at your face—you’re totally blushing right now." },
+    50: { emoji: '🍿', text: "Don't stop now, I need to know what happens next too!" },
+    75: { emoji: '😱', text: "Wait, wait... did he just say that?! *Gasps*" },
+    95: { emoji: '🤐', text: "Are you holding your breath? Because I definitely am." },
+    100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
+};
+
+/* --- UTILITY FUNCTIONS --- */
+
+// Formatting utility for stats (e.g., 1000 -> 1k, 1500000 -> 1.5m)
+function formatCompactNumber(number) {
+    if (number === undefined || number === null) return '0';
+    return new Intl.NumberFormat('en-US', {
+        notation: 'compact',
+        maximumFractionDigits: 1
+    }).format(number).toLowerCase();
+}
+
+// Calculates accurate read time by counting words across all content blocks
+function calculateReadTime(chapters, wpm = 225) {
+    if (!chapters || chapters.length === 0) return 7; 
+    
+    let totalWords = 0;
+    chapters.forEach(chapter => {
+        const blocks = chapter.content_blocks || chapter.content || [];
+        blocks.forEach(block => {
+            if (block.type === 'paragraph' && block.text) {
+                totalWords += block.text.trim().split(/\s+/).length;
+            }
+        });
+    });
+
+    return Math.max(1, Math.ceil(totalWords / wpm));
+}
+
+/* --- UI ELEMENTS --- */
+const searchContainer = document.getElementById('searchContainer');
+const searchIcon = document.getElementById('searchIcon');
+const searchIconI = searchIcon.querySelector('i');
+const closeIconWrapper = document.getElementById('closeIconWrapper');
+const searchInput = document.getElementById('searchInput');
+const homePageContainer = document.getElementById('homePageContainer'); 
+const postPage = document.getElementById('postPage');
+const postTitleElement = document.getElementById('postTitle');
+const body = document.body;
+const homeGallery = document.getElementById('homeGallery');
+const brandNameLink = document.getElementById('brandNameLink');
+const loadMoreButton = document.getElementById('loadMoreButton');
+const loadMoreContainer = document.getElementById('loadMoreContainer');
+const bookContent = document.getElementById('book-content');
+const readingBar = document.getElementById('readingBar');
+const readingCounter = document.getElementById('readingCounter');
+const flyOutContent = document.getElementById('flyOutContent');
+const flyEmoji = document.getElementById('flyEmoji');
+const flyText = document.getElementById('flyText');
+
+const ITEMS_PER_LOAD = 12; 
+let currentSearchQuery = '';
+let searchDebounceTimer;
+
+/* --- TRACKING & STATS --- */
+async function logPostView(postId, chapterId = null) {
+    try {
+        const { error } = await supabase
+            .from('post_views')
+            .insert([{ post_id: String(postId), chapter_id: chapterId ? parseInt(chapterId) : null }]);
+        if (error) console.error('View tracking error:', error.message);
+    } catch (err) { console.error('Analytics failed:', err); }
+}
+
+async function getPostStats(postId, slug) {
+    if (memory.cachedStats[postId]) return memory.cachedStats[postId];
+    try {
+        const { data: stats, error } = await supabase
+            .from('post_stats')
+            .select('views_total, views_today')
+            .or(`post_id.eq.${postId},slug.eq.${slug}`)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        const viewCount = stats ? (parseInt(stats.views_total) || 0) : 0;
+        const todayCount = stats ? (parseInt(stats.views_today) || 0) : 0;
+
+        memory.cachedStats[postId] = { viewCount, todayCount };
+        return memory.cachedStats[postId];
+    } catch (err) {
+        console.error("Stats Fetch Error:", err);
+        return { viewCount: 0, todayCount: 0 };
+    }
+}
+
+
+/* --- SPLASH SCREEN HANDLER (FIXED FOR FLICKER) --- */
+function initSplashScreen() {
+    const bgContainer = document.getElementById('splash-bg-container');
+    if (!bgContainer) return;
+
+    let visits = parseInt(localStorage.getItem('gb_visits') || '0');
+    localStorage.setItem('gb_visits', (visits + 1).toString());
+
+    const backgrounds = [
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40091d8e4a279186.gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a (1).gif'
+    ];
+
+    const randomIdx = Math.floor(Math.random() * backgrounds.length);
+    const selectedImg = backgrounds[randomIdx];
+
+    bgContainer.style.backgroundImage = 'none';
+    bgContainer.style.backgroundImage = `url('${selectedImg}')`;
+}
+
+async function hideSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    const bgContainer = document.getElementById('splash-bg-container');
+    if (!splash || initialLoadDone) return;
+
+    setTimeout(() => {
+        splash.classList.add('splash-hidden');
+        initialLoadDone = true;
+        
+        setTimeout(() => {
+            if(bgContainer) bgContainer.style.backgroundImage = 'none';
+        }, 1000);
+    }, 8000);
+}
+
+/* --- ROUTING & NAVIGATION --- */
+async function handleRoute() {
+    if (!initialLoadDone) initSplashScreen();
+
+    const route = getRouteInfo();
+    const isHome = !route.slug;
+    homePageContainer.classList.toggle('visible', isHome);
+    postPage.classList.toggle('visible', !isHome);
+    body.classList.toggle('is-post-page', !isHome);
+    
+    try {
+        if (isHome) {
+            searchContainer.classList.remove('active');
+            memory.cachedStats = {}; 
+            await loadHomePage(searchInput.value, true); 
+            document.title = 'Free uncensored Gay & BL Stories';
+            
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
+            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            
+        } else {
+            await loadPostPage(route.slug, route.chapterNum);
+            searchContainer.classList.remove('active');
+        }
+    } catch (globalError) {
+        console.error("Routing execution error encountered:", globalError);
+    } finally {
+        hideSplashScreen();
+        window.scrollTo(0, 0);
+    }
+}
+
+async function loadPostPage(slug, chapterNum) {
+    window.renderComplete = false;
+    memory.triggeredMilestones.clear(); 
+    postTitleElement.innerHTML = '';
+    bookContent.innerHTML = '<div class="spa-loader">Hold on... opening the book for you.</div>';
+    
+    const post = await fetchPost(slug); 
+    if (post) {
+        renderPostContent(post, chapterNum);
+        document.title = `${post.title} - Chapter ${chapterNum}`;
+        logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
+    } else {
+        window.history.replaceState(null, '', '/');
+        handleRoute(); 
+    }
+}
+
+async function createGalleryItem(post) {
+    const identifier = post.slug || post.id;
+    const title = post.title || 'Untitled Post';
+    const summary = post.summary || 'Tap to read more about this story...';
+    const imgUrl = post.thumbnail_url || 'https://via.placeholder.com/320x300?text=No+Image';
+    const adId = post.exoclick_id || '5048227';
+    
+    const calculatedTime = calculateReadTime(post.chapters);
+
+    const stats = await getPostStats(post.id, post.slug);
+    const trendingIcon = stats.todayCount > 5 ? `<span style="color: #ff4d4d;"><i class="fas fa-fire"></i></span>` : '';
+    const formattedViews = formatCompactNumber(stats.viewCount);
+
+    return `
+        <div class="gallery-item" onclick="navigateToPost('${identifier}', '${adId}')">
+            <img src="${imgUrl}" alt="${title}">
+            <div class="item-details">
+                <span class="item-title">${title} ${trendingIcon}</span>
+                <p class="item-summary">${summary}</p>
+                <div class="item-stats">
+                    <span><i class="fas fa-clock"></i> ${calculatedTime} min read</span>
+                    <span><i class="fas fa-eye"></i> ${formattedViews} views</span>
+                </div>
+            </div>
+        </div>`;
+}
+
+/* --- DATA FETCHING (FIXED RELATIONSHIP PARENTHESES FOR POSTGREST) --- */
+async function fetchGalleryItems(query = '', offset = 0) {
+    let supabaseQuery = supabase
+        .from('posts')
+        .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, chapters(id, content_blocks(type, text))') 
+        .eq('is_published', true) 
+        .order('created_at', { ascending: false })
+        .range(offset, offset + ITEMS_PER_LOAD - 1);
+    if (query) { supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,tags.ilike.%${query}%`); }
+    const { data, error } = await supabaseQuery;
+    if (error) return { data: [], hasMore: false };
+    return { data: data || [], hasMore: data?.length === ITEMS_PER_LOAD };
+}
+
+/* --- DATA FETCHING (FIXED RE-ADDITION OF ISUUID DECLARATION) --- */
+async function fetchPost(identifier) {
+    if (memory.postsContent[identifier]) return memory.postsContent[identifier];
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
+    const isUuid = uuidRegex.test(identifier);
+    let query = supabase.from('posts').select(`
+            id, title, thumbnail_url, summary, commentary, exoclick_id, slug,
+            chapters:chapters(id, title, chapter_image_url, commentary, order, content_blocks:content_blocks(*))
+        `);
+    if (isUuid) query = query.eq('id', identifier);
+    else query = query.eq('slug', identifier);
+    const { data, error } = await query.single();
+    if (error) return null;
+    if (memory.libraryProducts.length === 0) {
+        const { data: libData } = await supabase.from('affiliate_products').select('*');
+        memory.libraryProducts = libData || [];
+    }
+    data.affiliate_products = memory.libraryProducts;
+    if (data && data.chapters) {
+        data.chapters.sort((a,b) => (a.order || 0) - (b.order || 0));
+        data.chapters.forEach(chapter => {
+            chapter.content = (chapter.content_blocks || []).sort((a, b) => (a.order || 0) - (b.order || 0));
+        });
+    }
+    memory.postsContent[identifier] = data;
+    return data;
+}
+
+function navigateToPost(identifier, adId) {
+    const postPath = `/${identifier}/1`;
+    fireExoclickAd(adId, postPath);
+}
+
+async function renderGallery(items, append = false) {
+    if (!append) homeGallery.innerHTML = '';
+    if (!items || items.length === 0) {
+         if (!append) {
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
+             loadMoreContainer.style.display = 'none';
+         }
+         return;
+    }
+    const itemHtmls = await Promise.all(items.map(item => createGalleryItem(item)));
+    const html = itemHtmls.join('');
+    if (append) homeGallery.insertAdjacentHTML('beforeend', html);
+    else homeGallery.innerHTML = html;
+}
+
+function parseInlineStyling(text) {
+    if(!text) return '';
+    let formattedText = text;
+    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+    formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+    return formattedText;
+}
+
+function createProductCard(product) {
+    const imgUrl = product.image_url || 'https://via.placeholder.com/120x100?text=Product+Img';
+    return `
+        <a href="${product.link}" target="_blank" class="product-card">
+            <div class="product-image-wrapper"><img src="${imgUrl}" alt="${product.title}" class="product-image"></div>
+            <div class="product-details">
+                <h4 class="product-title">${product.title}</h4>
+                <p class="product-description">${product.description}</p>
+            </div>
         </a>
-        
-        <div class="search-container" id="searchContainer">
-            <input type="text" class="search-input" id="searchInput" placeholder="search anything...">
-            <button class="search-icon" id="searchIcon"><i class="fas fa-search"></i></button>
-            <div class="coffee-icon-wrapper" id="coffeeBtn"><i class="fas fa-heart"></i></div>
-            <div style="color: #7a9eb1;" class="share-icon-wrapper" id="shareBtn"><i class="fas fa-paper-plane"></i></div>
-            <div class="whatsapp-icon-wrapper" id="whatsappBtn"><i class="fab fa-whatsapp"></i></div>
-            <div class="close-icon-wrapper" id="closeIconWrapper"><i class="fas fa-times close-icon" id="closeIcon"></i></div>
-        </div>
-    </header>
+    `;
+}
 
-    <div class="progress-container">
-        <div class="progress-bar" id="readingBar">
-            <div class="star-pointer"><i class="fas fa-star"></i></div>
+function renderComponent(block, library) {
+    if(!block) return '';
+    switch (block.type) {
+        case 'paragraph': return `<p class="post-paragraph ${block.styling || ''}">${parseInlineStyling(block.text)}</p>`;
+        case 'image': return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
+        case 'affiliate-cta':
+            const prod = (library || []).find(p => p.product_id === block.product_id);
+            if (prod) {
+                return `<div style="margin: 30px 0;">${createProductCard(prod)}</div>`;
+            }
+            return '';
+        default: return '';
+    }
+}
+
+function updateSEOData(post, chapterNum, chapter) {
+    const seoText = document.getElementById('seo-text');
+    const seoImg = document.getElementById('seo-image');
+    const seoLink = document.getElementById('seo-link');
+    const currentNum = parseInt(chapterNum);
+    if (currentNum === 1) {
+        if(seoText) seoText.textContent = post.summary;
+        if(seoImg) seoImg.src = post.thumbnail_url;
+    } else if (chapter) {
+        const firstParagraph = chapter.content.find(block => block.type === 'paragraph');
+        if(seoText) seoText.textContent = firstParagraph?.text || `Chapter ${chapterNum}`;
+        if(seoImg) seoImg.src = chapter.chapter_image_url || post.thumbnail_url;
+    }
+    if(seoLink) seoLink.href = window.location.href;
+    window.renderComplete = true; 
+}
+
+function updateSchemaMarkup(post, chapterNum, chapter) {
+    const oldSchema = document.getElementById('dynamic-schema');
+    if (oldSchema) oldSchema.remove();
+    const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": `${post.title} - Chapter ${chapterNum}`,
+        "description": post.summary,
+        "image": chapter?.chapter_image_url || post.thumbnail_url,
+        "author": { "@type": "Person", "name": "Maro Alero Erubasa" }
+    };
+    const script = document.createElement('script');
+    script.id = 'dynamic-schema'; script.type = 'application/ld+json'; script.text = JSON.stringify(schemaData);
+    document.head.appendChild(script);
+}
+
+function renderChapterNavigation(post, currentIdx) {
+    const adId = post.exoclick_id || '5048227';
+    const slug = post.slug || post.id;
+    const totalChapters = post.chapters.length;
+    const chapterButtons = post.chapters.map((_, index) => {
+        const chapterNum = index + 1;
+        const isActive = index === currentIdx;
+        return `<button class="nav-num-btn ${isActive ? 'active' : ''}" onclick="fireExoclickAd('${adId}', '/${slug}/${chapterNum}')" ${isActive ? 'disabled' : ''}>${chapterNum}</button>`;
+    }).join('');
+    return `
+        <div class="chapter-pagination-container">
+            <button class="nav-icon-btn ${currentIdx === 0 ? 'disabled' : ''}" onclick="fireExoclickAd('${adId}', '/${slug}/${currentIdx}')"><i class="fas fa-chevron-left"></i></button>
+            <div class="chapter-numbers">${chapterButtons}</div>
+            <button class="nav-icon-btn ${currentIdx >= totalChapters - 1 ? 'disabled' : ''}" onclick="fireExoclickAd('${adId}', '/${slug}/${currentIdx + 2}')"><i class="fas fa-chevron-right"></i></button>
         </div>
-    </div>
-    <div class="scroll-counter" id="readingCounter">0%</div>
+    `;
+}
+
+function renderPostContent(post, chapterNum) {
+    const chapterIdx = parseInt(chapterNum) - 1;
+    const chapter = post.chapters[chapterIdx];
+    if (!chapter) { bookContent.innerHTML = '<p>Chapter not found.</p>'; return; }
     
-    <div class="fly-out-container" id="flyOutContent">
-        <span class="fly-emoji" id="flyEmoji"></span>
-        <span class="fly-text" id="flyText"></span>
-    </div>
-    
-    <div class="whatsapp-modal" id="whatsappModal">
-        <div class="modal-content">
-            <h3>Join our Community</h3>
-            <p>Join our WhatsApp channel for more BL stories and updates.</p>
-            <a href="https://whatsapp.com/channel/0029VbCBehf0Qeakf6S3PG37" target="_blank" class="whatsapp-channel-btn">
-               <i class="fab fa-whatsapp"></i> Join WhatsApp Channel
-            </a>
-            <br>
-            <button id="closeWhatsappModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-        </div>
-    </div>
+    if (chapter.commentary && Array.isArray(chapter.commentary) && chapter.commentary.length > 0) {
+        dynamicMessages = chapter.commentary.reduce((acc, item) => { acc[item.percent] = { emoji: item.emoji, text: item.text }; return acc; }, {});
+    } else { dynamicMessages = fallbackMessages; }
 
-    <div class="coffee-modal" id="coffeeModal">
-        <div class="modal-content">
-            <h3>Support Gaybook.site</h3>
-            <p>Click here ↓ to buy me a cup of coffee.</p>
-            <a href="support.html" target="_blank" class="buy-coffee-btn">
-               <i class="fas fa-user-secret"></i> Support 
-            </a>
-            <br><br>
-            <button id="closeCoffeeModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-        </div>
-    </div>
+    let html = `<section class="chapter"><h2 class="chapter-title">Chapter ${chapterNum}: ${chapter.title}</h2>`;
+    if (chapter.chapter_image_url) html += `<div class="image-slot"><img src="${chapter.chapter_image_url}" class="chapter-illustration"></div>`;
+    if (chapter.content) html += chapter.content.map(block => renderComponent(block, post.affiliate_products)).join('');
+    html += `</section>`;
+    html += renderChapterNavigation(post, chapterIdx);
+    postTitleElement.textContent = post.title;
+    bookContent.innerHTML = html;
+    updateSEOData(post, chapterNum, chapter);
+    updateSchemaMarkup(post, chapterNum, chapter);
+}
 
-    <div class="share-modal" id="shareModal">
-        <div class="modal-content">
-            <h3>Share this book</h3>
-            <p>tell your friends about it.</p>
-            <div class="share-link-box" id="shareLinkDisplay"></div>
-            <button id="copyLinkBtn" class="copy-link-btn"><i class="fas fa-copy"></i> Copy Link</button>
-            <br><br>
-            <button id="closeShareModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-        </div>
-    </div>
+function triggerFlyOut(milestone) {
+    const data = dynamicMessages[milestone] || fallbackMessages[milestone];
+    if (!data) return;
+    flyEmoji.textContent = data.emoji;
+    flyText.textContent = data.text;
+    flyOutContent.classList.remove('animate');
+    void flyOutContent.offsetWidth; 
+    flyOutContent.classList.add('animate');
+}
 
-    <div id="homePageContainer" class="page-content visible">
-        <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-            <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
-            <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
-        </section>
+function updateProgress() {
+    if (!body.classList.contains('is-post-page')) return;
+    const winScroll = document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = Math.round((winScroll / height) * 100);
+    readingBar.style.width = scrolled + "%";
+    readingCounter.textContent = scrolled + "%";
+    const points = Object.keys(dynamicMessages);
+    points.forEach(point => {
+        if (scrolled >= point && !memory.triggeredMilestones.has(point)) {
+            memory.triggeredMilestones.add(point);
+            triggerFlyOut(point);
+        }
+    });
+}
 
-        <main class="gallery" id="homeGallery"></main>
-        <div class="load-more-container" id="loadMoreContainer" style="display:none;">
-            <button class="load-more-button" id="loadMoreButton">See More↓</button>
-        </div>
-    </div>
+function getRouteInfo() {
+    const path = window.location.pathname;
+    const pathParts = path.split('/').filter(p => p.length > 0);
+    return { slug: pathParts[0] || null, chapterNum: pathParts[1] || "1" };
+}
 
-    <article class="book-container page-content" id="postPage">
-        <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-            <p id="seo-text"></p>
-            <img id="seo-image" src="" alt="Post preview image" />
-            <a id="seo-link" href="">Read more</a>
-        </section>
-        <h1 class="page-title" id="postTitle"></h1>
-        <div id="book-content"></div>
-    </article>
+async function loadHomePage(query = '', reset = true) {
+    window.renderComplete = false;
+    if (reset && query === '' && memory.galleryItems.length > 0) {
+        renderGallery(memory.galleryItems, false);
+        loadMoreContainer.style.display = memory.hasMore ? 'block' : 'none';
+        window.renderComplete = true;
+        return; 
+    }
+    if (reset) {
+        memory.currentOffset = 0;
+        homeGallery.innerHTML = '<div class="spa-loader">Summoning the books... they are pretending they did not see you coming....</div>';
+    }
+    const { data, hasMore } = await fetchGalleryItems(query, memory.currentOffset);
+    if (query === '') {
+        if (reset) memory.galleryItems = data;
+        else memory.galleryItems = [...memory.galleryItems, ...data];
+    }
+    await renderGallery(data, !reset);
+    memory.hasMore = hasMore;
+    loadMoreContainer.style.display = hasMore ? 'block' : 'none';
+    if (hasMore && data) memory.currentOffset += data.length;
+    currentSearchQuery = query;
+    window.renderComplete = true;
+}
 
-   <footer class="site-footer">
-    <div class="footer-content">
-        <span class="footer-brand">Gaybook.site</span>
-        
-        <div class="footer-links">
-            <a href="about.html">About</a>
-            <a href="sponsorship.html">Sponsorship</a>
-            <a href="terms.html">Terms Of Use</a>
-                    </div>
+/* --- MODALS & BUTTONS --- */
+const whatsappBtn = document.getElementById('whatsappBtn');
+const whatsappModal = document.getElementById('whatsappModal');
+const closeWhatsappModal = document.getElementById('closeWhatsappModal');
+const coffeeBtn = document.getElementById('coffeeBtn');
+const coffeeModal = document.getElementById('coffeeModal');
+const closeCoffeeModal = document.getElementById('closeCoffeeModal');
+const shareBtn = document.getElementById('shareBtn');
+const shareModal = document.getElementById('shareModal');
+const closeShareModal = document.getElementById('closeShareModal');
+const shareLinkDisplay = document.getElementById('shareLinkDisplay');
+const copyLinkBtn = document.getElementById('copyLinkBtn');
 
-        <span class="adult-disclaimer">
-            <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
-        </span>
+if(whatsappBtn) whatsappBtn.addEventListener('click', (e) => { e.stopPropagation(); whatsappModal.classList.add('active'); });
+if(closeWhatsappModal) closeWhatsappModal.addEventListener('click', () => { whatsappModal.classList.remove('active'); });
+if(coffeeBtn) coffeeBtn.addEventListener('click', (e) => { e.stopPropagation(); coffeeModal.classList.add('active'); });
+if(closeCoffeeModal) closeCoffeeModal.addEventListener('click', () => { coffeeModal.classList.remove('active'); });
+if(shareBtn) shareBtn.addEventListener('click', (e) => { e.stopPropagation(); if(shareLinkDisplay) shareLinkDisplay.textContent = window.location.href; shareModal.classList.add('active'); });
+if(closeShareModal) closeShareModal.addEventListener('click', () => { shareModal.classList.remove('active'); });
+if(copyLinkBtn) copyLinkBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(shareLinkDisplay.textContent).then(() => { copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copied!'; setTimeout(() => { copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Link'; }, 2000); });
+});
 
-        <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved.</p>
-    </div>
-</footer>
-<script src="gayfunctions.js"></script>
-<script src="gaysw.js"></script>
-</body>
-</html>        <main class="gallery" id="homeGallery"></main>
-        <div class="load-more-container" id="loadMoreContainer" style="display:none;">
-            <button class="load-more-button" id="loadMoreButton">See More↓</button>
-        </div>
-    </div>
+window.addEventListener('popstate', handleRoute); 
+window.onscroll = updateProgress;
 
-    <article class="book-container page-content" id="postPage">
-        <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-            <p id="seo-text"></p>
-            <img id="seo-image" src="" alt="Post preview image" />
-            <a id="seo-link" href="">Read more</a>
-        </section>
-        <h1 class="page-title" id="postTitle"></h1>
-        <div id="book-content"></div>
-    </article>
+if(brandNameLink) brandNameLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.location.pathname !== '/') { fireExoclickAd('5048227', '/'); }
+});
 
-   <footer class="site-footer">
-    <div class="footer-content">
-        <span class="footer-brand">Gaybook.site</span>
-        
-        <div class="footer-links">
-            <a href="about.html">About</a>
-            <a href="sponsorship.html">Sponsorship</a>
-            <a href="terms.html">Terms Of Use</a>
-                    </div>
+if(closeIconWrapper) closeIconWrapper.addEventListener('click', () => {
+    const route = getRouteInfo();
+    if (route.slug) { fireExoclickAd('5048227', '/'); }
+    else if (searchContainer.classList.contains('active')) { toggleSearch(false); }
+});
 
-        <span class="adult-disclaimer">
-            <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
-        </span>
+if(searchIcon) searchIcon.addEventListener('click', () => {
+    if (searchInput.value.length > 0) {
+        searchInput.value = '';
+        searchIconI.className = 'fas fa-search';
+        loadHomePage('', true);
+    } else if (!getRouteInfo().slug) { toggleSearch(true); }
+});
 
-        <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved.</p>
-    </div>
-</footer>
-<script src="gayfunctions.js"></script>
-<script src="gaysw.js"></script>
-</body>
-</html>
+function toggleSearch(expand) {
+    searchContainer.classList.toggle('active', expand);
+    if (expand) { setTimeout(() => searchInput.focus(), 150); }
+    else { loadHomePage(''); }
+}
+
+if(searchInput) searchInput.addEventListener('input', (e) => {
+    if (e.target.value.length > 0) { searchIconI.className = 'fas fa-times-circle'; }
+    else { searchIconI.className = 'fas fa-search'; }
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => { loadHomePage(e.target.value, true); }, 600);
+});
+
+if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
+document.addEventListener('DOMContentLoaded', handleRoute);
+
+    </script>
+    <script src="gaysw.js"></script>
+    </body>
+    </html>
