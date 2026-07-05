@@ -161,7 +161,22 @@ async function hideSplashScreen() {
 }
 
 /* --- ROUTING & NAVIGATION --- */
+/* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
+    const path = window.location.pathname;
+
+    // 1. Check if the current URL is for one of your static footer pages
+    const staticPages = ['/about', '/sponsorship', '/terms', '/support'];
+    const isStaticPage = staticPages.some(page => path.startsWith(page));
+
+    if (isStaticPage) {
+        // Let the browser load the static page naturally or handle its visibility
+        // Hide splash screen so it doesn't get stuck on static views
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.classList.add('splash-hidden');
+        return; 
+    }
+
     if (!initialLoadDone) initSplashScreen();
 
     const route = getRouteInfo();
