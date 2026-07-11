@@ -35,30 +35,12 @@ const fallbackMessages = {
 
 /* --- UTILITY FUNCTIONS --- */
 
-// Formatting utility for stats (e.g., 1000 -> 1k, 1500000 -> 1.5m)
 function formatCompactNumber(number) {
     if (number === undefined || number === null) return '0';
     return new Intl.NumberFormat('en-US', {
         notation: 'compact',
         maximumFractionDigits: 1
     }).format(number).toLowerCase();
-}
-
-// Calculates accurate read time by counting words across all content blocks
-function calculateReadTime(chapters, wpm = 225) {
-    if (!chapters || chapters.length === 0) return 7; 
-    
-    let totalWords = 0;
-    chapters.forEach(chapter => {
-        const blocks = chapter.content_blocks || chapter.content || [];
-        blocks.forEach(block => {
-            if (block.type === 'paragraph' && block.text) {
-                totalWords += block.text.trim().split(/\s+/).length;
-            }
-        });
-    });
-
-    return Math.max(1, Math.ceil(totalWords / wpm));
 }
 
 /* --- UI ELEMENTS --- */
@@ -118,8 +100,7 @@ async function getPostStats(postId, slug) {
     }
 }
 
-
-/* --- SPLASH SCREEN HANDLER (FIXED FOR FLICKER) --- */
+/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
@@ -161,22 +142,7 @@ async function hideSplashScreen() {
 }
 
 /* --- ROUTING & NAVIGATION --- */
-/* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
-    const path = window.location.pathname;
-
-    // 1. Check if the current URL is for one of your static footer pages
-    const staticPages = ['/about', '/sponsorship', '/terms', '/support'];
-    const isStaticPage = staticPages.some(page => path.startsWith(page));
-
-    if (isStaticPage) {
-        // Let the browser load the static page naturally or handle its visibility
-        // Hide splash screen so it doesn't get stuck on static views
-        const splash = document.getElementById('splash-screen');
-        if (splash) splash.classList.add('splash-hidden');
-        return; 
-    }
-
     if (!initialLoadDone) initSplashScreen();
 
     const route = getRouteInfo();
@@ -225,6 +191,7 @@ async function loadPostPage(slug, chapterNum) {
     }
 }
 
+/* --- OPTIMIZED GALLERY ITEM LAYOUT USING DB MANUALLY SPECIFIED READ TIMES --- */
 async function createGalleryItem(post) {
     const identifier = post.slug || post.id;
     const title = post.title || 'Untitled Post';
@@ -232,7 +199,13 @@ async function createGalleryItem(post) {
     const imgUrl = post.thumbnail_url || 'https://via.placeholder.com/320x300?text=No+Image';
     const adId = post.exoclick_id || '5048227';
     
-    const calculatedTime = calculateReadTime(post.chapters);
+    // Reads directly from our explicit DB metrics layout instead of processing arrays dynamically
+    const calculatedTime = post.read_time || 7; 
+    const chapterCount = post.chapters ? post.chapters.length : 0;
+
+    const publishDate = post.created_at 
+        ? new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'Recent';
 
     const stats = await getPostStats(post.id, post.slug);
     const trendingIcon = stats.todayCount > 5 ? `<span style="color: #ff4d4d;"><i class="fas fa-fire"></i></span>` : '';
@@ -244,35 +217,42 @@ async function createGalleryItem(post) {
             <div class="item-details">
                 <span class="item-title">${title} ${trendingIcon}</span>
                 <p class="item-summary">${summary}</p>
-                <div class="item-stats">
-                    <span><i class="fas fa-clock"></i> ${calculatedTime} min read</span>
-                    <span><i class="fas fa-eye"></i> ${formattedViews} views</span>
+                <div class="item-stats-container">
+                    <div class="item-stats">
+                        <span><i class="fas fa-book-open"></i> ${chapterCount} ${chapterCount === 1 ? 'Ch' : 'Chs'}</span>
+                        <span><i class="fas fa-calendar-alt"></i> ${publishDate}</span>
+                    </div>
+                    <div class="item-stats">
+                        <span><i class="fas fa-clock"></i> ${calculatedTime} min read</span>
+                        <span><i class="fas fa-eye"></i> ${formattedViews} views</span>
+                    </div>
                 </div>
             </div>
         </div>`;
 }
 
-/* --- DATA FETCHING (FIXED RELATIONSHIP PARENTHESES FOR POSTGREST) --- */
+/* --- FETCH GALLERY ITEMS (OPTIMIZED WITH EXPLICIT COLUMN) --- */
 async function fetchGalleryItems(query = '', offset = 0) {
     let supabaseQuery = supabase
         .from('posts')
-        .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, chapters(id, content_blocks(type, text))') 
+        // Added read_time to the specific selection properties
+        .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, created_at, read_time, chapters(id)') 
         .eq('is_published', true) 
         .order('created_at', { ascending: false })
         .range(offset, offset + ITEMS_PER_LOAD - 1);
+        
     if (query) { supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,tags.ilike.%${query}%`); }
     const { data, error } = await supabaseQuery;
     if (error) return { data: [], hasMore: false };
     return { data: data || [], hasMore: data?.length === ITEMS_PER_LOAD };
 }
 
-/* --- DATA FETCHING (FIXED RE-ADDITION OF ISUUID DECLARATION) --- */
 async function fetchPost(identifier) {
     if (memory.postsContent[identifier]) return memory.postsContent[identifier];
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
     const isUuid = uuidRegex.test(identifier);
     let query = supabase.from('posts').select(`
-            id, title, thumbnail_url, summary, commentary, exoclick_id, slug,
+            id, title, thumbnail_url, summary, commentary, exoclick_id, slug, created_at,
             chapters:chapters(id, title, chapter_image_url, commentary, order, content_blocks:content_blocks(*))
         `);
     if (isUuid) query = query.eq('id', identifier);
@@ -538,3 +518,4 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 document.addEventListener('DOMContentLoaded', handleRoute);
+    
