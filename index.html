@@ -1,144 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaybook.site</title>
-    <link rel="stylesheet" href="gaybook.site/Gaybook.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="gaystyles.css">
- 
-    <script>
-        function fireExoclickAd(adId, postPath) {
-            console.log(`Firing Exoclick Interstitial Ad: ${adId}`);
-            setTimeout(() => {
-                if(postPath === '/') { window.history.replaceState({}, '', postPath); }
-                else { window.history.pushState({}, '', postPath); }
-                window.dispatchEvent(new PopStateEvent('popstate')); 
-            }, 300); 
-        }
-    </script>
-</head>
-<body>
-
-    <div id="splash-screen">
-        <div id="splash-bg-container"></div>
-        <div class="splash-glass"></div>
-        <div class="splash-content">
-            <div class="logo-wrapper">
-                <span class="splash-text-logo">Gaybook</span>
-                <div class="adult-badge">18+</div>
-            </div>
-            <div class="loading-dots">
-                Loading<span>.</span><span>.</span><span>.</span>
-            </div>
-        </div>
-    </div>
-
-    <header class="header">
-        <a href="/" class="brand-name" id="brandNameLink">
-            <span class="brand-text">Gaybook.site</span>
-        </a>
-        
-        <div class="search-container" id="searchContainer">
-            <input type="text" class="search-input" id="searchInput" placeholder="search anything...">
-            <button class="search-icon" id="searchIcon"><i class="fas fa-search"></i></button>
-            <div class="coffee-icon-wrapper" id="coffeeBtn"><i class="fas fa-heart"></i></div>
-            <div style="color: #7a9eb1;" class="share-icon-wrapper" id="shareBtn"><i class="fas fa-paper-plane"></i></div>
-            <div class="whatsapp-icon-wrapper" id="whatsappBtn"><i class="fab fa-whatsapp"></i></div>
-            <div class="close-icon-wrapper" id="closeIconWrapper"><i class="fas fa-times close-icon" id="closeIcon"></i></div>
-        </div>
-    </header>
-
-    <div class="progress-container">
-        <div class="progress-bar" id="readingBar">
-            <div class="star-pointer"><i class="fas fa-star"></i></div>
-        </div>
-    </div>
-    <div class="scroll-counter" id="readingCounter">0%</div>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gaybook.site</title>
+        <link rel="stylesheet" href="gaybook.site/Gaybook.css">
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="gaystyles.css">
+     
+        <script>
+            function fireExoclickAd(adId, postPath) {
+                console.log(`Firing Exoclick Interstitial Ad: ${adId}`);
+                setTimeout(() => {
+                    if(postPath === '/') { window.history.replaceState({}, '', postPath); }
+                    else { window.history.pushState({}, '', postPath); }
+                    window.dispatchEvent(new PopStateEvent('popstate')); 
+                }, 300); 
+            }
+        </script>
+    </head>
+    <body>
     
-    <div class="fly-out-container" id="flyOutContent">
-        <span class="fly-emoji" id="flyEmoji"></span>
-        <span class="fly-text" id="flyText"></span>
-    </div>
+        <div id="splash-screen">
+            <div id="splash-bg-container"></div>
+            <div class="splash-glass"></div>
+            <div class="splash-content">
+                <div class="logo-wrapper">
+                    <span class="splash-text-logo">Gaybook</span>
+                    <div class="adult-badge">18+</div>
+                </div>
+                <div class="loading-dots">
+                    Loading<span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+        </div>
     
-    <div class="whatsapp-modal" id="whatsappModal">
-        <div class="modal-content">
-            <h3>Join our Community</h3>
-            <p>Join our WhatsApp channel for more BL stories and updates.</p>
-            <a href="https://whatsapp.com/channel/0029VbCBehf0Qeakf6S3PG37"  class="whatsapp-channel-btn">
-               <i class="fab fa-whatsapp"></i> Join WhatsApp Channel
+        <header class="header">
+            <a href="/" class="brand-name" id="brandNameLink">
+                <span class="brand-text">Gaybook.site</span>
             </a>
-            <br>
-            <button id="closeWhatsappModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            
+            <div class="search-container" id="searchContainer">
+                <input type="text" class="search-input" id="searchInput" placeholder="search anything...">
+                <button class="search-icon" id="searchIcon"><i class="fas fa-search"></i></button>
+                <div class="coffee-icon-wrapper" id="coffeeBtn"><i class="fas fa-heart"></i></div>
+                <div style="color: #7a9eb1;" class="share-icon-wrapper" id="shareBtn"><i class="fas fa-paper-plane"></i></div>
+                <div class="whatsapp-icon-wrapper" id="whatsappBtn"><i class="fab fa-whatsapp"></i></div>
+                <div class="close-icon-wrapper" id="closeIconWrapper"><i class="fas fa-times close-icon" id="closeIcon"></i></div>
+            </div>
+        </header>
+    
+        <div class="progress-container">
+            <div class="progress-bar" id="readingBar">
+                <div class="star-pointer"><i class="fas fa-star"></i></div>
+            </div>
         </div>
-    </div>
-
-    <div class="coffee-modal" id="coffeeModal">
-        <div class="modal-content">
-            <h3>Support Gaybook.site</h3>
-            <p>Click here ↓ to buy me a cup of coffee.</p>
-            <a href="/support/" class="buy-coffee-btn">
-               <i class="fas fa-user-secret"></i> Support 
-            </a>
-            <br><br>
-            <button id="closeCoffeeModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-        </div>
-    </div>
-
-    <div class="share-modal" id="shareModal">
-        <div class="modal-content">
-            <h3>Share this book</h3>
-            <p>tell your friends about it.</p>
-            <div class="share-link-box" id="shareLinkDisplay"></div>
-            <button id="copyLinkBtn" class="copy-link-btn"><i class="fas fa-copy"></i> Copy Link</button>
-            <br><br>
-            <button id="closeShareModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-        </div>
-    </div>
-
-    <div id="homePageContainer" class="page-content visible">
-        <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-            <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
-            <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
-        </section>
-
-        <main class="gallery" id="homeGallery"></main>
-        <div class="load-more-container" id="loadMoreContainer" style="display:none;">
-            <button class="load-more-button" id="loadMoreButton">See More↓</button>
-        </div>
-    </div>
-
-    <article class="book-container page-content" id="postPage">
-        <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-            <p id="seo-text"></p>
-            <img id="seo-image" src="" alt="Post preview image" />
-            <a id="seo-link" href="">Read more</a>
-        </section>
-        <h1 class="page-title" id="postTitle"></h1>
-        <div id="book-content"></div>
-    </article>
-
-   <footer class="site-footer">
-    <div class="footer-content">
-        <span class="footer-brand">Gaybook.site</span>
+        <div class="scroll-counter" id="readingCounter">0%</div>
         
-<div class="footer-links">
-    <a href="/about/">About</a>
-    <a href="/sponsorship/">Sponsorship</a>
-    <a href="/terms/">Terms Of Use</a>
-</div>
-
-        <span class="adult-disclaimer">
-            <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
-        </span>
-
-        <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved.</p>
-    </div>
-</footer>
-<script src="gayfunctions.js"></script>
-<script src="gaysw.js"></script>
-</body>
-</html>
+        <div class="fly-out-container" id="flyOutContent">
+            <span class="fly-emoji" id="flyEmoji"></span>
+            <span class="fly-text" id="flyText"></span>
+        </div>
+        
+        <div class="whatsapp-modal" id="whatsappModal">
+            <div class="modal-content">
+                <h3>Join our Community</h3>
+                <p>Join our WhatsApp channel for more BL stories and updates.</p>
+                <a href="https://whatsapp.com/channel/0029VbCBehf0Qeakf6S3PG37" target="_blank" class="whatsapp-channel-btn">
+                   <i class="fab fa-whatsapp"></i> Join WhatsApp Channel
+                </a>
+                <br>
+                <button id="closeWhatsappModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            </div>
+        </div>
+    
+        <div class="coffee-modal" id="coffeeModal">
+            <div class="modal-content">
+                <h3>Support Gaybook.site</h3>
+                <p>Click here ↓ to buy me a cup of coffee.</p>
+                <a href="support.html" target="_blank" class="buy-coffee-btn">
+                   <i class="fas fa-user-secret"></i> Support 
+                </a>
+                <br><br>
+                <button id="closeCoffeeModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            </div>
+        </div>
+    
+        <div class="share-modal" id="shareModal">
+            <div class="modal-content">
+                <h3>Share this book</h3>
+                <p>tell your friends about it.</p>
+                <div class="share-link-box" id="shareLinkDisplay"></div>
+                <button id="copyLinkBtn" class="copy-link-btn"><i class="fas fa-copy"></i> Copy Link</button>
+                <br><br>
+                <button id="closeShareModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
+            </div>
+        </div>
+    
+        <div id="homePageContainer" class="page-content visible">
+            <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+                <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
+                <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
+            </section>
+    
+            <main class="gallery" id="homeGallery"></main>
+            <div class="load-more-container" id="loadMoreContainer" style="display:none;">
+                <button class="load-more-button" id="loadMoreButton">See More↓</button>
+            </div>
+        </div>
+    
+        <article class="book-container page-content" id="postPage">
+            <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+                <p id="seo-text"></p>
+                <img id="seo-image" src="" alt="Post preview image" />
+                <a id="seo-link" href="">Read more</a>
+            </section>
+            <h1 class="page-title" id="postTitle"></h1>
+            <div id="book-content"></div>
+        </article>
+    
+       <footer class="site-footer">
+        <div class="footer-content">
+            <span class="footer-brand">Gaybook.site</span>
+            
+            <div class="footer-links">
+                <a href="about.html">About</a>
+                <a href="sponsorship.html">Sponsorship</a>
+                <a href="terms.html">Terms Of Use</a>
+                        </div>
+    
+            <span class="adult-disclaimer">
+                <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
+            </span>
+    
+            <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="gaysw.js"></script>
+    </body>
+    </html>
