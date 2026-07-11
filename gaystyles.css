@@ -1,4 +1,4 @@
-   /* ---------------------------------
+/* ---------------------------------
        1. CSS Root Variables & Global Styles 
     --------------------------------- */
     * {
@@ -53,7 +53,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: #000; /* Ensuring black start */
+        background: #000; 
         transition: opacity 0.8s ease, visibility 0.8s;
     }
 
@@ -66,11 +66,9 @@
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        background-color: #000; /* Fallback */
+        background-color: #000; 
         z-index: 1;
     }
-
-    /* Removed .bg-v1 to .bg-v5 classes to prevent cache flickering */
 
     .splash-glass {
         position: absolute;
@@ -507,9 +505,17 @@
         color: #999;
         line-height: 1.4;
         display: -webkit-box;
-        -webkit-line-clamp: 6;
+        -webkit-line-clamp: 5; 
         -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+
+    /* --- UPDATED FLEX-GRID SYSTEM FOR METRICS --- */
+    .item-stats-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: auto; 
     }
 
     .item-stats {
@@ -518,7 +524,7 @@
         font-size: 0.75rem;
         color: #777;
         font-family: var(--font-heading);
-        margin-top: 5px;
+        flex-wrap: wrap;
     }
     .item-stats i { margin-right: 4px; }
 
@@ -657,7 +663,7 @@
     .product-card { display: flex; flex-direction: row; text-decoration: none; color: #fff; background-color: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; padding: 15px; }
     .product-image-wrapper { width: 120px; flex-shrink: 0; margin-right: 15px; }
     .product-image { width: 100%; height: auto; max-height: 100px; object-fit: contain; }
-  /* --- UPDATED GLASSY FOOTER --- */
+
 .site-footer {
     background: rgba(10, 10, 10, 0.8);
     backdrop-filter: blur(15px);
