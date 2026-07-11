@@ -1,5 +1,4 @@
-
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -417,6 +416,10 @@
                     <input type="text" id="post-title" placeholder="Story Title" style="font-size:20px; font-weight:700;" oninput="generateSlug(this.value)">
                     <input type="text" id="post-slug" placeholder="url-slug-here">
                     <textarea id="post-summary" placeholder="SEO Summary..." style="height: 80px;"></textarea>
+                    
+                    <label>Estimated Read Time (Minutes)</label>
+                    <input type="number" id="post-readtime" placeholder="e.g. 7" value="7" min="1">
+                    
                     <label>Main Thumbnail</label>
                     <div style="display: flex; gap: 5px; align-items: flex-start;">
                         <input type="text" id="post-thumb" placeholder="Thumbnail URL">
@@ -723,36 +726,80 @@
     async function saveFullPost() {
         const saveBtn = document.getElementById('save-btn');
         const originalText = saveBtn.innerText;
-        saveBtn.innerText = "UPLOADING..."; saveBtn.disabled = true;
+        saveBtn.innerText = "UPLOADING..."; 
+        saveBtn.disabled = true;
+        
         try {
             const postData = {
-                title: document.getElementById('post-title').value, slug: document.getElementById('post-slug').value,
-                summary: document.getElementById('post-summary').value, thumbnail_url: document.getElementById('post-thumb').value,
-                exoclick_id: document.getElementById('post-exoclick').value, tags: document.getElementById('post-tags').value, is_published: true
+                title: document.getElementById('post-title').value, 
+                slug: document.getElementById('post-slug').value,
+                summary: document.getElementById('post-summary').value, 
+                thumbnail_url: document.getElementById('post-thumb').value,
+                exoclick_id: document.getElementById('post-exoclick').value, 
+                tags: document.getElementById('post-tags').value, 
+                read_time: parseInt(document.getElementById('post-readtime').value) || 7, // Capturing field data here
+                is_published: true
             };
+            
             let postId;
-            if(editId) { await supabase.from('posts').update(postData).eq('id', editId); postId = editId; await supabase.from('chapters').delete().eq('post_id', postId); } 
-            else { const { data } = await supabase.from('posts').insert([postData]).select().single(); postId = data.id; }
+            if(editId) { 
+                await supabase.from('posts').update(postData).eq('id', editId); 
+                postId = editId; 
+                await supabase.from('chapters').delete().eq('post_id', postId); 
+            } else { 
+                const { data } = await supabase.from('posts').insert([postData]).select().single(); 
+                postId = data.id; 
+            }
+            
             for(let i=0; i<chapters.length; i++) {
                 const c = chapters[i];
-                const { data: chapData } = await supabase.from('chapters').insert([{ post_id: postId, title: c.title, chapter_image_url: c.image_url, commentary: c.commentary || [], order: i + 1 }]).select().single();
+                const { data: chapData } = await supabase.from('chapters').insert([{ 
+                    post_id: postId, 
+                    title: c.title, 
+                    chapter_image_url: c.image_url, 
+                    commentary: c.commentary || [], 
+                    order: i + 1 
+                }]).select().single();
+                
                 if(c.blocks && c.blocks.length > 0) {
                     for(let j=0; j<c.blocks.length; j++) {
                         const b = c.blocks[j];
                         
                         let formattedText = b.text || '';
                         if(b.type === 'paragraph') {
+                            // 1. Unify existing break tags back to newlines
                             formattedText = formattedText.replace(/<br\s*\/?>/gi, '\n');
-                            // Formats linebreaks down into a sleek single break tag standard
-                            formattedText = formattedText.replace(/\n+/g, '<br>');
+                            
+                            // 2. Wrap dialogue quotes in bold tags automatically
+                            formattedText = formattedText.replace(/["“]([^"”]+)["”]/g, '<b>$1</b>');
+
+                            // 3. Turn double returns into clean paragraph blocks
+                            formattedText = formattedText.split(/\n\s*\n/)
+                                .map(para => para.trim().replace(/\n/g, '<br>'))
+                                .filter(para => para.length > 0)
+                                .map(para => `<div class="post-paragraph">${para}</div>`)
+                                .join('');
                         }
 
-                        await supabase.from('content_blocks').insert([{ chapter_id: chapData.id, type: b.type, text: formattedText, url: b.url || '', product_id: b.product_id || null, order: j + 1 }]);
+                        await supabase.from('content_blocks').insert([{ 
+                            chapter_id: chapData.id, 
+                            type: b.type, 
+                            text: formattedText, 
+                            url: b.url || '', 
+                            product_id: b.product_id || null, 
+                            order: j + 1 
+                        }]);
                     }
                 }
             }
-            alert("Story successfully published!"); location.reload();
-        } catch (err) { console.error(err); alert("Error: " + err.message); saveBtn.innerText = originalText; saveBtn.disabled = false; }
+            alert("Story successfully published!"); 
+            location.reload();
+        } catch (err) { 
+            console.error(err); 
+            alert("Error: " + err.message); 
+            saveBtn.innerText = originalText; 
+            saveBtn.disabled = false; 
+        }
     }
 
     async function loadPosts() {
@@ -811,6 +858,7 @@
         document.getElementById('post-title').value = post.title || '';
         document.getElementById('post-slug').value = post.slug || '';
         document.getElementById('post-summary').value = post.summary || '';
+        document.getElementById('post-readtime').value = post.read_time || 7; // Injects into layout field when editing
         document.getElementById('post-thumb').value = post.thumbnail_url || '';
         document.getElementById('post-exoclick').value = post.exoclick_id || '';
         document.getElementById('post-tags').value = post.tags || '';
