@@ -180,11 +180,11 @@ async function handleRoute() {
             searchContainer.classList.remove('active');
             memory.cachedStats = {}; 
             await loadHomePage(searchInput.value, true); 
-            document.title = 'Free uncensored Gay & BL Stories';
+            document.title = 'Free blb Novellas | Adult Content';
             
             let metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
-            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            metaDesc.content = "Pornfic BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
             
         } else {
             await loadPostPage(route.slug, route.chapterNum);
@@ -307,7 +307,7 @@ async function renderGallery(items, append = false) {
     if (!append) homeGallery.innerHTML = '';
     if (!items || items.length === 0) {
          if (!append) {
-             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">oh boi... not a single book showed up. The audacity. Try a different search.</p>';
              loadMoreContainer.style.display = 'none';
          }
          return;
