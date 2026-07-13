@@ -570,7 +570,7 @@
     }
     
     .post-paragraph {
-        margin-bottom: 1.1rem;
+        margin-bottom: 2.5rem; 
         text-align: left;
         font-family: var(--font-body); 
         font-weight: 400;
@@ -578,6 +578,8 @@
         line-height: var(--line-height-base);
         color: var(--color-primary); 
     }
+    
+
     
     .post-paragraph strong, .post-paragraph b { font-weight: 700; color: #fff; }
 
@@ -987,29 +989,53 @@ async function getPostStats(postId, slug) {
 }
 
 /* --- SPLASH SCREEN HANDLER --- */
+/* --- SPLASH SCREEN HANDLER --- */
+/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
 
-    let visits = parseInt(localStorage.getItem('gb_visits') || '0');
-    localStorage.setItem('gb_visits', (visits + 1).toString());
-
     const backgrounds = [
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/15342376.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/22600551.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40091d8e4a279186.gif',
-        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a (1).gif'
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40091d8e4a279186%20(1).gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40db559a86d35875%20(1).gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78%20(1).gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a%20(1).gif',
+         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037%20(1).gif',
+          'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
+        
+        // URL encoded space
     ];
 
-    const randomIdx = Math.floor(Math.random() * backgrounds.length);
-    const selectedImg = backgrounds[randomIdx];
+    let lastIdx = localStorage.getItem('gb_last_bg_idx');
+    let randomIdx;
 
-    bgContainer.style.backgroundImage = 'none';
+    do {
+        randomIdx = Math.floor(Math.random() * backgrounds.length);
+    } while (lastIdx !== null && parseInt(lastIdx) === randomIdx && backgrounds.length > 1);
+
+    localStorage.setItem('gb_last_bg_idx', randomIdx.toString());
+
+    const selectedImg = backgrounds[randomIdx];
     bgContainer.style.backgroundImage = `url('${selectedImg}')`;
+}
+
+function hideSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    const bgContainer = document.getElementById('splash-bg-container');
+    if (!splash || initialLoadDone) return;
+
+    // Keeping your intentional 8-second dramatic/aesthetic delay intact
+    setTimeout(() => {
+        splash.classList.add('splash-hidden');
+        initialLoadDone = true;
+        
+        // Fully clear the background after the CSS fade transition finishes to save memory
+        setTimeout(() => {
+            if (bgContainer) bgContainer.style.backgroundImage = 'none';
+        }, 800); 
+    }, 8000); 
 }
 
 async function hideSplashScreen() {
@@ -1201,18 +1227,33 @@ function createProductCard(product) {
     `;
 }
 
+/* --- AUTO-CLEANING COMPONENT RENDERER --- */
 function renderComponent(block, library) {
     if(!block) return '';
     switch (block.type) {
-        case 'paragraph': return `<p class="post-paragraph ${block.styling || ''}">${parseInlineStyling(block.text)}</p>`;
-        case 'image': return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
+                case 'paragraph': 
+            let cleanText = block.text || '';
+            
+            // Removed the line that deletes <div> tags to keep database wrappers safe
+            cleanText = cleanText.replace(/class="post-paragraph"/gi, '').replace(/post-paragraph/gi, '');
+            
+            // Safely parse internal <br> elements down into actual breaks 
+            cleanText = cleanText.replace(/<br\s*\/?>/gi, '<br>');
+
+            // Return the text directly because it ALREADY contains the individual paragraph <div> tags from the database
+            return parseInlineStyling(cleanText);
+
+            
+        case 'image': 
+            return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
+            
         case 'affiliate-cta':
             const prod = (library || []).find(p => p.product_id === block.product_id);
-            if (prod) {
-                return `<div style="margin: 30px 0;">${createProductCard(prod)}</div>`;
-            }
+            if (prod) return `<div style="margin: 30px 0;">${createProductCard(prod)}</div>`;
             return '';
-        default: return '';
+            
+        default: 
+            return '';
     }
 }
 
