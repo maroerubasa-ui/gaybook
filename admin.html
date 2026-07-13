@@ -479,7 +479,6 @@
     let cachedAffiliates = [];
     let cachedAds = [];
 
-    // Upgraded Core Asset Pipeline to Native Supabase Public Bucket
     async function uploadToSupabase(file) {
         const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
         const { data, error } = await supabase.storage
@@ -493,10 +492,14 @@
     }
 
     async function deleteFromSupabase(fileUrl) {
-        if (!fileUrl || !fileUrl.includes('supabase.co/storage/v1/object/public/')) return;
-        const fileName = fileUrl.split('/').pop();
+        if (!fileUrl || !fileUrl.includes('/storage/v1/object/public/Assets/')) return;
+        
+        const searchPath = '/storage/v1/object/public/Assets/';
+        const encodedPath = fileUrl.substring(fileUrl.indexOf(searchPath) + searchPath.length);
+        const filePath = decodeURIComponent(encodedPath);
+
         try { 
-            const { error } = await supabase.storage.from('Assets').remove([fileName]);
+            const { error } = await supabase.storage.from('Assets').remove([filePath]);
             if (error) console.error("Asset Deletion Error:", error.message);
         } catch (err) { console.error("Storage Fault Context:", err); }
     }
@@ -508,8 +511,20 @@
         input.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+
+            let oldUrl = null;
+            if (targetId) {
+                oldUrl = document.getElementById(targetId).value;
+            } else if (isChapter && bIdx !== null) {
+                oldUrl = blocks[bIdx].url;
+            } else if (isChapter) {
+                oldUrl = chapters[cIdx].image_url;
+            }
+
             const url = await uploadToSupabase(file);
             if (url) {
+                if (oldUrl) await deleteFromSupabase(oldUrl);
+
                 if (targetId) document.getElementById(targetId).value = url;
                 else if (isChapter && bIdx !== null) chapters[cIdx].blocks[bIdx].url = url;
                 else if (isChapter) chapters[cIdx].image_url = url;
@@ -737,23 +752,32 @@
                 thumbnail_url: document.getElementById('post-thumb').value,
                 exoclick_id: document.getElementById('post-exoclick').value, 
                 tags: document.getElementById('post-tags').value, 
-                read_time: parseInt(document.getElementById('post-readtime').value) || 7, // Capturing field data here
+                read_time: parseInt(document.getElementById('post-readtime').value) || 7,
                 is_published: true
             };
+
+            if (!postData.title || !postData.slug) {
+                throw new Error("Story Title and URL Slug are required!");
+            }
             
             let postId;
             if(editId) { 
-                await supabase.from('posts').update(postData).eq('id', editId); 
+                const { error: updateError } = await supabase.from('posts').update(postData).eq('id', editId); 
+                if (updateError) throw new Error(`Failed to update story: ${updateError.message}`);
                 postId = editId; 
-                await supabase.from('chapters').delete().eq('post_id', postId); 
+                
+                const { error: deleteError } = await supabase.from('chapters').delete().eq('post_id', postId); 
+                if (deleteError) throw new Error(`Failed to clear old chapters: ${deleteError.message}`);
             } else { 
-                const { data } = await supabase.from('posts').insert([postData]).select().single(); 
+                const { data, error: insertError } = await supabase.from('posts').insert([postData]).select().single(); 
+                if (insertError) throw new Error(`Failed to create story entry: ${insertError.message}`);
+                if (!data) throw new Error("No data returned from creating story.");
                 postId = data.id; 
             }
             
             for(let i=0; i<chapters.length; i++) {
                 const c = chapters[i];
-                const { data: chapData } = await supabase.from('chapters').insert([{ 
+                const { data: chapData, error: chapError } = await supabase.from('chapters').insert([{ 
                     post_id: postId, 
                     title: c.title, 
                     chapter_image_url: c.image_url, 
@@ -761,27 +785,26 @@
                     order: i + 1 
                 }]).select().single();
                 
+                if (chapError) throw new Error(`Failed to save Chapter ${i + 1}: ${chapError.message}`);
+                if (!chapData) throw new Error(`No data returned for Chapter ${i + 1}.`);
+                
                 if(c.blocks && c.blocks.length > 0) {
                     for(let j=0; j<c.blocks.length; j++) {
                         const b = c.blocks[j];
                         
                         let formattedText = b.text || '';
                         if(b.type === 'paragraph') {
-                            // 1. Unify existing break tags back to newlines
                             formattedText = formattedText.replace(/<br\s*\/?>/gi, '\n');
-                            
-                            // 2. Wrap dialogue quotes in bold tags automatically
-                            formattedText = formattedText.replace(/["“]([^"”]+)["”]/g, '<b>$1</b>');
-
-                            // 3. Turn double returns into clean paragraph blocks
+                            formattedText = formattedText.replace(/<div[^>]*>|<\/div>/gi, '');
+                            formattedText = formattedText.replace(/["“]([^"”\n]+)["”]/g, '<b>“$1”</b>');
                             formattedText = formattedText.split(/\n\s*\n/)
                                 .map(para => para.trim().replace(/\n/g, '<br>'))
                                 .filter(para => para.length > 0)
-                                .map(para => `<div class="post-paragraph">${para}</div>`)
-                                .join('');
+                                .map(para => `<div class="post-paragraph">${para}</div><br>`)
+                                .join('\n');
                         }
 
-                        await supabase.from('content_blocks').insert([{ 
+                        const { error: blockError } = await supabase.from('content_blocks').insert([{ 
                             chapter_id: chapData.id, 
                             type: b.type, 
                             text: formattedText, 
@@ -789,6 +812,8 @@
                             product_id: b.product_id || null, 
                             order: j + 1 
                         }]);
+
+                        if (blockError) throw new Error(`Failed to save block ${j + 1} in Chapter ${i + 1}: ${blockError.message}`);
                     }
                 }
             }
@@ -858,7 +883,7 @@
         document.getElementById('post-title').value = post.title || '';
         document.getElementById('post-slug').value = post.slug || '';
         document.getElementById('post-summary').value = post.summary || '';
-        document.getElementById('post-readtime').value = post.read_time || 7; // Injects into layout field when editing
+        document.getElementById('post-readtime').value = post.read_time || 7;
         document.getElementById('post-thumb').value = post.thumbnail_url || '';
         document.getElementById('post-exoclick').value = post.exoclick_id || '';
         document.getElementById('post-tags').value = post.tags || '';
@@ -868,8 +893,10 @@
             blocks: (c.content_blocks || []).sort((a,b) => a.order - b.order).map(b => {
                 let processedText = b.text || '';
                 if (b.type === 'paragraph') {
+                    processedText = processedText.replace(/<div class=["']post-paragraph["']>/gi, '');
+                    processedText = processedText.replace(/<\/div>/gi, '\n\n');
                     processedText = processedText.replace(/<br\s*\/?>/gi, '\n');
-                    processedText = processedText.replace(/\n{3,}/g, '\n\n');
+                    processedText = processedText.trim().replace(/\n{3,}/g, '\n\n');
                 }
                 return { ...b, text: processedText };
             })
@@ -877,7 +904,39 @@
         switchView(null, 'editor'); renderEditor();
     }
 
-    async function deleteStory(id) { if(confirm("Are you sure?")) { await supabase.from('posts').delete().eq('id', id); loadPosts(); } }
+    async function deleteStory(id) { 
+        if(!confirm("Are you sure you want to permanently delete this story and all its associated images from storage?")) return;
+        
+        try {
+            const { data: post } = await supabase.from('posts').select('thumbnail_url').eq('id', id).single();
+            const { data: chaps } = await supabase.from('chapters').select('id, chapter_image_url').eq('post_id', id);
+            
+            let imageUrls = [];
+            if (post && post.thumbnail_url) imageUrls.push(post.thumbnail_url);
+            
+            if (chaps && chaps.length > 0) {
+                chaps.forEach(c => { if(c.chapter_image_url) imageUrls.push(c.chapter_image_url); });
+                
+                const chapIds = chaps.map(c => c.id);
+                const { data: blocks } = await supabase.from('content_blocks').select('url').in('chapter_id', chapIds).eq('type', 'image');
+                if (blocks) {
+                    blocks.forEach(b => { if(b.url) imageUrls.push(b.url); });
+                }
+            }
+
+            for (const url of imageUrls) {
+                await deleteFromSupabase(url);
+            }
+
+            // Await added here so table cleaning finishes fully before list fetches
+            await supabase.from('posts').delete().eq('id', id); 
+            await loadPosts();
+            alert("Story and all attached media permanently deleted!");
+        } catch (err) {
+            console.error("Complete execution failure during deletion layout:", err);
+            alert("Error during background file cleanup: " + err.message);
+        }
+    }
 
     function switchView(e, view) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
