@@ -1055,6 +1055,12 @@ async function hideSplashScreen() {
 
 /* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
+    // 1. If the path contains '.html', let the browser load the static file normally
+    const path = window.location.pathname;
+    if (path.includes('.html')) {
+        return; // Exit the router immediately
+    }
+
     if (!initialLoadDone) initSplashScreen();
 
     const route = getRouteInfo();
@@ -1085,6 +1091,7 @@ async function handleRoute() {
         window.scrollTo(0, 0);
     }
 }
+
 
 async function loadPostPage(slug, chapterNum) {
     window.renderComplete = false;
