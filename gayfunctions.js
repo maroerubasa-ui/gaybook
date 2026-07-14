@@ -167,11 +167,10 @@ async function hideSplashScreen() {
 
 /* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
-    // 1. Check if the current URL points to a static HTML page in your footer
+    // 1. If the path contains '.html', let the browser load the static file normally
     const path = window.location.pathname;
-    if (path.endsWith('.html')) {
-        // Allow the browser to proceed with normal page loading
-        return; 
+    if (path.includes('.html')) {
+        return; // Exit the router immediately
     }
 
     if (!initialLoadDone) initSplashScreen();
