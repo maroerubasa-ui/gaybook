@@ -167,6 +167,13 @@ async function hideSplashScreen() {
 
 /* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
+    // 1. Check if the current URL points to a static HTML page in your footer
+    const path = window.location.pathname;
+    if (path.endsWith('.html')) {
+        // Allow the browser to proceed with normal page loading
+        return; 
+    }
+
     if (!initialLoadDone) initSplashScreen();
 
     const route = getRouteInfo();
@@ -180,11 +187,11 @@ async function handleRoute() {
             searchContainer.classList.remove('active');
             memory.cachedStats = {}; 
             await loadHomePage(searchInput.value, true); 
-            document.title = 'Free blb Novellas | Adult Content';
+            document.title = 'Free uncensored Gay & BL Stories';
             
             let metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
-            metaDesc.content = "Pornfic BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
             
         } else {
             await loadPostPage(route.slug, route.chapterNum);
@@ -307,7 +314,7 @@ async function renderGallery(items, append = false) {
     if (!append) homeGallery.innerHTML = '';
     if (!items || items.length === 0) {
          if (!append) {
-             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">oh boi... not a single book showed up. The audacity. Try a different search.</p>';
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
              loadMoreContainer.style.display = 'none';
          }
          return;
