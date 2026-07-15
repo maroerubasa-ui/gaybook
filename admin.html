@@ -353,6 +353,49 @@
             background: rgba(255,255,255,0.08);
             border-color: rgba(255,255,255,0.15);
         }
+
+        /* Local storage draft UI styles */
+        .draft-deck-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .draft-items-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .draft-pill {
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .draft-pill h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .draft-pill span {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .draft-pill-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -411,6 +454,11 @@
             </section>
 
             <section id="view-editor" class="view-section">
+                <div id="drafts-deck" class="draft-deck-card" style="display: none;">
+                    <label style="color: var(--accent); font-weight: 600;">Saved Local Drafts</label>
+                    <div id="draft-items" class="draft-items-list"></div>
+                </div>
+
                 <div class="card">
                     <label>Story Details</label>
                     <input type="text" id="post-title" placeholder="Story Title" style="font-size:20px; font-weight:700;" oninput="generateSlug(this.value)">
@@ -430,8 +478,16 @@
                 </div>
                 <div id="chapters-canvas"></div>
                 <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="addChapter()" style="width:100%; padding:15px; background:white; border:1px solid var(--primary); border-radius:8px; margin-bottom:10px; font-weight:bold; color:#000;">+ ADD CHAPTER</button>
-                    <button onclick="saveFullPost()" id="save-btn" style="width:100%; padding:18px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; font-size:18px;">PUBLISH TO LIVE SITE</button>
+                    <button onclick="addChapter()" style="width:100%; padding:15px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:10px; font-weight:bold; color:var(--primary-text);">+ ADD CHAPTER</button>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="saveToDrafts()" id="draft-btn" style="flex: 1; padding:18px; background: rgba(255,255,255,0.08); color:white; border: 1px solid var(--glass-border); border-radius:8px; font-weight:bold; font-size:16px;">
+                            <i class="far fa-save" style="margin-right: 6px;"></i>SAVE AS DRAFT
+                        </button>
+                        <button onclick="saveFullPost()" id="save-btn" style="flex: 2; padding:18px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; font-size:18px;">
+                            <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>PUBLISH TO LIVE SITE
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>
@@ -475,6 +531,7 @@
 
     let chapters = [];
     let editId = null;
+    let currentDraftId = null; // Keeps track of which local storage draft we are editing
     let libraryType = 'affiliate';
     let cachedAffiliates = [];
     let cachedAds = [];
@@ -516,7 +573,7 @@
             if (targetId) {
                 oldUrl = document.getElementById(targetId).value;
             } else if (isChapter && bIdx !== null) {
-                oldUrl = blocks[bIdx].url;
+                oldUrl = chapters[cIdx].blocks[bIdx].url;
             } else if (isChapter) {
                 oldUrl = chapters[cIdx].image_url;
             }
@@ -573,7 +630,12 @@
 
     window.onload = async () => {
         const { data } = await supabase.auth.getSession();
-        if(data.session) initDashboard(); else document.getElementById('auth-container').style.display = 'block';
+        if(data.session) {
+            initDashboard(); 
+            renderDrafts(); // Pull stored drafts on layout boot
+        } else {
+            document.getElementById('auth-container').style.display = 'block';
+        }
     };
 
     async function initDashboard() {
@@ -660,6 +722,123 @@
         chapters[idx].blocks.push(block);
         document.getElementById('block-modal').style.display = 'none';
         renderEditor();
+    }
+
+    /* Local Storage Drafts Management Core Pipeline */
+    function getDrafts() {
+        return JSON.parse(localStorage.getItem('gaybook_story_drafts') || '[]');
+    }
+
+    function renderDrafts() {
+        const drafts = getDrafts();
+        const draftsDeck = document.getElementById('drafts-deck');
+        const draftItems = document.getElementById('draft-items');
+        
+        if (drafts.length === 0) {
+            draftsDeck.style.display = 'none';
+            return;
+        }
+
+        draftsDeck.style.display = 'block';
+        draftItems.innerHTML = drafts.map(d => `
+            <div class="draft-pill">
+                <div>
+                    <h4>${d.title || 'Untitled Draft'}</h4>
+                    <span>Saved: ${new Date(d.savedAt).toLocaleDateString()} ${new Date(d.savedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div class="draft-pill-actions">
+                    <button onclick="loadDraft('${d.id}')" style="background:#fff; color:#000; font-size:11px; padding: 4px 8px;">Load</button>
+                    <button onclick="deleteDraft('${d.id}')" style="color:var(--danger); font-size:11px; padding: 4px 8px;">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function saveToDrafts() {
+        const title = document.getElementById('post-title').value.trim();
+        const slug = document.getElementById('post-slug').value.trim();
+        const summary = document.getElementById('post-summary').value; 
+        const thumbnail_url = document.getElementById('post-thumb').value;
+        const exoclick_id = document.getElementById('post-exoclick').value; 
+        const tags = document.getElementById('post-tags').value; 
+        const read_time = parseInt(document.getElementById('post-readtime').value) || 7;
+
+        if (!title) {
+            alert("Please provide at least a Story Title to save a draft.");
+            return;
+        }
+
+        const draftData = {
+            id: currentDraftId || 'draft_' + Date.now(),
+            editId: editId, // Track if editing a published live story
+            title,
+            slug,
+            summary,
+            thumbnail_url,
+            exoclick_id,
+            tags,
+            read_time,
+            chapters: JSON.parse(JSON.stringify(chapters)), // Deep clone structural arrays
+            savedAt: Date.now()
+        };
+
+        let drafts = getDrafts();
+        const existingIdx = drafts.findIndex(d => d.id === draftData.id);
+
+        if (existingIdx > -1) {
+            drafts[existingIdx] = draftData;
+        } else {
+            drafts.push(draftData);
+        }
+
+        localStorage.setItem('gaybook_story_drafts', JSON.stringify(drafts));
+        currentDraftId = draftData.id;
+        
+        alert(`Draft local backup successful: "${title}"`);
+        renderDrafts();
+    }
+
+    function loadDraft(draftId) {
+        const drafts = getDrafts();
+        const draft = drafts.find(d => d.id === draftId);
+        if (!draft) return;
+
+        currentDraftId = draft.id;
+        editId = draft.editId || null;
+
+        document.getElementById('post-title').value = draft.title || '';
+        document.getElementById('post-slug').value = draft.slug || '';
+        document.getElementById('post-summary').value = draft.summary || '';
+        document.getElementById('post-readtime').value = draft.read_time || 7;
+        document.getElementById('post-thumb').value = draft.thumbnail_url || '';
+        document.getElementById('post-exoclick').value = draft.exoclick_id || '';
+        document.getElementById('post-tags').value = draft.tags || '';
+
+        // Safely map values back into the live state
+        chapters = draft.chapters || [];
+        renderEditor();
+        alert(`Draft loaded! (${draft.title})`);
+    }
+
+    function deleteDraft(draftId) {
+        if (!confirm("Remove this draft from browser local storage?")) return;
+        let drafts = getDrafts();
+        drafts = drafts.filter(d => d.id !== draftId);
+        localStorage.setItem('gaybook_story_drafts', JSON.stringify(drafts));
+        
+        if (currentDraftId === draftId) {
+            currentDraftId = null;
+        }
+        renderDrafts();
+    }
+
+    function clearConnectedDraft(slug) {
+        let drafts = getDrafts();
+        // Clear drafts using either the unique draft ID or matching browser address slugs
+        drafts = drafts.filter(d => d.id !== currentDraftId && d.slug !== slug);
+        localStorage.setItem('gaybook_story_drafts', JSON.stringify(drafts));
+        currentDraftId = null;
+        renderDrafts();
     }
 
     function renderEditor() {
@@ -817,6 +996,10 @@
                     }
                 }
             }
+            
+            // Clean local storage copy of current draft upon safe publication
+            clearConnectedDraft(postData.slug);
+            
             alert("Story successfully published!"); 
             location.reload();
         } catch (err) { 
@@ -878,6 +1061,7 @@
 
     async function fetchStory(id) {
         editId = id;
+        currentDraftId = null; // Clear local draft tracking to focus on the live database row
         const { data: post } = await supabase.from('posts').select('*').eq('id', id).single();
         const { data: chaps } = await supabase.from('chapters').select('*, content_blocks(*)').eq('post_id', id).order('order', {ascending: true});
         document.getElementById('post-title').value = post.title || '';
@@ -928,7 +1112,6 @@
                 await deleteFromSupabase(url);
             }
 
-            // Await added here so table cleaning finishes fully before list fetches
             await supabase.from('posts').delete().eq('id', id); 
             await loadPosts();
             alert("Story and all attached media permanently deleted!");
