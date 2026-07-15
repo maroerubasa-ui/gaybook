@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Story Journal</title>
+    <style>
+        :root {
+            --bg-dark: #0f0e17;
+            --card-dark: #16161a;
+            --text-main: #fffffe;
+            --text-muted: #a7a9be;
+            --accent: #ff8906;
+            --highlight: rgba(255, 137, 6, 0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Sticky Header Track */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 14, 23, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #222;
+            z-index: 1000;
+            padding: 12px 0;
+            text-align: center;
+        }
+
+        .progress-container {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        /* Proportional Timeline Track */
+        .timeline-track {
+            position: relative;
+            width: 85%;
+            height: 10px;
+            background: #222;
+            margin: 0 auto;
+            border-radius: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            border-radius: 5px 0 0 5px;
+            transition: width 0.1s ease-out;
+        }
+
+        /* Comment Markers on Progress Bar */
+        .comment-marker {
+            position: absolute;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: #ff477e;
+            box-shadow: 0 0 8px #ff477e;
+            cursor: pointer;
+            transform: translateX(-50%);
+        }
+
+        main {
+            max-width: 680px;
+            width: 90%;
+            margin-top: 120px;
+            margin-bottom: 180px;
+        }
+
+        .setup-box {
+            background: var(--card-dark);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #222;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            background: #242629;
+            color: var(--text-main);
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 1rem;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--accent);
+            color: var(--text-main);
+            border: none;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        /* Reader System */
+        #story-area p {
+            line-height: 1.8;
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            color: var(--text-muted);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        #story-area p:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        #story-area p.active {
+            color: var(--text-main);
+            background: var(--highlight);
+            box-shadow: -4px 0 0 var(--accent);
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Inline Comment Display */
+        .comment-display {
+            background: #2e2f3e;
+            color: #fffffe;
+            padding: 12px 16px;
+            border-left: 4px solid #ff477e;
+            margin-top: -1.5rem;
+            margin-bottom: 2.5rem;
+            border-radius: 0 6px 6px 0;
+            font-size: 1rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="progress-container">READING PROGRESS: <span id="progress-percent">0%</span></div>
+        <div class="timeline-track" id="track-container">
+            <div class="progress-fill" id="myBar"></div>
+            <!-- Dynamic tick markers render here -->
+        </div>
+    </header>
+
+    <main>
+        <div id="setup-view" class="setup-box">
+            <h2 style="margin-top: 0; color: var(--accent);">Load Story Journal 📖</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Paste text below. Tap paragraphs anytime while reading to log thoughts or commentary.</p>
+            <textarea id="text-input" placeholder="Paste chapters or text content here..."></textarea>
+            <button onclick="initReader()">Initialize Story Reader</button>
+        </div>
+
+        <div id="story-area"></div>
+    </main>
+
+    <script>
+        let totalParagraphs = 0;
+        let commentsData = {}; // Format: { paragraphIndex: "Comment text" }
+        let currentActiveIdx = 0;
+        let isInitialAutoscroll = false;
+
+        // On document load, see if user has an active session saved
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedText = localStorage.getItem('journal_story_raw');
+            if (savedText) {
+                document.getElementById('text-input').value = savedText;
+                const savedComments = localStorage.getItem('journal_comments');
+                if (savedComments) {
+                    commentsData = JSON.parse(savedComments);
+                }
+                initReader(true); // Restore reader session
+            }
+        });
+
+        function initReader(isRestoring = false) {
+            const rawText = document.getElementById('text-input').value.trim();
+            if (!rawText) return alert("Please paste text data first.");
+
+            // Save text data globally
+            localStorage.setItem('journal_story_raw', rawText);
+
+            const area = document.getElementById('story-area');
+            area.innerHTML = '';
+
+            const paragraphs = rawText.split(/\n\s*\n/);
+            totalParagraphs = paragraphs.length;
+
+            paragraphs.forEach((pText, idx) => {
+                if (pText.trim() === '') return;
+
+                // Create paragraph block
+                const p = document.createElement('p');
+                p.textContent = pText;
+                p.dataset.index = idx;
+                p.addEventListener('click', () => promptForComment(idx));
+                area.appendChild(p);
+
+                // If comment exists from storage, inject it immediately below
+                if (commentsData[idx]) {
+                    renderCommentNode(idx, commentsData[idx]);
+                }
+            });
+
+            document.getElementById('setup-view').style.display = 'none';
+            window.addEventListener('scroll', handleScroll);
+            
+            // Generate historical progress markers on track
+            renderAllMarkers();
+
+            // Try to restore position from last active paragraph index
+            if (isRestoring) {
+                const lastIdx = localStorage.getItem('journal_last_idx');
+                if (lastIdx) {
+                    isInitialAutoscroll = true;
+                    setTimeout(() => {
+                        const targetPara = document.querySelector(`p[data-index="${lastIdx}"]`);
+                        if (targetPara) {
+                            targetPara.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                        }
+                        isInitialAutoscroll = false;
+                    }, 350);
+                }
+            }
+        }
+
+        function handleScroll() {
+            if (isInitialAutoscroll) return;
+
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = height > 0 ? Math.round((winScroll / height) * 100) : 0;
+            
+            document.getElementById("myBar").style.width = scrolled + "%";
+            document.getElementById("progress-percent").textContent = scrolled + "%";
+
+            // Track active paragraph focus at viewpoint center
+            const paras = document.querySelectorAll('#story-area > p');
+            const centerLine = window.innerHeight / 2;
+
+            paras.forEach(p => {
+                const rect = p.getBoundingClientRect();
+                if (rect.top < centerLine && rect.bottom > centerLine) {
+                    const idx = p.dataset.index;
+                    if (currentActiveIdx !== idx) {
+                        paras.forEach(el => el.classList.remove('active'));
+                        p.classList.add('active');
+                        currentActiveIdx = idx;
+                        localStorage.setItem('journal_last_idx', idx);
+                    }
+                }
+            });
+        }
+
+        function promptForComment(idx) {
+            const existingText = commentsData[idx] || "";
+            const userComment = prompt("Add your commentary/gossip to this scene:", existingText);
+            
+            // If user presses cancel, preserve existing data
+            if (userComment === null) return; 
+
+            if (userComment.trim() === "") {
+                // Clear comment if user left empty string
+                delete commentsData[idx];
+                removeCommentNode(idx);
+            } else {
+                commentsData[idx] = userComment;
+                renderCommentNode(idx, userComment);
+            }
+
+            // Sync with local storage
+            localStorage.setItem('journal_comments', JSON.stringify(commentsData));
+            renderAllMarkers();
+        }
+
+        function renderCommentNode(idx, text) {
+            removeCommentNode(idx); // Clear duplicates if editing
+            const paraNode = document.querySelector(`p[data-index="${idx}"]`);
+            if (paraNode) {
+                const commBlock = document.createElement('div');
+                commBlock.className = 'comment-display';
+                commBlock.id = `comment-block-${idx}`;
+                commBlock.innerHTML = `<strong>My Commentary:</strong> "${text}"`;
+                paraNode.parentNode.insertBefore(commBlock, paraNode.nextSibling);
+            }
+        }
+
+        function removeCommentNode(idx) {
+            const block = document.getElementById(`comment-block-${idx}`);
+            if (block) block.remove();
+        }
+
+        function renderAllMarkers() {
+            // Clear prior dynamic marker nodes from tracking row
+            const track = document.getElementById('track-container');
+            document.querySelectorAll('.comment-marker').forEach(m => m.remove());
+
+            // Build markers relative to paragraph positions
+            Object.keys(commentsData).forEach(idx => {
+                const positionPct = ((parseInt(idx) + 1) / totalParagraphs) * 100;
+                
+                const marker = document.createElement('div');
+                marker.className = 'comment-marker';
+                marker.style.left = `${positionPct}%`;
+                marker.title = `Comment at segment ${Math.round(positionPct)}%`;
+                
+                // Allow clicking the timeline tick to jump to paragraph instantly
+                marker.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Avoid triggering global container resets
+                    const targetPara = document.querySelector(`p[data-index="${idx}"]`);
+                    if (targetPara) {
+                        targetPara.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                });
+
+                track.appendChild(marker);
+            });
+        }
+    </script>
+</body>
+</html>
