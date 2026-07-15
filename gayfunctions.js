@@ -167,10 +167,18 @@ async function hideSplashScreen() {
 
 /* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
-    // 1. If the path contains '.html', let the browser load the static file normally
     const path = window.location.pathname;
-    if (path.includes('.html')) {
-        return; // Exit the router immediately
+    
+    // 1. Define a list of your static page names (blacklist)
+    const staticPages = ['about', 'sponsorship', 'terms', 'support'];
+    
+    // Extract the first segment of the URL (e.g., "about" from "/about/" or "/about.html")
+    const pathParts = path.split('/').filter(p => p.length > 0);
+    const firstSegment = pathParts[0] ? pathParts[0].toLowerCase().replace('.html', '') : '';
+
+    // 2. If the URL matches one of our static pages, stop the SPA router immediately
+    if (staticPages.includes(firstSegment)) {
+        return; // Let the browser load the static file naturally
     }
 
     if (!initialLoadDone) initSplashScreen();
@@ -203,6 +211,7 @@ async function handleRoute() {
         window.scrollTo(0, 0);
     }
 }
+
 
 async function loadPostPage(slug, chapterNum) {
     window.renderComplete = false;
