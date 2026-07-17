@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Story Journal</title>
+    <title>Interactive Story Journal Library</title>
     <style>
         :root {
             --bg-dark: #0f0e17;
@@ -12,6 +12,7 @@
             --text-muted: #a7a9be;
             --accent: #ff8906;
             --highlight: rgba(255, 137, 6, 0.15);
+            --sidebar-width: 260px;
         }
 
         body {
@@ -21,15 +22,98 @@
             margin: 0;
             padding: 0;
             display: flex;
+        }
+
+        /* Sidebar for multiple stories */
+        aside {
+            width: var(--sidebar-width);
+            background: #12111a;
+            border-right: 1px solid #222;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
             flex-direction: column;
+            z-index: 1001;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #222;
+            font-weight: bold;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
-        /* Sticky Header Track */
+        .new-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto;
+        }
+
+        .story-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .story-item {
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .story-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+        }
+
+        .story-item.active-story {
+            background: var(--highlight);
+            color: var(--text-main);
+            border-left: 3px solid var(--accent);
+        }
+
+        .delete-story-btn {
+            background: transparent;
+            color: #ff477e;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+        .delete-story-btn:hover { opacity: 1; }
+
+        /* Main Content wrapper adjusted for sidebar */
+        .content-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
         header {
             position: fixed;
             top: 0;
-            width: 100%;
+            right: 0;
+            left: var(--sidebar-width);
             background: rgba(15, 14, 23, 0.95);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid #222;
@@ -46,7 +130,6 @@
             margin-bottom: 8px;
         }
 
-        /* Proportional Timeline Track */
         .timeline-track {
             position: relative;
             width: 85%;
@@ -64,7 +147,6 @@
             transition: width 0.1s ease-out;
         }
 
-        /* Comment Markers on Progress Bar */
         .comment-marker {
             position: absolute;
             top: 0;
@@ -102,8 +184,19 @@
             font-size: 1rem;
             resize: vertical;
             box-sizing: border-box;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-family: inherit;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #242629;
+            color: var(--text-main);
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
         }
 
         button {
@@ -119,11 +212,8 @@
             transition: opacity 0.2s;
         }
 
-        button:active {
-            opacity: 0.8;
-        }
+        button:active { opacity: 0.8; }
 
-        /* Reader System */
         #story-area p {
             line-height: 1.8;
             font-size: 1.2rem;
@@ -136,10 +226,7 @@
             position: relative;
         }
 
-        #story-area p:hover {
-            background: rgba(255, 255, 255, 0.03);
-        }
-
+        #story-area p:hover { background: rgba(255, 255, 255, 0.03); }
         #story-area p.active {
             color: var(--text-main);
             background: var(--highlight);
@@ -147,7 +234,6 @@
             border-radius: 0 6px 6px 0;
         }
 
-        /* Inline Comment Display */
         .comment-display {
             background: #2e2f3e;
             color: #fffffe;
@@ -163,97 +249,174 @@
 </head>
 <body>
 
-    <header>
-        <div class="progress-container">READING PROGRESS: <span id="progress-percent">0%</span></div>
-        <div class="timeline-track" id="track-container">
-            <div class="progress-fill" id="myBar"></div>
-            <!-- Dynamic tick markers render here -->
+    <!-- Sidebar Library -->
+    <aside>
+        <div class="sidebar-header">
+            <span>📚 Library</span>
+            <button class="new-btn" onclick="showSetupNewStory()">+ New</button>
         </div>
-    </header>
-
-    <main>
-        <div id="setup-view" class="setup-box">
-            <h2 style="margin-top: 0; color: var(--accent);">Load Story Journal 📖</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Paste text below. Tap paragraphs anytime while reading to log thoughts or commentary.</p>
-            <textarea id="text-input" placeholder="Paste chapters or text content here..."></textarea>
-            <button onclick="initReader()">Initialize Story Reader</button>
+        <div class="story-list" id="story-list-container">
+            <!-- Saved stories will list here dynamically -->
         </div>
+    </aside>
 
-        <div id="story-area"></div>
-    </main>
+    <!-- Main Workspace -->
+    <div class="content-wrapper">
+        <header>
+            <div class="progress-container">READING PROGRESS: <span id="progress-percent">0%</span></div>
+            <div class="timeline-track" id="track-container">
+                <div class="progress-fill" id="myBar"></div>
+            </div>
+        </header>
+
+        <main>
+            <div id="setup-view" class="setup-box">
+                <h2 style="margin-top: 0; color: var(--accent);">Load Story Journal 📖</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Give your story a title and paste the text below.</p>
+                <input type="text" id="story-title" placeholder="Story Title (e.g., Chapter 1, Sci-Fi Short Story)">
+                <textarea id="text-input" placeholder="Paste text content here..."></textarea>
+                <button onclick="createNewStory()">Initialize Story Reader</button>
+            </div>
+
+            <div id="story-area"></div>
+        </main>
+    </div>
 
     <script>
+        // Database structured in LocalStorage under one inventory key: 'journal_library'
+        // Format: { currentActiveId: "171999...", stories: { "171999...": { title: "", text: "", comments: {}, lastIdx: 0 } } }
+        let library = { currentActiveId: null, stories: {} };
         let totalParagraphs = 0;
-        let commentsData = {}; // Format: { paragraphIndex: "Comment text" }
-        let currentActiveIdx = 0;
         let isInitialAutoscroll = false;
 
-        // On document load, see if user has an active session saved
         window.addEventListener('DOMContentLoaded', () => {
-            const savedText = localStorage.getItem('journal_story_raw');
-            if (savedText) {
-                document.getElementById('text-input').value = savedText;
-                const savedComments = localStorage.getItem('journal_comments');
-                if (savedComments) {
-                    commentsData = JSON.parse(savedComments);
+            const savedLibrary = localStorage.getItem('journal_library');
+            if (savedLibrary) {
+                library = JSON.parse(savedLibrary);
+                renderSidebar();
+                
+                if (library.currentActiveId && library.stories[library.currentActiveId]) {
+                    loadStory(library.currentActiveId);
+                } else {
+                    showSetupNewStory();
                 }
-                initReader(true); // Restore reader session
+            } else {
+                showSetupNewStory();
             }
         });
 
-        function initReader(isRestoring = false) {
+        function renderSidebar() {
+            const container = document.getElementById('story-list-container');
+            container.innerHTML = '';
+            
+            Object.keys(library.stories).forEach(id => {
+                const story = library.stories[id];
+                const item = document.createElement('div');
+                item.className = `story-item ${id === library.currentActiveId ? 'active-story' : ''}`;
+                item.onclick = () => loadStory(id);
+
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = story.title || "Untitled Story";
+                titleSpan.style.overflow = "hidden";
+                titleSpan.style.textOverflow = "ellipsis";
+                titleSpan.style.whiteSpace = "nowrap";
+                
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-story-btn';
+                delBtn.innerHTML = '✕';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteStory(id);
+                };
+
+                item.appendChild(titleSpan);
+                item.appendChild(delBtn);
+                container.appendChild(item);
+            });
+        }
+
+        function showSetupNewStory() {
+            library.currentActiveId = null;
+            saveLibraryToStorage();
+            renderSidebar();
+
+            document.getElementById('story-area').innerHTML = '';
+            document.getElementById('story-title').value = '';
+            document.getElementById('text-input').value = '';
+            document.getElementById('setup-view').style.display = 'block';
+            document.getElementById("myBar").style.width = "0%";
+            document.getElementById("progress-percent").textContent = "0%";
+            document.querySelectorAll('.comment-marker').forEach(m => m.remove());
+        }
+
+        function createNewStory() {
+            const title = document.getElementById('story-title').value.trim() || "Untitled Story";
             const rawText = document.getElementById('text-input').value.trim();
             if (!rawText) return alert("Please paste text data first.");
 
-            // Save text data globally
-            localStorage.setItem('journal_story_raw', rawText);
+            const newId = Date.now().toString(); // unique timestamp id
+            
+            library.stories[newId] = {
+                title: title,
+                text: rawText,
+                comments: {},
+                lastIdx: 0
+            };
+            library.currentActiveId = newId;
+            
+            saveLibraryToStorage();
+            renderSidebar();
+            loadStory(newId);
+        }
 
+        function loadStory(id) {
+            library.currentActiveId = id;
+            saveLibraryToStorage();
+            renderSidebar();
+
+            const story = library.stories[id];
+            document.getElementById('setup-view').style.display = 'none';
+            
             const area = document.getElementById('story-area');
             area.innerHTML = '';
 
-            const paragraphs = rawText.split(/\n\s*\n/);
+            const paragraphs = story.text.split(/\n\s*\n/);
             totalParagraphs = paragraphs.length;
 
             paragraphs.forEach((pText, idx) => {
                 if (pText.trim() === '') return;
 
-                // Create paragraph block
                 const p = document.createElement('p');
                 p.textContent = pText;
                 p.dataset.index = idx;
                 p.addEventListener('click', () => promptForComment(idx));
                 area.appendChild(p);
 
-                // If comment exists from storage, inject it immediately below
-                if (commentsData[idx]) {
-                    renderCommentNode(idx, commentsData[idx]);
+                if (story.comments[idx]) {
+                    renderCommentNode(idx, story.comments[idx]);
                 }
             });
 
-            document.getElementById('setup-view').style.display = 'none';
+            window.removeEventListener('scroll', handleScroll);
             window.addEventListener('scroll', handleScroll);
             
-            // Generate historical progress markers on track
             renderAllMarkers();
 
-            // Try to restore position from last active paragraph index
-            if (isRestoring) {
-                const lastIdx = localStorage.getItem('journal_last_idx');
-                if (lastIdx) {
-                    isInitialAutoscroll = true;
-                    setTimeout(() => {
-                        const targetPara = document.querySelector(`p[data-index="${lastIdx}"]`);
-                        if (targetPara) {
-                            targetPara.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                        }
-                        isInitialAutoscroll = false;
-                    }, 350);
-                }
+            // Restore position sequence safely
+            if (story.lastIdx) {
+                isInitialAutoscroll = true;
+                setTimeout(() => {
+                    const targetPara = document.querySelector(`p[data-index="${story.lastIdx}"]`);
+                    if (targetPara) {
+                        targetPara.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                    isInitialAutoscroll = false;
+                }, 350);
             }
         }
 
         function handleScroll() {
-            if (isInitialAutoscroll) return;
+            if (isInitialAutoscroll || !library.currentActiveId) return;
 
             const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -262,47 +425,45 @@
             document.getElementById("myBar").style.width = scrolled + "%";
             document.getElementById("progress-percent").textContent = scrolled + "%";
 
-            // Track active paragraph focus at viewpoint center
             const paras = document.querySelectorAll('#story-area > p');
             const centerLine = window.innerHeight / 2;
+            const activeStory = library.stories[library.currentActiveId];
 
             paras.forEach(p => {
                 const rect = p.getBoundingClientRect();
                 if (rect.top < centerLine && rect.bottom > centerLine) {
-                    const idx = p.dataset.index;
-                    if (currentActiveIdx !== idx) {
+                    const idx = parseInt(p.dataset.index);
+                    if (activeStory.lastIdx !== idx) {
                         paras.forEach(el => el.classList.remove('active'));
                         p.classList.add('active');
-                        currentActiveIdx = idx;
-                        localStorage.setItem('journal_last_idx', idx);
+                        activeStory.lastIdx = idx;
+                        saveLibraryToStorage();
                     }
                 }
             });
         }
 
         function promptForComment(idx) {
-            const existingText = commentsData[idx] || "";
+            const activeStory = library.stories[library.currentActiveId];
+            const existingText = activeStory.comments[idx] || "";
             const userComment = prompt("Add your commentary/gossip to this scene:", existingText);
             
-            // If user presses cancel, preserve existing data
             if (userComment === null) return; 
 
             if (userComment.trim() === "") {
-                // Clear comment if user left empty string
-                delete commentsData[idx];
+                delete activeStory.comments[idx];
                 removeCommentNode(idx);
             } else {
-                commentsData[idx] = userComment;
+                activeStory.comments[idx] = userComment;
                 renderCommentNode(idx, userComment);
             }
 
-            // Sync with local storage
-            localStorage.setItem('journal_comments', JSON.stringify(commentsData));
+            saveLibraryToStorage();
             renderAllMarkers();
         }
 
         function renderCommentNode(idx, text) {
-            removeCommentNode(idx); // Clear duplicates if editing
+            removeCommentNode(idx);
             const paraNode = document.querySelector(`p[data-index="${idx}"]`);
             if (paraNode) {
                 const commBlock = document.createElement('div');
@@ -319,12 +480,13 @@
         }
 
         function renderAllMarkers() {
-            // Clear prior dynamic marker nodes from tracking row
             const track = document.getElementById('track-container');
             document.querySelectorAll('.comment-marker').forEach(m => m.remove());
 
-            // Build markers relative to paragraph positions
-            Object.keys(commentsData).forEach(idx => {
+            if (!library.currentActiveId) return;
+            const activeStory = library.stories[library.currentActiveId];
+
+            Object.keys(activeStory.comments).forEach(idx => {
                 const positionPct = ((parseInt(idx) + 1) / totalParagraphs) * 100;
                 
                 const marker = document.createElement('div');
@@ -332,9 +494,8 @@
                 marker.style.left = `${positionPct}%`;
                 marker.title = `Comment at segment ${Math.round(positionPct)}%`;
                 
-                // Allow clicking the timeline tick to jump to paragraph instantly
                 marker.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Avoid triggering global container resets
+                    e.stopPropagation();
                     const targetPara = document.querySelector(`p[data-index="${idx}"]`);
                     if (targetPara) {
                         targetPara.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -343,6 +504,29 @@
 
                 track.appendChild(marker);
             });
+        }
+
+        function deleteStory(id) {
+            if (!confirm("Are you sure you want to delete this story and all its comments?")) return;
+            
+            delete library.stories[id];
+            if (library.currentActiveId === id) {
+                const remainingIds = Object.keys(library.stories);
+                library.currentActiveId = remainingIds.length > 0 ? remainingIds[0] : null;
+            }
+            
+            saveLibraryToStorage();
+            renderSidebar();
+
+            if (library.currentActiveId) {
+                loadStory(library.currentActiveId);
+            } else {
+                showSetupNewStory();
+            }
+        }
+
+        function saveLibraryToStorage() {
+            localStorage.setItem('journal_library', JSON.stringify(library));
         }
     </script>
 </body>
