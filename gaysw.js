@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gaybook-v612'; // Incrementing version to force update
+const CACHE_NAME = 'gaybook-v2'; // Incrementing version to force update
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
