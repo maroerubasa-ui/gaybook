@@ -12,7 +12,7 @@
             --text-muted: #a7a9be;
             --accent: #ff8906;
             --highlight: rgba(255, 137, 6, 0.15);
-            --sidebar-width: 260px;
+            --sidebar-width: 280px;
         }
 
         body {
@@ -24,7 +24,7 @@
             display: flex;
         }
 
-        /* Sidebar for multiple stories */
+        /* Sidebar modified to slide over content */
         aside {
             width: var(--sidebar-width);
             background: #12111a;
@@ -35,7 +35,31 @@
             top: 0;
             display: flex;
             flex-direction: column;
+            z-index: 1002;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        aside.open {
+            transform: translateX(0);
+        }
+
+        /* Backdrop overlay when sidebar is open */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
             z-index: 1001;
+            display: none;
+        }
+
+        .sidebar-overlay.visible {
+            display: block;
         }
 
         .sidebar-header {
@@ -48,6 +72,12 @@
             align-items: center;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
         .new-btn {
             background: transparent;
             border: 1px solid var(--accent);
@@ -57,6 +87,15 @@
             cursor: pointer;
             border-radius: 4px;
             width: auto;
+        }
+
+        .close-sidebar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
         }
 
         .story-list {
@@ -99,27 +138,49 @@
         }
         .delete-story-btn:hover { opacity: 1; }
 
-        /* Main Content wrapper adjusted for sidebar */
+        /* Content width completely restored */
         .content-wrapper {
-            margin-left: var(--sidebar-width);
+            margin-left: 0;
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            width: 100%;
         }
 
         header {
             position: fixed;
             top: 0;
             right: 0;
-            left: var(--sidebar-width);
+            left: 0;
             background: rgba(15, 14, 23, 0.95);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid #222;
             z-index: 1000;
-            padding: 12px 0;
-            text-align: center;
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Floating open trigger for Library panel */
+        .menu-trigger-btn {
+            position: absolute;
+            left: 20px;
+            top: 14px;
+            background: #16161a;
+            border: 1px solid #333;
+            color: var(--text-main);
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+            font-weight: normal;
+        }
+        .menu-trigger-btn:hover {
+            border-color: var(--accent);
         }
 
         .progress-container {
@@ -249,11 +310,17 @@
 </head>
 <body>
 
+    <!-- Backdrop Dimmer Elements -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
     <!-- Sidebar Library -->
-    <aside>
+    <aside id="library-sidebar">
         <div class="sidebar-header">
             <span>📚 Library</span>
-            <button class="new-btn" onclick="showSetupNewStory()">+ New</button>
+            <div class="header-actions">
+                <button class="new-btn" onclick="showSetupNewStory()">+ New</button>
+                <button class="close-sidebar-btn" onclick="toggleSidebar(false)">✕</button>
+            </div>
         </div>
         <div class="story-list" id="story-list-container">
             <!-- Saved stories will list here dynamically -->
@@ -263,6 +330,7 @@
     <!-- Main Workspace -->
     <div class="content-wrapper">
         <header>
+            <button class="menu-trigger-btn" onclick="toggleSidebar(true)">☰ Library</button>
             <div class="progress-container">READING PROGRESS: <span id="progress-percent">0%</span></div>
             <div class="timeline-track" id="track-container">
                 <div class="progress-fill" id="myBar"></div>
@@ -283,8 +351,6 @@
     </div>
 
     <script>
-        // Database structured in LocalStorage under one inventory key: 'journal_library'
-        // Format: { currentActiveId: "171999...", stories: { "171999...": { title: "", text: "", comments: {}, lastIdx: 0 } } }
         let library = { currentActiveId: null, stories: {} };
         let totalParagraphs = 0;
         let isInitialAutoscroll = false;
@@ -305,6 +371,19 @@
             }
         });
 
+        // Sliding Panel Toggle Mechanics
+        function toggleSidebar(shouldOpen) {
+            const sidebar = document.getElementById('library-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (shouldOpen) {
+                sidebar.classList.add('open');
+                overlay.classList.add('visible');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('visible');
+            }
+        }
+
         function renderSidebar() {
             const container = document.getElementById('story-list-container');
             container.innerHTML = '';
@@ -313,7 +392,10 @@
                 const story = library.stories[id];
                 const item = document.createElement('div');
                 item.className = `story-item ${id === library.currentActiveId ? 'active-story' : ''}`;
-                item.onclick = () => loadStory(id);
+                item.onclick = () => {
+                    loadStory(id);
+                    toggleSidebar(false); // Auto close panel upon choosing a book
+                };
 
                 const titleSpan = document.createElement('span');
                 titleSpan.textContent = story.title || "Untitled Story";
@@ -347,6 +429,7 @@
             document.getElementById("myBar").style.width = "0%";
             document.getElementById("progress-percent").textContent = "0%";
             document.querySelectorAll('.comment-marker').forEach(m => m.remove());
+            toggleSidebar(false);
         }
 
         function createNewStory() {
@@ -354,7 +437,7 @@
             const rawText = document.getElementById('text-input').value.trim();
             if (!rawText) return alert("Please paste text data first.");
 
-            const newId = Date.now().toString(); // unique timestamp id
+            const newId = Date.now().toString();
             
             library.stories[newId] = {
                 title: title,
@@ -402,7 +485,6 @@
             
             renderAllMarkers();
 
-            // Restore position sequence safely
             if (story.lastIdx) {
                 isInitialAutoscroll = true;
                 setTimeout(() => {
