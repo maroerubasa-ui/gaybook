@@ -11,32 +11,35 @@
         padding: 0;
     }
 
-    :root {
-        --bg-color-gallery: transparent; 
-        --text-color-gallery: #ffffff; 
-        --glass-bg: rgba(255, 255, 255, 0.1); 
-        --glass-border: rgba(255, 255, 255, 0.1);
-        
-        --color-primary: #d1d1d1; 
-        --color-secondary: #eeeeee; 
-        --color-background: #000000; 
-        --color-accent: #333333; 
-        --color-whatsapp: #25d366; 
-        --color-whatsapp-dark: #128c7e; 
-        --font-body: 'Lora', serif; 
-        --font-heading: 'Source Sans Pro', sans-serif; 
-        --font-comic: 'Comic Neue', cursive; 
-        --font-size-base: 1.25rem; 
-        --line-height-base: 1.8; 
-        --max-text-width: 750px; 
-        --padding-page: 40px; 
-        --gallery-gap: 30px; 
-        
-        --color-button-bg: #333;
-        --color-button-text: #fff;
-        --color-link-footer: #ffcc00; 
-    }
-
+   :root {
+    --bg-color-gallery: transparent;
+    --text-color-gallery: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    --color-primary: #b8c0d8;
+    --color-secondary: #eeeeee;
+    --color-background: #000000;
+    --color-accent: #333333;
+    --color-whatsapp: #25d366;
+    --color-whatsapp-dark: #128c7e;
+    
+    /* Modern digital reading font family (Plus Jakarta Sans with clean geometric curves) */
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-heading: 'Source Sans Pro', sans-serif;
+    --font-comic: 'Comic Neue', cursive;
+    
+    /* Mobile-first base sizing (Bigger text and generous spacing) */
+    --font-size-base: 3.1rem;
+    --line-height-base: 2.3;
+    --max-text-width: 740px;
+    --padding-page: 32px;
+    --gallery-gap: 30px;
+    
+    --color-button-bg: #333;
+    --color-button-text: #fff;
+    --color-link-footer: #ffcc00;
+}
     body {
         font-family: var(--font-body);
         color: var(--color-primary); 
@@ -153,6 +156,12 @@
 
     .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+.book-container {
+        max-width: var(--max-text-width); 
+        margin: 0 auto; 
+        padding-left: var(--padding-page); 
+        padding-right: var(--padding-page);
+    }
     .gallery, .book-container {
         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05));
     }
@@ -186,7 +195,7 @@
     }
 
     .brand-name {
-        font-family: 'none', serif; 
+        font-family: 'comic', serif; 
         font-size: 1rem;
         font-weight: 700;
         padding: 8px 15px;
@@ -571,22 +580,29 @@
     
     .post-paragraph {
         margin-bottom: 2.5rem; 
-        text-align: left;
+        text-align: center; /* Centred text styling */
         font-family: var(--font-body); 
-        font-weight: 400;
-        padding: 5px; 
-        line-height: var(--line-height-base);
+        font-size: var(--font-size-base); 
+        font-weight: 600;
+        padding: 9px; 
+        line-height: var(--line-height-base); 
         color: var(--color-primary); 
     }
-    
 
-    
+    @media (max-width: 768px) { 
+        :root { 
+            --font-size-base: 2.2rem; /* Even larger and highly legible on mobile screens */
+            --padding-page: 28px; /* Balanced side margins to keep text neatly centred */
+        } 
+        .page-title { font-size: 2.2rem; }
+        .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
+    }    
     .post-paragraph strong, .post-paragraph b { font-weight: 700; color: #fff; }
 
     .book-container {
         max-width: var(--max-text-width); 
         margin: 0 auto; 
-        padding: var(--padding-page); 
+        padding: var(--padding-page); /* Generous padding on left and right */
     }
 
     .image-slot {
@@ -740,7 +756,7 @@
 }
 
     @media (max-width: 768px) { 
-        :root { --font-size-base: 1.15rem; --padding-page: 20px; } 
+        :root { --font-size-base: 1.8rem; --padding-page: 24px; } 
         .page-title { font-size: 2.2rem; }
         .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
     }
@@ -751,12 +767,11 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gaybook.site</title>
-        <link rel="stylesheet" href="gaybook.site/Gaybook.css">
+      
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <link rel="stylesheet" href="gaystyles.css">
-     
+        
         <script>
             function fireExoclickAd(adId, postPath) {
                 console.log(`Firing Exoclick Interstitial Ad: ${adId}`);
@@ -827,7 +842,7 @@
             <div class="modal-content">
                 <h3>Support Gaybook.site</h3>
                 <p>Click here ↓ to buy me a cup of coffee.</p>
-                <a href="/support" target="_blank" class="buy-coffee-btn">
+                <a href="support.html" target="_blank" class="buy-coffee-btn">
                    <i class="fas fa-user-secret"></i> Support 
                 </a>
                 <br><br>
@@ -873,10 +888,10 @@
             <span class="footer-brand">Gaybook.site</span>
             
             <div class="footer-links">
-                <a href="/about">About</a>
-                <a href="/sponsorship">Sponsorship</a>
-                <a href="/terms">Terms Of Use</a>
-                        </div>
+                <a href="about.html">About</a>
+                <a href="sponsorship.html">Sponsorship</a>
+                <a href="terms.html">Terms Of Use</a>
+            </div>
     
             <span class="adult-disclaimer">
                 <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
@@ -989,8 +1004,6 @@ async function getPostStats(postId, slug) {
 }
 
 /* --- SPLASH SCREEN HANDLER --- */
-/* --- SPLASH SCREEN HANDLER --- */
-/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
@@ -1002,10 +1015,8 @@ function initSplashScreen() {
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40db559a86d35875%20(1).gif',
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78%20(1).gif',
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a%20(1).gif',
-         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037%20(1).gif',
-          'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
-        
-        // URL encoded space
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037%20(1).gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
     ];
 
     let lastIdx = localStorage.getItem('gb_last_bg_idx');
@@ -1019,23 +1030,6 @@ function initSplashScreen() {
 
     const selectedImg = backgrounds[randomIdx];
     bgContainer.style.backgroundImage = `url('${selectedImg}')`;
-}
-
-function hideSplashScreen() {
-    const splash = document.getElementById('splash-screen');
-    const bgContainer = document.getElementById('splash-bg-container');
-    if (!splash || initialLoadDone) return;
-
-    // Keeping your intentional 8-second dramatic/aesthetic delay intact
-    setTimeout(() => {
-        splash.classList.add('splash-hidden');
-        initialLoadDone = true;
-        
-        // Fully clear the background after the CSS fade transition finishes to save memory
-        setTimeout(() => {
-            if (bgContainer) bgContainer.style.backgroundImage = 'none';
-        }, 800); 
-    }, 8000); 
 }
 
 async function hideSplashScreen() {
@@ -1055,20 +1049,6 @@ async function hideSplashScreen() {
 
 /* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
-    const path = window.location.pathname;
-    
-    // 1. Define a list of your static page names (blacklist)
-    const staticPages = ['about', 'sponsorship', 'terms', 'support'];
-    
-    // Extract the first segment of the URL (e.g., "about" from "/about/" or "/about.html")
-    const pathParts = path.split('/').filter(p => p.length > 0);
-    const firstSegment = pathParts[0] ? pathParts[0].toLowerCase().replace('.html', '') : '';
-
-    // 2. If the URL matches one of our static pages, stop the SPA router immediately
-    if (staticPages.includes(firstSegment)) {
-        return; // Let the browser load the static file naturally
-    }
-
     if (!initialLoadDone) initSplashScreen();
 
     const route = getRouteInfo();
@@ -1087,6 +1067,7 @@ async function handleRoute() {
             let metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
             metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            window.scrollTo(0, 0);
             
         } else {
             await loadPostPage(route.slug, route.chapterNum);
@@ -1094,13 +1075,11 @@ async function handleRoute() {
         }
     } catch (globalError) {
         console.error("Routing execution error encountered:", globalError);
+        window.scrollTo(0, 0);
     } finally {
         hideSplashScreen();
-        window.scrollTo(0, 0);
     }
 }
-
-
 
 async function loadPostPage(slug, chapterNum) {
     window.renderComplete = false;
@@ -1113,13 +1092,24 @@ async function loadPostPage(slug, chapterNum) {
         renderPostContent(post, chapterNum);
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
+
+        // Restore scroll position from localStorage for this specific page/chapter
+        const scrollKey = `scroll_${slug}_ch${chapterNum}`;
+        const savedScroll = localStorage.getItem(scrollKey);
+        setTimeout(() => {
+            if (savedScroll) {
+                window.scrollTo(0, parseInt(savedScroll, 10));
+            } else {
+                window.scrollTo(0, 0);
+            }
+        }, 100);
     } else {
         window.history.replaceState(null, '', '/');
         handleRoute(); 
     }
 }
 
-/* --- OPTIMIZED GALLERY ITEM LAYOUT USING DB MANUALLY SPECIFIED READ TIMES --- */
+/* --- OPTIMIZED GALLERY ITEM LAYOUT --- */
 async function createGalleryItem(post) {
     const identifier = post.slug || post.id;
     const title = post.title || 'Untitled Post';
@@ -1127,7 +1117,6 @@ async function createGalleryItem(post) {
     const imgUrl = post.thumbnail_url || 'https://via.placeholder.com/320x300?text=No+Image';
     const adId = post.exoclick_id || '5048227';
     
-    // Reads directly from our explicit DB metrics layout instead of processing arrays dynamically
     const calculatedTime = post.read_time || 7; 
     const chapterCount = post.chapters ? post.chapters.length : 0;
 
@@ -1159,11 +1148,9 @@ async function createGalleryItem(post) {
         </div>`;
 }
 
-/* --- FETCH GALLERY ITEMS (OPTIMIZED WITH EXPLICIT COLUMN) --- */
 async function fetchGalleryItems(query = '', offset = 0) {
     let supabaseQuery = supabase
         .from('posts')
-        // Added read_time to the specific selection properties
         .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, created_at, read_time, chapters(id)') 
         .eq('is_published', true) 
         .order('created_at', { ascending: false })
@@ -1243,22 +1230,14 @@ function createProductCard(product) {
     `;
 }
 
-/* --- AUTO-CLEANING COMPONENT RENDERER --- */
 function renderComponent(block, library) {
     if(!block) return '';
     switch (block.type) {
-                case 'paragraph': 
+        case 'paragraph': 
             let cleanText = block.text || '';
-            
-            // Removed the line that deletes <div> tags to keep database wrappers safe
             cleanText = cleanText.replace(/class="post-paragraph"/gi, '').replace(/post-paragraph/gi, '');
-            
-            // Safely parse internal <br> elements down into actual breaks 
             cleanText = cleanText.replace(/<br\s*\/?>/gi, '<br>');
-
-            // Return the text directly because it ALREADY contains the individual paragraph <div> tags from the database
-            return parseInlineStyling(cleanText);
-
+            return `<p class="post-paragraph">${parseInlineStyling(cleanText)}</p>`;
             
         case 'image': 
             return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
@@ -1358,16 +1337,27 @@ function updateProgress() {
     if (!body.classList.contains('is-post-page')) return;
     const winScroll = document.documentElement.scrollTop;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrolled = Math.round((winScroll / height) * 100);
-    readingBar.style.width = scrolled + "%";
-    readingCounter.textContent = scrolled + "%";
-    const points = Object.keys(dynamicMessages);
-    points.forEach(point => {
-        if (scrolled >= point && !memory.triggeredMilestones.has(point)) {
-            memory.triggeredMilestones.add(point);
-            triggerFlyOut(point);
+    
+    if (height > 0) {
+        const scrolled = Math.round((winScroll / height) * 100);
+        readingBar.style.width = scrolled + "%";
+        readingCounter.textContent = scrolled + "%";
+        
+        // Save scroll position automatically into localStorage
+        const route = getRouteInfo();
+        if (route.slug) {
+            const scrollKey = `scroll_${route.slug}_ch${route.chapterNum}`;
+            localStorage.setItem(scrollKey, winScroll);
         }
-    });
+
+        const points = Object.keys(dynamicMessages);
+        points.forEach(point => {
+            if (scrolled >= point && !memory.triggeredMilestones.has(point)) {
+                memory.triggeredMilestones.add(point);
+                triggerFlyOut(point);
+            }
+        });
+    }
 }
 
 function getRouteInfo() {
