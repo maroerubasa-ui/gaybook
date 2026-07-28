@@ -536,6 +536,64 @@
     let cachedAffiliates = [];
     let cachedAds = [];
 
+    // Global global flag to load ExoClick provider script only once
+    let isExoClickScriptLoaded = false;
+
+    function injectExoClickAds(containerElement) {
+        const placeholder = "-Ad--exoclick-continue-reading-";
+        
+        const walker = document.createTreeWalker(containerElement, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        let nodesToReplace = [];
+
+        while (node = walker.nextNode()) {
+            if (node.nodeValue.includes(placeholder)) {
+                nodesToReplace.push(node);
+            }
+        }
+
+        if (nodesToReplace.length === 0) return;
+
+        const adHTML = `
+            <div class="exoclick-ad-wrapper" style="margin: 20px 0; text-align: center;">
+                <ins class="eas6a97888e2" data-zoneid="5988042" data-keywords="keywords" data-sub="123450000" data-block-ad-types="0" data-ex-av="name"></ins>
+            </div>
+        `;
+
+        nodesToReplace.forEach(textNode => {
+            const parent = textNode.parentNode;
+            const parts = textNode.nodeValue.split(placeholder);
+            
+            const fragment = document.createDocumentFragment();
+            parts.forEach((part, index) => {
+                if (part) {
+                    fragment.appendChild(document.createTextNode(part));
+                }
+                if (index < parts.length - 1) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = adHTML;
+                    while (tempDiv.firstChild) {
+                        fragment.appendChild(tempDiv.firstChild);
+                    }
+                }
+            });
+            
+            parent.replaceChild(fragment, textNode);
+        });
+
+        if (!isExoClickScriptLoaded) {
+            const script = document.createElement('script');
+            script.async = true;
+            script.type = 'application/javascript';
+            script.src = 'https://a.magsrv.com/ad-provider.js';
+            document.head.appendChild(script);
+            isExoClickScriptLoaded = true;
+        }
+
+        window.AdProvider = window.AdProvider || [];
+        window.AdProvider.push({ "serve": {} });
+    }
+
     async function uploadToSupabase(file) {
         const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
         const { data, error } = await supabase.storage
@@ -886,7 +944,7 @@
                             <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'down')"><i class="fas fa-arrow-down"></i></button>
                             <i class="fas fa-trash btn-del" onclick="handleBlockDelete(${cIdx}, ${bIdx})"></i>
                         </div>
-                    </div>`;
+                    `;
                 if(block.type === 'paragraph') { 
                     html += `<textarea class="reader-text-engine" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value" placeholder="Write story text here...">${block.text || ''}</textarea>`; 
                 } 
@@ -910,7 +968,7 @@
                         <button class="upload-btn" style="margin-top:5px;" onclick="triggerUpload(null, true, ${cIdx}, ${bIdx})">Upload</button>
                     </div>`;
                 }
-                html += `</div>`;
+                html += `</div></div>`;
             });
             canvas.innerHTML += html + `</div></div>`;
         });
@@ -997,7 +1055,6 @@
                 }
             }
             
-            // Clean local storage copy of current draft upon safe publication
             clearConnectedDraft(postData.slug);
             
             alert("Story successfully published!"); 
@@ -1061,7 +1118,7 @@
 
     async function fetchStory(id) {
         editId = id;
-        currentDraftId = null; // Clear local draft tracking to focus on the live database row
+        currentDraftId = null;
         const { data: post } = await supabase.from('posts').select('*').eq('id', id).single();
         const { data: chaps } = await supabase.from('chapters').select('*, content_blocks(*)').eq('post_id', id).order('order', {ascending: true});
         document.getElementById('post-title').value = post.title || '';
