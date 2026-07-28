@@ -1,3 +1,4 @@
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -101,8 +102,6 @@ async function getPostStats(postId, slug) {
 }
 
 /* --- SPLASH SCREEN HANDLER --- */
-/* --- SPLASH SCREEN HANDLER --- */
-/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
@@ -114,10 +113,8 @@ function initSplashScreen() {
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-40db559a86d35875%20(1).gif',
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-41da2e0cfde01e78%20(1).gif',
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4a9992fb19cc015a%20(1).gif',
-         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037%20(1).gif',
-          'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
-        
-        // URL encoded space
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/ezgif-4b575af810db3037%20(1).gif',
+        'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
     ];
 
     let lastIdx = localStorage.getItem('gb_last_bg_idx');
@@ -131,23 +128,6 @@ function initSplashScreen() {
 
     const selectedImg = backgrounds[randomIdx];
     bgContainer.style.backgroundImage = `url('${selectedImg}')`;
-}
-
-function hideSplashScreen() {
-    const splash = document.getElementById('splash-screen');
-    const bgContainer = document.getElementById('splash-bg-container');
-    if (!splash || initialLoadDone) return;
-
-    // Keeping your intentional 8-second dramatic/aesthetic delay intact
-    setTimeout(() => {
-        splash.classList.add('splash-hidden');
-        initialLoadDone = true;
-        
-        // Fully clear the background after the CSS fade transition finishes to save memory
-        setTimeout(() => {
-            if (bgContainer) bgContainer.style.backgroundImage = 'none';
-        }, 800); 
-    }, 8000); 
 }
 
 async function hideSplashScreen() {
@@ -167,20 +147,6 @@ async function hideSplashScreen() {
 
 /* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
-    const path = window.location.pathname;
-    
-    // 1. Define a list of your static page names (blacklist)
-    const staticPages = ['about', 'sponsorship', 'terms', 'support'];
-    
-    // Extract the first segment of the URL (e.g., "about" from "/about/" or "/about.html")
-    const pathParts = path.split('/').filter(p => p.length > 0);
-    const firstSegment = pathParts[0] ? pathParts[0].toLowerCase().replace('.html', '') : '';
-
-    // 2. If the URL matches one of our static pages, stop the SPA router immediately
-    if (staticPages.includes(firstSegment)) {
-        return; // Let the browser load the static file naturally
-    }
-
     if (!initialLoadDone) initSplashScreen();
 
     const route = getRouteInfo();
@@ -199,6 +165,7 @@ async function handleRoute() {
             let metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
             metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            window.scrollTo(0, 0);
             
         } else {
             await loadPostPage(route.slug, route.chapterNum);
@@ -206,12 +173,11 @@ async function handleRoute() {
         }
     } catch (globalError) {
         console.error("Routing execution error encountered:", globalError);
+        window.scrollTo(0, 0);
     } finally {
         hideSplashScreen();
-        window.scrollTo(0, 0);
     }
 }
-
 
 async function loadPostPage(slug, chapterNum) {
     window.renderComplete = false;
@@ -224,13 +190,24 @@ async function loadPostPage(slug, chapterNum) {
         renderPostContent(post, chapterNum);
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
+
+        // Restore scroll position from localStorage for this specific page/chapter
+        const scrollKey = `scroll_${slug}_ch${chapterNum}`;
+        const savedScroll = localStorage.getItem(scrollKey);
+        setTimeout(() => {
+            if (savedScroll) {
+                window.scrollTo(0, parseInt(savedScroll, 10));
+            } else {
+                window.scrollTo(0, 0);
+            }
+        }, 100);
     } else {
         window.history.replaceState(null, '', '/');
         handleRoute(); 
     }
 }
 
-/* --- OPTIMIZED GALLERY ITEM LAYOUT USING DB MANUALLY SPECIFIED READ TIMES --- */
+/* --- OPTIMIZED GALLERY ITEM LAYOUT --- */
 async function createGalleryItem(post) {
     const identifier = post.slug || post.id;
     const title = post.title || 'Untitled Post';
@@ -238,7 +215,6 @@ async function createGalleryItem(post) {
     const imgUrl = post.thumbnail_url || 'https://via.placeholder.com/320x300?text=No+Image';
     const adId = post.exoclick_id || '5048227';
     
-    // Reads directly from our explicit DB metrics layout instead of processing arrays dynamically
     const calculatedTime = post.read_time || 7; 
     const chapterCount = post.chapters ? post.chapters.length : 0;
 
@@ -270,11 +246,9 @@ async function createGalleryItem(post) {
         </div>`;
 }
 
-/* --- FETCH GALLERY ITEMS (OPTIMIZED WITH EXPLICIT COLUMN) --- */
 async function fetchGalleryItems(query = '', offset = 0) {
     let supabaseQuery = supabase
         .from('posts')
-        // Added read_time to the specific selection properties
         .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, created_at, read_time, chapters(id)') 
         .eq('is_published', true) 
         .order('created_at', { ascending: false })
@@ -354,22 +328,14 @@ function createProductCard(product) {
     `;
 }
 
-/* --- AUTO-CLEANING COMPONENT RENDERER --- */
 function renderComponent(block, library) {
     if(!block) return '';
     switch (block.type) {
-                case 'paragraph': 
+        case 'paragraph': 
             let cleanText = block.text || '';
-            
-            // Removed the line that deletes <div> tags to keep database wrappers safe
             cleanText = cleanText.replace(/class="post-paragraph"/gi, '').replace(/post-paragraph/gi, '');
-            
-            // Safely parse internal <br> elements down into actual breaks 
             cleanText = cleanText.replace(/<br\s*\/?>/gi, '<br>');
-
-            // Return the text directly because it ALREADY contains the individual paragraph <div> tags from the database
-            return parseInlineStyling(cleanText);
-
+            return `<p class="post-paragraph">${parseInlineStyling(cleanText)}</p>`;
             
         case 'image': 
             return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
@@ -469,16 +435,27 @@ function updateProgress() {
     if (!body.classList.contains('is-post-page')) return;
     const winScroll = document.documentElement.scrollTop;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrolled = Math.round((winScroll / height) * 100);
-    readingBar.style.width = scrolled + "%";
-    readingCounter.textContent = scrolled + "%";
-    const points = Object.keys(dynamicMessages);
-    points.forEach(point => {
-        if (scrolled >= point && !memory.triggeredMilestones.has(point)) {
-            memory.triggeredMilestones.add(point);
-            triggerFlyOut(point);
+    
+    if (height > 0) {
+        const scrolled = Math.round((winScroll / height) * 100);
+        readingBar.style.width = scrolled + "%";
+        readingCounter.textContent = scrolled + "%";
+        
+        // Save scroll position automatically into localStorage
+        const route = getRouteInfo();
+        if (route.slug) {
+            const scrollKey = `scroll_${route.slug}_ch${route.chapterNum}`;
+            localStorage.setItem(scrollKey, winScroll);
         }
-    });
+
+        const points = Object.keys(dynamicMessages);
+        points.forEach(point => {
+            if (scrolled >= point && !memory.triggeredMilestones.has(point)) {
+                memory.triggeredMilestones.add(point);
+                triggerFlyOut(point);
+            }
+        });
+    }
 }
 
 function getRouteInfo() {
