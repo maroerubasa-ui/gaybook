@@ -296,7 +296,7 @@ async function renderGallery(items, append = false) {
     if (!append) homeGallery.innerHTML = '';
     if (!items || items.length === 0) {
          if (!append) {
-             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try a different search.</p>';
              loadMoreContainer.style.display = 'none';
          }
          return;
