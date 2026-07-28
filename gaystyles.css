@@ -1,4 +1,4 @@
-
+ 
    /* ---------------------------------
        1. CSS Root Variables & Global Styles 
     --------------------------------- */
@@ -8,32 +8,35 @@
         padding: 0;
     }
 
-    :root {
-        --bg-color-gallery: transparent; 
-        --text-color-gallery: #ffffff; 
-        --glass-bg: rgba(255, 255, 255, 0.1); 
-        --glass-border: rgba(255, 255, 255, 0.1);
-        
-        --color-primary: #d1d1d1; 
-        --color-secondary: #eeeeee; 
-        --color-background: #000000; 
-        --color-accent: #333333; 
-        --color-whatsapp: #25d366; 
-        --color-whatsapp-dark: #128c7e; 
-        --font-body: 'Lora', serif; 
-        --font-heading: 'Source Sans Pro', sans-serif; 
-        --font-comic: 'Comic Neue', cursive; 
-        --font-size-base: 1.25rem; 
-        --line-height-base: 1.8; 
-        --max-text-width: 750px; 
-        --padding-page: 40px; 
-        --gallery-gap: 30px; 
-        
-        --color-button-bg: #333;
-        --color-button-text: #fff;
-        --color-link-footer: #ffcc00; 
-    }
-
+   :root {
+    --bg-color-gallery: transparent;
+    --text-color-gallery: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    --color-primary: #b8c0d8;
+    --color-secondary: #eeeeee;
+    --color-background: #000000;
+    --color-accent: #333333;
+    --color-whatsapp: #25d366;
+    --color-whatsapp-dark: #128c7e;
+    
+    /* Modern digital reading font family (Plus Jakarta Sans with clean geometric curves) */
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-heading: 'Source Sans Pro', sans-serif;
+    --font-comic: 'Comic Neue', cursive;
+    
+    /* Mobile-first base sizing (Bigger text and generous spacing) */
+    --font-size-base: 3.1rem;
+    --line-height-base: 2.3;
+    --max-text-width: 740px;
+    --padding-page: 32px;
+    --gallery-gap: 30px;
+    
+    --color-button-bg: #333;
+    --color-button-text: #fff;
+    --color-link-footer: #ffcc00;
+}
     body {
         font-family: var(--font-body);
         color: var(--color-primary); 
@@ -150,6 +153,12 @@
 
     .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+.book-container {
+        max-width: var(--max-text-width); 
+        margin: 0 auto; 
+        padding-left: var(--padding-page); 
+        padding-right: var(--padding-page);
+    }
     .gallery, .book-container {
         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05));
     }
@@ -183,7 +192,7 @@
     }
 
     .brand-name {
-        font-family: 'none', serif; 
+        font-family: 'comic', serif; 
         font-size: 1rem;
         font-weight: 700;
         padding: 8px 15px;
@@ -568,22 +577,29 @@
     
     .post-paragraph {
         margin-bottom: 2.5rem; 
-        text-align: left;
+        text-align: center; /* Centred text styling */
         font-family: var(--font-body); 
-        font-weight: 400;
-        padding: 5px; 
-        line-height: var(--line-height-base);
+        font-size: var(--font-size-base); 
+        font-weight: 600;
+        padding: 9px; 
+        line-height: var(--line-height-base); 
         color: var(--color-primary); 
     }
-    
 
-    
+    @media (max-width: 768px) { 
+        :root { 
+            --font-size-base: 2.2rem; /* Even larger and highly legible on mobile screens */
+            --padding-page: 28px; /* Balanced side margins to keep text neatly centred */
+        } 
+        .page-title { font-size: 2.2rem; }
+        .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
+    }    
     .post-paragraph strong, .post-paragraph b { font-weight: 700; color: #fff; }
 
     .book-container {
         max-width: var(--max-text-width); 
         margin: 0 auto; 
-        padding: var(--padding-page); 
+        padding: var(--padding-page); /* Generous padding on left and right */
     }
 
     .image-slot {
@@ -737,7 +753,7 @@
 }
 
     @media (max-width: 768px) { 
-        :root { --font-size-base: 1.15rem; --padding-page: 20px; } 
+        :root { --font-size-base: 1.8rem; --padding-page: 24px; } 
         .page-title { font-size: 2.2rem; }
         .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
     }
