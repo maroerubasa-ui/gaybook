@@ -1,5 +1,4 @@
-
-if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('Service Worker registered!'))
@@ -213,7 +212,6 @@ async function createGalleryItem(post) {
     const title = post.title || 'Untitled Post';
     const summary = post.summary || 'Tap to read more about this story...';
     const imgUrl = post.thumbnail_url || 'https://via.placeholder.com/320x300?text=No+Image';
-    const adId = post.exoclick_id || '5048227';
     
     const calculatedTime = post.read_time || 7; 
     const chapterCount = post.chapters ? post.chapters.length : 0;
@@ -227,7 +225,7 @@ async function createGalleryItem(post) {
     const formattedViews = formatCompactNumber(stats.viewCount);
 
     return `
-        <div class="gallery-item" onclick="navigateToPost('${identifier}', '${adId}')">
+        <div class="gallery-item" onclick="navigateToPost('${identifier}')">
             <img src="${imgUrl}" alt="${title}">
             <div class="item-details">
                 <span class="item-title">${title} ${trendingIcon}</span>
@@ -249,7 +247,7 @@ async function createGalleryItem(post) {
 async function fetchGalleryItems(query = '', offset = 0) {
     let supabaseQuery = supabase
         .from('posts')
-        .select('id, title, summary, thumbnail_url, tags, exoclick_id, slug, created_at, read_time, chapters(id)') 
+        .select('id, title, summary, thumbnail_url, tags, slug, created_at, read_time, chapters(id)') 
         .eq('is_published', true) 
         .order('created_at', { ascending: false })
         .range(offset, offset + ITEMS_PER_LOAD - 1);
@@ -265,7 +263,7 @@ async function fetchPost(identifier) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
     const isUuid = uuidRegex.test(identifier);
     let query = supabase.from('posts').select(`
-            id, title, thumbnail_url, summary, commentary, exoclick_id, slug, created_at,
+            id, title, thumbnail_url, summary, commentary, slug, created_at,
             chapters:chapters(id, title, chapter_image_url, commentary, order, content_blocks:content_blocks(*))
         `);
     if (isUuid) query = query.eq('id', identifier);
@@ -287,16 +285,17 @@ async function fetchPost(identifier) {
     return data;
 }
 
-function navigateToPost(identifier, adId) {
+// Interstitial allowed ONLY when opening a book from the gallery
+function navigateToPost(identifier) {
     const postPath = `/${identifier}/1`;
-    fireExoclickAd(adId, postPath);
+    fireExoclickAd(postPath);
 }
 
 async function renderGallery(items, append = false) {
     if (!append) homeGallery.innerHTML = '';
     if (!items || items.length === 0) {
          if (!append) {
-             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try a different search.</p>';
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
              loadMoreContainer.style.display = 'none';
          }
          return;
@@ -383,20 +382,25 @@ function updateSchemaMarkup(post, chapterNum, chapter) {
     document.head.appendChild(script);
 }
 
+// Interstitial allowed ONLY when navigating through chapter buttons
+function navigateChapter(slug, chapterNum) {
+    const postPath = `/${slug}/${chapterNum}`;
+    fireExoclickAd(postPath);
+}
+
 function renderChapterNavigation(post, currentIdx) {
-    const adId = post.exoclick_id || '5048227';
     const slug = post.slug || post.id;
     const totalChapters = post.chapters.length;
     const chapterButtons = post.chapters.map((_, index) => {
         const chapterNum = index + 1;
         const isActive = index === currentIdx;
-        return `<button class="nav-num-btn ${isActive ? 'active' : ''}" onclick="fireExoclickAd('${adId}', '/${slug}/${chapterNum}')" ${isActive ? 'disabled' : ''}>${chapterNum}</button>`;
+        return `<button class="nav-num-btn ${isActive ? 'active' : ''}" onclick="navigateChapter('${slug}', '${chapterNum}')" ${isActive ? 'disabled' : ''}>${chapterNum}</button>`;
     }).join('');
     return `
         <div class="chapter-pagination-container">
-            <button class="nav-icon-btn ${currentIdx === 0 ? 'disabled' : ''}" onclick="fireExoclickAd('${adId}', '/${slug}/${currentIdx}')"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-icon-btn ${currentIdx === 0 ? 'disabled' : ''}" onclick="navigateChapter('${slug}', '${currentIdx}')"><i class="fas fa-chevron-left"></i></button>
             <div class="chapter-numbers">${chapterButtons}</div>
-            <button class="nav-icon-btn ${currentIdx >= totalChapters - 1 ? 'disabled' : ''}" onclick="fireExoclickAd('${adId}', '/${slug}/${currentIdx + 2}')"><i class="fas fa-chevron-right"></i></button>
+            <button class="nav-icon-btn ${currentIdx >= totalChapters - 1 ? 'disabled' : ''}" onclick="navigateChapter('${slug}', '${currentIdx + 2}')"><i class="fas fa-chevron-right"></i></button>
         </div>
     `;
 }
@@ -517,12 +521,18 @@ window.onscroll = updateProgress;
 
 if(brandNameLink) brandNameLink.addEventListener('click', (e) => {
     e.preventDefault();
-    if (window.location.pathname !== '/') { fireExoclickAd('5048227', '/'); }
+    if (window.location.pathname !== '/') { 
+        window.history.replaceState({}, '', '/');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }
 });
 
 if(closeIconWrapper) closeIconWrapper.addEventListener('click', () => {
     const route = getRouteInfo();
-    if (route.slug) { fireExoclickAd('5048227', '/'); }
+    if (route.slug) { 
+        window.history.replaceState({}, '', '/');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }
     else if (searchContainer.classList.contains('active')) { toggleSearch(false); }
 });
 
@@ -549,4 +559,4 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 document.addEventListener('DOMContentLoaded', handleRoute);
-    
+ 
