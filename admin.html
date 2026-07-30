@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaybook Admin | Full Library System</title>
+    <title> Full Library System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <!-- Mammoth.js for .docx parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -412,14 +414,16 @@
 
     <div id="admin-panel">
         <header>
-            <b style="font-size: 20px;">Gaybook CMS</b>
+            <b style="font-size: 20px;">Control Panel</b>
             <button onclick="handleLogout()" style="background:none; border:none; color:var(--danger); font-weight:600;">Logout</button>
         </header>
         <div class="nav-tabs">
             <div class="nav-tab active" onclick="switchView(event, 'stats')">Analytics</div>
             <div class="nav-tab" onclick="switchView(event, 'manage')">Stories</div>
+            <div class="nav-tab" onclick="switchView(event, 'scheduled')">Scheduled Queue</div>
             <div class="nav-tab" onclick="switchView(event, 'affiliates')">Affiliate Lib</div>
             <div class="nav-tab" onclick="switchView(event, 'ads')">Ads Lib</div>
+            <div class="nav-tab" onclick="switchView(event, 'interstitial')">Interstitial Ad</div>
             <div class="nav-tab" onclick="switchView(event, 'editor')">+ New Story</div>
         </div>
 
@@ -437,6 +441,12 @@
                 <div id="posts-list" style="margin-top:15px;"></div>
             </section>
 
+            <section id="view-scheduled" class="view-section">
+                <h3>Scheduled Queue (Auto-Publish)</h3>
+                <p style="color:var(--text-muted); font-size:13px; margin-top:4px; margin-bottom:15px;">Books saved here will automatically go live when their release date and time are reached.</p>
+                <div id="scheduled-posts-list"></div>
+            </section>
+
             <section id="view-affiliates" class="view-section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <h3>Affiliate Products</h3>
@@ -451,6 +461,23 @@
                     <button onclick="openLibModal('ad')" style="padding:8px 15px; border-radius:6px; background:var(--accent); border:none; color:white;">+ Add Ad Slot</button>
                 </div>
                 <div id="ads-list" class="library-grid"></div>
+            </section>
+
+            <section id="view-interstitial" class="view-section">
+                <div class="card">
+                    <h3>Global Interstitial Ad Settings</h3>
+                    <p style="color:var(--text-muted); font-size:13px; margin-top:4px; margin-bottom:15px;">
+                        Configure the dynamic interstitial script fetched by your live site from the <code>site_settings</code> table.
+                    </p>
+                    
+                    <label>Interstitial Script Code (HTML / JavaScript Tag)</label>
+                    <textarea id="interstitial-script-value" placeholder="Paste your script tag here..." style="height: 140px; font-family: monospace; font-size: 13px;"></textarea>
+                    
+                    <label style="margin-top: 10px; display: block;">Description / Notes</label>
+                    <input type="text" id="interstitial-script-desc" placeholder="e.g. Dynamic interstitial ad script fetched from Supabase">
+
+                    <button onclick="saveInterstitialSettings()" class="btn-main" style="margin-top: 15px;">Save Interstitial Script</button>
+                </div>
             </section>
 
             <section id="view-editor" class="view-section">
@@ -475,16 +502,25 @@
                     </div>
                     <input type="text" id="post-exoclick" placeholder="Exoclick Interstitial ID">
                     <input type="text" id="post-tags" placeholder="tags, comma, separated">
+
+                    <!-- Scheduled Publishing Controls -->
+                    <div style="margin-top: 15px; padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 6px;">
+                        <label style="display:block; margin-bottom:6px; color:var(--accent);">Scheduled Release Date & Time</label>
+                        <input type="datetime-local" id="post-scheduled-date" style="margin-bottom:0;">
+                    </div>
                 </div>
                 <div id="chapters-canvas"></div>
                 <div style="text-align: center; margin-top: 20px;">
                     <button onclick="addChapter()" style="width:100%; padding:15px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:10px; font-weight:bold; color:var(--primary-text);">+ ADD CHAPTER</button>
                     
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="saveToDrafts()" id="draft-btn" style="flex: 1; padding:18px; background: rgba(255,255,255,0.08); color:white; border: 1px solid var(--glass-border); border-radius:8px; font-weight:bold; font-size:16px;">
-                            <i class="far fa-save" style="margin-right: 6px;"></i>SAVE AS DRAFT
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="saveToDrafts()" id="draft-btn" style="flex: 1; min-width: 140px; padding:18px; background: rgba(255,255,255,0.08); color:white; border: 1px solid var(--glass-border); border-radius:8px; font-weight:bold; font-size:15px;">
+                            <i class="far fa-save" style="margin-right: 6px;"></i>SAVE DRAFT
                         </button>
-                        <button onclick="saveFullPost()" id="save-btn" style="flex: 2; padding:18px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; font-size:18px;">
+                        <button onclick="saveScheduledPost()" id="schedule-btn" style="flex: 1; min-width: 160px; padding:18px; background: rgba(138, 153, 173, 0.3); color:white; border: 1px solid var(--glass-border); border-radius:8px; font-weight:bold; font-size:15px;">
+                            <i class="far fa-clock" style="margin-right: 6px;"></i>PUBLISH LATER
+                        </button>
+                        <button onclick="saveFullPost()" id="save-btn" style="flex: 2; min-width: 200px; padding:18px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; font-size:18px;">
                             <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>PUBLISH TO LIVE SITE
                         </button>
                     </div>
@@ -531,67 +567,28 @@
 
     let chapters = [];
     let editId = null;
-    let currentDraftId = null; // Keeps track of which local storage draft we are editing
+    let currentDraftId = null;
     let libraryType = 'affiliate';
     let cachedAffiliates = [];
     let cachedAds = [];
 
-    // Global global flag to load ExoClick provider script only once
-    let isExoClickScriptLoaded = false;
-
-    function injectExoClickAds(containerElement) {
-        const placeholder = "-Ad--exoclick-continue-reading-";
-        
-        const walker = document.createTreeWalker(containerElement, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        let nodesToReplace = [];
-
-        while (node = walker.nextNode()) {
-            if (node.nodeValue.includes(placeholder)) {
-                nodesToReplace.push(node);
-            }
-        }
-
-        if (nodesToReplace.length === 0) return;
-
-        const adHTML = `
-            <div class="exoclick-ad-wrapper" style="margin: 20px 0; text-align: center;">
-                <ins class="eas6a97888e2" data-zoneid="5988042" data-keywords="keywords" data-sub="123450000" data-block-ad-types="0" data-ex-av="name"></ins>
-            </div>
-        `;
-
-        nodesToReplace.forEach(textNode => {
-            const parent = textNode.parentNode;
-            const parts = textNode.nodeValue.split(placeholder);
-            
-            const fragment = document.createDocumentFragment();
-            parts.forEach((part, index) => {
-                if (part) {
-                    fragment.appendChild(document.createTextNode(part));
-                }
-                if (index < parts.length - 1) {
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = adHTML;
-                    while (tempDiv.firstChild) {
-                        fragment.appendChild(tempDiv.firstChild);
-                    }
-                }
-            });
-            
-            parent.replaceChild(fragment, textNode);
+    function switchView(event, viewName) {
+        document.querySelectorAll('.view-section').forEach(section => {
+            section.classList.remove('active');
         });
-
-        if (!isExoClickScriptLoaded) {
-            const script = document.createElement('script');
-            script.async = true;
-            script.type = 'application/javascript';
-            script.src = 'https://a.magsrv.com/ad-provider.js';
-            document.head.appendChild(script);
-            isExoClickScriptLoaded = true;
+        
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        const targetSection = document.getElementById(`view-${viewName}`);
+        if (targetSection) {
+            targetSection.classList.add('active');
         }
-
-        window.AdProvider = window.AdProvider || [];
-        window.AdProvider.push({ "serve": {} });
+        
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
     }
 
     async function uploadToSupabase(file) {
@@ -656,6 +653,51 @@
         renderEditor();
     }
 
+    function changeBlockType(cIdx, bIdx, newType) {
+        const block = chapters[cIdx].blocks[bIdx];
+        block.type = newType;
+        if (newType === 'paragraph') { block.text = block.text || ''; delete block.url; delete block.product_id; }
+        else if (newType === 'ad-slot') { block.text = cachedAds.length > 0 ? cachedAds[0].code : ''; delete block.url; delete block.product_id; }
+        else if (newType === 'affiliate-cta') { block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : ''; block.text = 'Buy Now'; delete block.url; }
+        else if (newType === 'image') { block.url = ''; delete block.product_id; }
+        renderEditor();
+    }
+
+    function executeFindAndReplace(cIdx) {
+        const findInput = document.getElementById(`find-input-${cIdx}`).value;
+        const replaceInput = document.getElementById(`replace-input-${cIdx}`).value;
+        const targetTypeSelect = document.getElementById(`replace-type-select-${cIdx}`).value;
+
+        if (!findInput) {
+            alert("Please enter text or numbers to scan for.");
+            return;
+        }
+
+        let matchCount = 0;
+        chapters[cIdx].blocks.forEach(block => {
+            if (block.type === 'paragraph' && block.text) {
+                if (block.text.includes(findInput)) {
+                    matchCount++;
+                    block.text = block.text.split(findInput).join(replaceInput);
+                    if (targetTypeSelect !== 'paragraph') {
+                        block.type = targetTypeSelect;
+                        if (targetTypeSelect === 'ad-slot') {
+                            block.text = cachedAds.length > 0 ? cachedAds[0].code : '';
+                        } else if (targetTypeSelect === 'affiliate-cta') {
+                            block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : '';
+                            block.text = 'Buy Now';
+                        } else if (targetTypeSelect === 'image') {
+                            block.url = '';
+                        }
+                    }
+                }
+            }
+        });
+
+        renderEditor();
+        alert(`Scan complete! Replaced occurrences across ${matchCount} block(s).`);
+    }
+
     function initDraggable() {
         chapters.forEach((_, cIdx) => {
             const el = document.getElementById(`block-list-${cIdx}`);
@@ -690,7 +732,7 @@
         const { data } = await supabase.auth.getSession();
         if(data.session) {
             initDashboard(); 
-            renderDrafts(); // Pull stored drafts on layout boot
+            renderDrafts();
         } else {
             document.getElementById('auth-container').style.display = 'block';
         }
@@ -699,7 +741,12 @@
     async function initDashboard() {
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
-        loadPosts(); loadAffiliateLibrary(); loadAdLibrary();
+        await loadAffiliateLibrary(); 
+        await loadAdLibrary();
+        await loadInterstitialSettings();
+        checkScheduledReleases();
+        loadPosts();
+        loadScheduledPosts();
     }
 
     async function handleLogin() {
@@ -757,6 +804,58 @@
         `).join('');
     }
 
+    async function loadInterstitialSettings() {
+        try {
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('*')
+                .eq('key', 'interstitial_ad_script')
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                console.error("Error loading interstitial settings:", error.message);
+                return;
+            }
+
+            if (data) {
+                document.getElementById('interstitial-script-value').value = data.value || '';
+                document.getElementById('interstitial-script-desc').value = data.description || '';
+            }
+        } catch (err) {
+            console.error("Fault fetching interstitial settings:", err);
+        }
+    }
+
+    async function saveInterstitialSettings() {
+        const value = document.getElementById('interstitial-script-value').value.trim();
+        const description = document.getElementById('interstitial-script-desc').value.trim();
+
+        if (!value) {
+            alert("The script value cannot be empty.");
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({
+                    key: 'interstitial_ad_script',
+                    value: value,
+                    description: description || 'Dynamic interstitial ad script fetched from Supabase',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'key' });
+
+            if (error) {
+                alert("Failed to save interstitial script: " + error.message);
+            } else {
+                alert("Interstitial script successfully updated! Your live site will now fetch the new version.");
+            }
+        } catch (err) {
+            console.error("Save fault:", err);
+            alert("An error occurred while saving.");
+        }
+    }
+
     async function deleteAffiliate(id) { if(confirm("Delete affiliate product?")) { await supabase.from('affiliate_products').delete().eq('id', id); loadAffiliateLibrary(); } }
     async function deleteAd(id) { if(confirm("Delete this ad slot?")) { await supabase.from('ad_inventory').delete().eq('id', id); loadAdLibrary(); } }
 
@@ -772,7 +871,7 @@
 
     function addBlock(type) {
         const idx = document.getElementById('target-chap-select').value;
-        const block = { type, id: Date.now() };
+        const block = { type, id: Date.now() + Math.random() };
         if(type==='paragraph') block.text = '';
         if(type==='ad-slot') block.text = cachedAds.length > 0 ? cachedAds[0].code : '';
         if(type==='affiliate-cta') { block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : ''; block.text = 'Buy Now'; }
@@ -782,7 +881,127 @@
         renderEditor();
     }
 
-    /* Local Storage Drafts Management Core Pipeline */
+    async function handleChapterDocumentImport(event, cIdx) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+        
+        if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const textContent = e.target.result;
+                appendParsedTextToChapter(textContent, cIdx);
+            };
+            reader.readAsText(file);
+        } else {
+            const reader = new FileReader();
+            reader.onload = async function(loadEvent) {
+                const arrayBuffer = loadEvent.target.result;
+                try {
+                    const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                    appendParsedHtmlToChapter(result.value, cIdx);
+                } catch (err) {
+                    console.error("Docx parsing error:", err);
+                    alert("Failed to parse file. Please check file format.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    function isAdMarker(text) {
+        if (!text) return false;
+        const cleaned = text
+            .replace(/<[^>]*>/g, '')
+            .replace(/[–—―]/g, '-')
+            .replace(/\s+/g, '')
+            .toLowerCase();
+        
+        return cleaned === '-ad-exoclick-continue-reading-';
+    }
+
+    function appendParsedTextToChapter(rawText, cIdx) {
+        const lines = rawText.split(/\r?\n/);
+        let currentParagraphs = [];
+
+        const flushParagraphs = () => {
+            if (currentParagraphs.length === 0) return;
+            const combinedText = currentParagraphs.join('<br>');
+            chapters[cIdx].blocks.push({
+                type: 'paragraph',
+                id: Date.now() + Math.random(),
+                text: combinedText
+            });
+            currentParagraphs = [];
+        };
+
+        for (let line of lines) {
+            const trimmed = line.trim();
+            if (isAdMarker(trimmed)) {
+                flushParagraphs();
+                chapters[cIdx].blocks.push({
+                    type: 'ad-slot',
+                    id: Date.now() + Math.random(),
+                    text: cachedAds.length > 0 ? cachedAds[0].code : ''
+                });
+            } else if (trimmed === "") {
+                flushParagraphs();
+            } else {
+                currentParagraphs.push(trimmed);
+            }
+        }
+        flushParagraphs();
+
+        renderEditor();
+        alert(`Successfully imported document into Chapter ${cIdx + 1}!`);
+    }
+
+    function appendParsedHtmlToChapter(htmlContent, cIdx) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+
+        const elements = tempDiv.children;
+        if (elements.length === 0) {
+            const textContent = tempDiv.textContent || '';
+            if (isAdMarker(textContent)) {
+                chapters[cIdx].blocks.push({ type: 'ad-slot', id: Date.now(), text: cachedAds.length > 0 ? cachedAds[0].code : '' });
+            } else {
+                chapters[cIdx].blocks.push({ type: 'paragraph', id: Date.now(), text: textContent });
+            }
+        } else {
+            for (let el of elements) {
+                const rawText = el.textContent || '';
+                const innerHtmlText = el.innerHTML || '';
+                
+                if (isAdMarker(rawText) || isAdMarker(innerHtmlText)) {
+                    chapters[cIdx].blocks.push({
+                        type: 'ad-slot',
+                        id: Date.now() + Math.random(),
+                        text: cachedAds.length > 0 ? cachedAds[0].code : ''
+                    });
+                } else {
+                    const text = rawText.trim();
+                    if (!text) continue;
+
+                    let formattedText = el.innerHTML;
+                    formattedText = formattedText.replace(/<strong>/gi, '<b>').replace(/<\/strong>/gi, '</b>');
+                    formattedText = formattedText.replace(/<em>/gi, '<i>').replace(/<\/em>/gi, '<i>');
+                    formattedText = formattedText.replace(/["“]([^"”\n]+)["”]/g, '<b><u><i>“$1”</i></u></b>');
+
+                    chapters[cIdx].blocks.push({
+                        type: 'paragraph',
+                        id: Date.now() + Math.random(),
+                        text: formattedText
+                    });
+                }
+            }
+        }
+
+        renderEditor();
+        alert(`Successfully imported document into Chapter ${cIdx + 1}!`);
+    }
+
     function getDrafts() {
         return JSON.parse(localStorage.getItem('gaybook_story_drafts') || '[]');
     }
@@ -820,6 +1039,7 @@
         const exoclick_id = document.getElementById('post-exoclick').value; 
         const tags = document.getElementById('post-tags').value; 
         const read_time = parseInt(document.getElementById('post-readtime').value) || 7;
+        const scheduled_for = document.getElementById('post-scheduled-date').value;
 
         if (!title) {
             alert("Please provide at least a Story Title to save a draft.");
@@ -828,7 +1048,7 @@
 
         const draftData = {
             id: currentDraftId || 'draft_' + Date.now(),
-            editId: editId, // Track if editing a published live story
+            editId: editId,
             title,
             slug,
             summary,
@@ -836,7 +1056,8 @@
             exoclick_id,
             tags,
             read_time,
-            chapters: JSON.parse(JSON.stringify(chapters)), // Deep clone structural arrays
+            scheduled_for,
+            chapters: JSON.parse(JSON.stringify(chapters)),
             savedAt: Date.now()
         };
 
@@ -871,8 +1092,8 @@
         document.getElementById('post-thumb').value = draft.thumbnail_url || '';
         document.getElementById('post-exoclick').value = draft.exoclick_id || '';
         document.getElementById('post-tags').value = draft.tags || '';
+        document.getElementById('post-scheduled-date').value = draft.scheduled_for || '';
 
-        // Safely map values back into the live state
         chapters = draft.chapters || [];
         renderEditor();
         alert(`Draft loaded! (${draft.title})`);
@@ -892,7 +1113,6 @@
 
     function clearConnectedDraft(slug) {
         let drafts = getDrafts();
-        // Clear drafts using either the unique draft ID or matching browser address slugs
         drafts = drafts.filter(d => d.id !== currentDraftId && d.slug !== slug);
         localStorage.setItem('gaybook_story_drafts', JSON.stringify(drafts));
         currentDraftId = null;
@@ -910,6 +1130,28 @@
                     <span onclick="chapters.splice(${cIdx},1);renderEditor()" style="color:red; cursor:pointer; font-size:12px;">DELETE CHAPTER</span>
                 </div>
                 <input type="text" placeholder="Chapter Title" value="${chap.title}" oninput="chapters[${cIdx}].title=this.value">
+                
+                <!-- Find & Replace Toolbar -->
+                <div style="margin: 14px 0; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px;">
+                    <label style="display:block; margin-bottom:6px; color:var(--accent);">Find & Replace / Block Morph Tool</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="text" id="find-input-${cIdx}" placeholder="Find word, number..." style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                        <input type="text" id="replace-input-${cIdx}" placeholder="Replace with..." style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                        <select id="replace-type-select-${cIdx}" style="width: 140px; margin-bottom: 0;">
+                            <option value="paragraph">Keep Paragraph</option>
+                            <option value="ad-slot">Change to Ad Slot</option>
+                            <option value="affiliate-cta">Change to Affiliate</option>
+                            <option value="image">Change to Image</option>
+                        </select>
+                        <button onclick="executeFindAndReplace(${cIdx})" style="background:var(--accent); color:#fff; border:none; padding: 0 16px; border-radius: 6px; font-weight:600;">Run</button>
+                    </div>
+                </div>
+
+                <div style="margin: 12px 0; padding: 10px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px;">
+                    <label style="display:block; margin-bottom:4px; color:var(--accent);">Import Document to Chapter (${cIdx + 1})</label>
+                    <input type="file" id="chapter-file-input-${cIdx}" accept=".docx,.txt,.md" onchange="handleChapterDocumentImport(event, ${cIdx})" style="margin-bottom:0; background:none; border:none; padding:0;">
+                </div>
+
                 <label>Chapter Header Image</label>
                 <div style="display:flex; gap:5px; align-items:flex-start;">
                     <input type="text" placeholder="URL" value="${chap.image_url||''}" oninput="chapters[${cIdx}].image_url=this.value">
@@ -935,16 +1177,21 @@
                 html += `
                 <div class="block-item" data-id="${block.id}">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <div style="display:flex; align-items:center;">
+                        <div style="display:flex; align-items:center; gap: 8px;">
                             <i class="fas fa-grip-vertical drag-handle"></i>
-                            <span class="block-type-label">${block.type.toUpperCase()}</span>
+                            <select onchange="changeBlockType(${cIdx}, ${bIdx}, this.value)" style="padding: 2px 6px; font-size: 10px; margin: 0; width: auto; background: rgba(255,255,255,0.06); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;">
+                                <option value="paragraph" ${block.type === 'paragraph' ? 'selected' : ''}>Paragraph</option>
+                                <option value="ad-slot" ${block.type === 'ad-slot' ? 'selected' : ''}>Ad Slot</option>
+                                <option value="affiliate-cta" ${block.type === 'affiliate-cta' ? 'selected' : ''}>Affiliate CTA</option>
+                                <option value="image" ${block.type === 'image' ? 'selected' : ''}>Image</option>
+                            </select>
                         </div>
                         <div class="block-controls">
                             <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'up')"><i class="fas fa-arrow-up"></i></button>
                             <button class="move-btn" onclick="moveBlock(${cIdx}, ${bIdx}, 'down')"><i class="fas fa-arrow-down"></i></button>
                             <i class="fas fa-trash btn-del" onclick="handleBlockDelete(${cIdx}, ${bIdx})"></i>
                         </div>
-                    `;
+                    </div>`;
                 if(block.type === 'paragraph') { 
                     html += `<textarea class="reader-text-engine" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value" placeholder="Write story text here...">${block.text || ''}</textarea>`; 
                 } 
@@ -968,7 +1215,7 @@
                         <button class="upload-btn" style="margin-top:5px;" onclick="triggerUpload(null, true, ${cIdx}, ${bIdx})">Upload</button>
                     </div>`;
                 }
-                html += `</div></div>`;
+                html += `</div>`;
             });
             canvas.innerHTML += html + `</div></div>`;
         });
@@ -976,10 +1223,24 @@
     }
 
     async function saveFullPost() {
-        const saveBtn = document.getElementById('save-btn');
-        const originalText = saveBtn.innerText;
-        saveBtn.innerText = "UPLOADING..."; 
-        saveBtn.disabled = true;
+        await executePostSave(true);
+    }
+
+    async function saveScheduledPost() {
+        const scheduledDate = document.getElementById('post-scheduled-date').value;
+        if (!scheduledDate) {
+            alert("Please specify a target Release Date and Time to schedule this publication.");
+            return;
+        }
+        await executePostSave(false, scheduledDate);
+    }
+
+    async function executePostSave(isPublishedNow, scheduledDateStr = null) {
+        const actionBtnId = isPublishedNow ? 'save-btn' : 'schedule-btn';
+        const actionBtn = document.getElementById(actionBtnId);
+        const originalText = actionBtn.innerText;
+        actionBtn.innerText = "SAVING..."; 
+        actionBtn.disabled = true;
         
         try {
             const postData = {
@@ -990,7 +1251,8 @@
                 exoclick_id: document.getElementById('post-exoclick').value, 
                 tags: document.getElementById('post-tags').value, 
                 read_time: parseInt(document.getElementById('post-readtime').value) || 7,
-                is_published: true
+                is_published: isPublishedNow,
+                scheduled_for: scheduledDateStr ? new Date(scheduledDateStr).toISOString() : null
             };
 
             if (!postData.title || !postData.slug) {
@@ -1035,7 +1297,7 @@
                             formattedText = formattedText.replace(/<div[^>]*>|<\/div>/gi, '');
                             formattedText = formattedText.replace(/["“]([^"”\n]+)["”]/g, '<b>“$1”</b>');
                             formattedText = formattedText.split(/\n\s*\n/)
-                                .map(para => para.trim().replace(/\n/g, '<br>'))
+                                .map(para => `<div class="post-paragraph">${para}</div>`)
                                 .filter(para => para.length > 0)
                                 .map(para => `<div class="post-paragraph">${para}</div><br>`)
                                 .join('\n');
@@ -1057,18 +1319,41 @@
             
             clearConnectedDraft(postData.slug);
             
-            alert("Story successfully published!"); 
+            alert(isPublishedNow ? "Story successfully published!" : "Story successfully saved to the scheduled queue!"); 
             location.reload();
         } catch (err) { 
             console.error(err); 
             alert("Error: " + err.message); 
-            saveBtn.innerText = originalText; 
-            saveBtn.disabled = false; 
+            actionBtn.innerText = originalText; 
+            actionBtn.disabled = false; 
+        }
+    }
+
+    async function checkScheduledReleases() {
+        try {
+            const nowIso = new Date().toISOString();
+            const { data: duePosts, error } = await supabase
+                .from('posts')
+                .select('id, title')
+                .eq('is_published', false)
+                .not('scheduled_for', 'is', null)
+                .lte('scheduled_for', nowIso);
+
+            if (error || !duePosts || duePosts.length === 0) return;
+
+            for (const post of duePosts) {
+                await supabase
+                    .from('posts')
+                    .update({ is_published: true })
+                    .eq('id', post.id);
+            }
+        } catch (err) {
+            console.error("Background auto-publish dispatcher check fault:", err);
         }
     }
 
     async function loadPosts() {
-        const { data: posts } = await supabase.from('posts').select('*').order('created_at', {ascending: false});
+        const { data: posts } = await supabase.from('posts').select('*').eq('is_published', true).order('created_at', {ascending: false});
         const { data: stats } = await supabase.from('post_stats').select('*');
         
         const slugLookup = {};
@@ -1092,6 +1377,45 @@
         }).join('');
         
         if(stats) renderLeaderboard(stats, slugLookup);
+    }
+
+    async function loadScheduledPosts() {
+        const { data: posts } = await supabase.from('posts').select('*').eq('is_published', false).not('scheduled_for', 'is', null).order('scheduled_for', {ascending: true});
+        const list = document.getElementById('scheduled-posts-list');
+        
+        if (!posts || posts.length === 0) {
+            list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); background: var(--glass-card); border-radius: 8px; border: 1px solid var(--glass-border);">No books currently waiting in the scheduled release queue.</div>`;
+            return;
+        }
+
+        list.innerHTML = posts.map(p => {
+            const targetDate = new Date(p.scheduled_for);
+            const formattedDate = targetDate.toLocaleDateString() + ' at ' + targetDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            return `
+            <div class="post-row">
+                <div style="flex:1">
+                    <b>${p.title}</b>
+                    <br><small style="color:var(--accent)"><i class="far fa-clock" style="margin-right: 4px;"></i>Releases on: ${formattedDate}</small>
+                </div>
+                <div>
+                    <button onclick="publishNowFromQueue('${p.id}')" style="padding:5px 10px; margin-right:5px; border:none; border-radius:4px; background:var(--accent); color:#fff;">Publish Now</button>
+                    <button onclick="fetchStory('${p.id}')" style="padding:5px 10px; margin-right:5px; border:none; border-radius:4px; color:#111;">Edit</button>
+                    <button onclick="deleteStory('${p.id}')" style="padding:5px 10px; color:var(--danger); border:none; background:none;">Del</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function publishNowFromQueue(id) {
+        if (!confirm("Publish this scheduled book immediately?")) return;
+        const { error } = await supabase.from('posts').update({ is_published: true }).eq('id', id);
+        if (error) {
+            alert("Failed to publish: " + error.message);
+        } else {
+            alert("Book is now live!");
+            loadPosts();
+            loadScheduledPosts();
+        }
     }
 
     function renderLeaderboard(stats, slugLookup) {
@@ -1128,6 +1452,15 @@
         document.getElementById('post-thumb').value = post.thumbnail_url || '';
         document.getElementById('post-exoclick').value = post.exoclick_id || '';
         document.getElementById('post-tags').value = post.tags || '';
+        
+        if (post.scheduled_for) {
+            const dt = new Date(post.scheduled_for);
+            const tzOffset = dt.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(dt - tzOffset)).toISOString().slice(0, 16);
+            document.getElementById('post-scheduled-date').value = localISOTime;
+        } else {
+            document.getElementById('post-scheduled-date').value = '';
+        }
         
         chapters = (chaps || []).map(c => ({
             title: c.title, image_url: c.chapter_image_url, commentary: c.commentary || [],
@@ -1171,19 +1504,12 @@
 
             await supabase.from('posts').delete().eq('id', id); 
             await loadPosts();
+            await loadScheduledPosts();
             alert("Story and all attached media permanently deleted!");
         } catch (err) {
             console.error("Complete execution failure during deletion layout:", err);
             alert("Error during background file cleanup: " + err.message);
         }
-    }
-
-    function switchView(e, view) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('view-'+view).classList.add('active');
-        if (e && e.target) e.target.classList.add('active');
-        else { const tabs = document.querySelectorAll('.nav-tab'); if(view === 'editor') tabs[4].classList.add('active'); }
     }
 
     async function handleLogout() { await supabase.auth.signOut(); location.reload(); }
