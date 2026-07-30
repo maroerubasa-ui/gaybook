@@ -1,4 +1,4 @@
-    /* ---------------------------------
+     /* ---------------------------------
        1. CSS Root Variables & Global Styles 
     --------------------------------- */
     * {
@@ -26,8 +26,8 @@
     --font-comic: 'Comic Neue', cursive;
     
     /* Mobile-first base sizing (Bigger text and generous spacing) */
-    --font-size-base: 3.1rem;
-    --line-height-base: 2.3;
+    --font-size-base: 1.15rem; /* Corrected base font size */
+    --line-height-base: 1.7; /* Balanced line height */
     --max-text-width: 740px;
     --padding-page: 32px;
     --gallery-gap: 30px;
@@ -575,20 +575,20 @@
     }
     
     .post-paragraph {
-        margin-bottom: 2.5rem; 
-        text-align: center; /* Centred text styling */
+        margin-bottom: 1.5rem; /* Cleaned up from 1.2rem + extra <br> tags */
+        text-align: left; /* Changed from center to left for standard reading comfort */
         font-family: var(--font-body); 
         font-size: var(--font-size-base); 
-        font-weight: 600;
-        padding: 9px; 
+        font-weight: 400; /* Reset from bold 600 to regular reading weight */
+        padding: 0; /* Removed 9px padding that caused staggered indents */
         line-height: var(--line-height-base); 
         color: var(--color-primary); 
     }
 
     @media (max-width: 768px) { 
         :root { 
-            --font-size-base: 2.2rem; /* Even larger and highly legible on mobile screens */
-            --padding-page: 28px; /* Balanced side margins to keep text neatly centred */
+            --font-size-base: 1.15rem; /* Standardized legible mobile body text */
+            --padding-page: 20px; /* Balanced mobile side margins */
         } 
         .page-title { font-size: 2.2rem; }
         .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
@@ -750,13 +750,6 @@
     font-size: 0.75rem;
     opacity: 0.5;
 }
-
-    @media (max-width: 768px) { 
-        :root { --font-size-base: 1.8rem; --padding-page: 24px; } 
-        .page-title { font-size: 2.2rem; }
-        .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
-    }
     
     #homePageContainer, #postPage { display: none !important; }
     #homePageContainer.visible, #postPage.visible { display: block !important; }
-      
