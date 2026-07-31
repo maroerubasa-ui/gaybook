@@ -4,15 +4,46 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gaybook.site</title>
-        <link rel="stylesheet" href="gaybook.site/Gaybook.css">
+      
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <link rel="stylesheet" href="gaystyles.css">
-     
         <script>
-            function fireExoclickAd(adId, postPath) {
-                console.log(`Firing Exoclick Interstitial Ad: ${adId}`);
+            // Disable manual browser scroll restoration to control it smoothly per chapter load
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+
+            async function fireExoclickAd(postPath) {
+                console.log(`Firing Interstitial Ad before navigating to: ${postPath}`);
+                try {
+                    const { data, error } = await supabase
+                        .from('site_settings')
+                        .select('value')
+                        .eq('key', 'interstitial_ad_script')
+                        .maybeSingle();
+
+                    if (data && data.value) {
+                        const adContainer = document.createElement('div');
+                        adContainer.innerHTML = data.value;
+                        document.body.appendChild(adContainer);
+                        
+                        const scripts = adContainer.getElementsByTagName('script');
+                        for (let i = 0; i < scripts.length; i++) {
+                            const newScript = document.createElement('script');
+                            if (scripts[i].src) {
+                                newScript.src = scripts[i].src;
+                            } else {
+                                newScript.text = scripts[i].textContent;
+                            }
+                            document.body.appendChild(newScript);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch/fire dynamic interstitial ad:', err);
+                }
+
                 setTimeout(() => {
                     if(postPath === '/') { window.history.replaceState({}, '', postPath); }
                     else { window.history.pushState({}, '', postPath); }
@@ -129,7 +160,7 @@
                 <a href="about.html">About</a>
                 <a href="sponsorship.html">Sponsorship</a>
                 <a href="terms.html">Terms Of Use</a>
-                        </div>
+            </div>
     
             <span class="adult-disclaimer">
                 <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
@@ -140,5 +171,5 @@
     </footer>
     <script src="gayfunctions.js"></script>
      <script src="gaysw.js"></script>
-    </body>
+       </body>
     </html>
