@@ -1,4 +1,5 @@
-  if ('serviceWorker' in navigator) {
+
+     if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('Service Worker registered!'))
@@ -100,7 +101,7 @@ async function getPostStats(postId, slug) {
     }
 }
 
-/* --- SPLASH SCREEN HANDLER --- */
+/* --- SPLASH SCREEN HANDLER WITH LOCALSTORAGE --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
@@ -116,16 +117,14 @@ function initSplashScreen() {
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
     ];
 
-    let lastIdx = localStorage.getItem('gb_last_bg_idx');
-    let randomIdx;
+    let lastBg = localStorage.getItem('gaybook_last_splash');
+    let availableBgs = backgrounds.filter(bg => bg !== lastBg);
+    if (availableBgs.length === 0) availableBgs = backgrounds;
 
-    do {
-        randomIdx = Math.floor(Math.random() * backgrounds.length);
-    } while (lastIdx !== null && parseInt(lastIdx) === randomIdx && backgrounds.length > 1);
+    const randomIdx = Math.floor(Math.random() * availableBgs.length);
+    const selectedImg = availableBgs[randomIdx];
 
-    localStorage.setItem('gb_last_bg_idx', randomIdx.toString());
-
-    const selectedImg = backgrounds[randomIdx];
+    localStorage.setItem('gaybook_last_splash', selectedImg);
     bgContainer.style.backgroundImage = `url('${selectedImg}')`;
 }
 
@@ -141,7 +140,7 @@ async function hideSplashScreen() {
         setTimeout(() => {
             if(bgContainer) bgContainer.style.backgroundImage = 'none';
         }, 1000);
-    }, 8000);
+    }, 2000); // Reduced delay slightly for snappier load, adjustable if needed
 }
 
 /* --- ROUTING & NAVIGATION --- */
@@ -190,16 +189,8 @@ async function loadPostPage(slug, chapterNum) {
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
 
-        // Restore scroll position from localStorage for this specific page/chapter
-        const scrollKey = `scroll_${slug}_ch${chapterNum}`;
-        const savedScroll = localStorage.getItem(scrollKey);
-        setTimeout(() => {
-            if (savedScroll) {
-                window.scrollTo(0, parseInt(savedScroll, 10));
-            } else {
-                window.scrollTo(0, 0);
-            }
-        }, 100);
+        window.scrollTo(0, 0);
+        updateProgress();
     } else {
         window.history.replaceState(null, '', '/');
         handleRoute(); 
@@ -268,8 +259,11 @@ async function fetchPost(identifier) {
         `);
     if (isUuid) query = query.eq('id', identifier);
     else query = query.eq('slug', identifier);
-    const { data, error } = await query.single();
-    if (error) return null;
+    
+    // Use maybeSingle instead of single to prevent uncaught exceptions if row isn't found perfectly
+    const { data, error } = await query.maybeSingle();
+    if (error || !data) return null;
+
     if (memory.libraryProducts.length === 0) {
         const { data: libData } = await supabase.from('affiliate_products').select('*');
         memory.libraryProducts = libData || [];
@@ -285,7 +279,7 @@ async function fetchPost(identifier) {
     return data;
 }
 
-// Interstitial allowed ONLY when opening a book from the gallery
+// Uses replaceState to prevent building a cluttered history stack
 function navigateToPost(identifier) {
     const postPath = `/${identifier}/1`;
     fireExoclickAd(postPath);
@@ -382,25 +376,19 @@ function updateSchemaMarkup(post, chapterNum, chapter) {
     document.head.appendChild(script);
 }
 
-// Interstitial allowed ONLY when navigating through chapter buttons
-function navigateChapter(slug, chapterNum) {
-    const postPath = `/${slug}/${chapterNum}`;
-    fireExoclickAd(postPath);
-}
-
 function renderChapterNavigation(post, currentIdx) {
     const slug = post.slug || post.id;
     const totalChapters = post.chapters.length;
     const chapterButtons = post.chapters.map((_, index) => {
         const chapterNum = index + 1;
         const isActive = index === currentIdx;
-        return `<button class="nav-num-btn ${isActive ? 'active' : ''}" onclick="navigateChapter('${slug}', '${chapterNum}')" ${isActive ? 'disabled' : ''}>${chapterNum}</button>`;
+        return `<button class="nav-num-btn ${isActive ? 'active' : ''}" onclick="fireExoclickAd('/${slug}/${chapterNum}')" ${isActive ? 'disabled' : ''}>${chapterNum}</button>`;
     }).join('');
     return `
         <div class="chapter-pagination-container">
-            <button class="nav-icon-btn ${currentIdx === 0 ? 'disabled' : ''}" onclick="navigateChapter('${slug}', '${currentIdx}')"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-icon-btn ${currentIdx === 0 ? 'disabled' : ''}" onclick="fireExoclickAd('/${slug}/${currentIdx}')"><i class="fas fa-chevron-left"></i></button>
             <div class="chapter-numbers">${chapterButtons}</div>
-            <button class="nav-icon-btn ${currentIdx >= totalChapters - 1 ? 'disabled' : ''}" onclick="navigateChapter('${slug}', '${currentIdx + 2}')"><i class="fas fa-chevron-right"></i></button>
+            <button class="nav-icon-btn ${currentIdx >= totalChapters - 1 ? 'disabled' : ''}" onclick="fireExoclickAd('/${slug}/${currentIdx + 2}')"><i class="fas fa-chevron-right"></i></button>
         </div>
     `;
 }
@@ -437,24 +425,17 @@ function triggerFlyOut(milestone) {
 
 function updateProgress() {
     if (!body.classList.contains('is-post-page')) return;
-    const winScroll = document.documentElement.scrollTop;
+    const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     
     if (height > 0) {
-        const scrolled = Math.round((winScroll / height) * 100);
+        const scrolled = Math.min(100, Math.max(0, Math.round((winScroll / height) * 100)));
         readingBar.style.width = scrolled + "%";
         readingCounter.textContent = scrolled + "%";
-        
-        // Save scroll position automatically into localStorage
-        const route = getRouteInfo();
-        if (route.slug) {
-            const scrollKey = `scroll_${route.slug}_ch${route.chapterNum}`;
-            localStorage.setItem(scrollKey, winScroll);
-        }
 
         const points = Object.keys(dynamicMessages);
         points.forEach(point => {
-            if (scrolled >= point && !memory.triggeredMilestones.has(point)) {
+            if (scrolled >= parseInt(point) && !memory.triggeredMilestones.has(point)) {
                 memory.triggeredMilestones.add(point);
                 triggerFlyOut(point);
             }
@@ -517,21 +498,19 @@ if(copyLinkBtn) copyLinkBtn.addEventListener('click', () => {
 });
 
 window.addEventListener('popstate', handleRoute); 
-window.onscroll = updateProgress;
+window.addEventListener('scroll', updateProgress, { passive: true });
 
 if(brandNameLink) brandNameLink.addEventListener('click', (e) => {
     e.preventDefault();
-    if (window.location.pathname !== '/') { 
-        window.history.replaceState({}, '', '/');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    }
+    if (window.location.pathname !== '/') { window.history.replaceState({}, '', '/'); handleRoute(); }
 });
 
 if(closeIconWrapper) closeIconWrapper.addEventListener('click', () => {
     const route = getRouteInfo();
     if (route.slug) { 
-        window.history.replaceState({}, '', '/');
-        window.dispatchEvent(new PopStateEvent('popstate'));
+        // Instantly clear history stack back to home when exiting a book
+        window.history.replaceState({}, '', '/'); 
+        handleRoute(); 
     }
     else if (searchContainer.classList.contains('active')) { toggleSearch(false); }
 });
@@ -559,4 +538,5 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 document.addEventListener('DOMContentLoaded', handleRoute);
+
  
