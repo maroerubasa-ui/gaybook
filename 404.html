@@ -802,11 +802,10 @@
                     console.error('Failed to fetch/fire dynamic interstitial ad:', err);
                 }
 
+                // Force actual browser navigation so ad networks can track the click/impression reliably
                 setTimeout(() => {
-                    if(postPath === '/') { window.history.replaceState({}, '', postPath); }
-                    else { window.history.pushState({}, '', postPath); }
-                    window.dispatchEvent(new PopStateEvent('popstate')); 
-                }, 300); 
+                    window.location.href = postPath;
+                }, 400); 
             }
         </script>
     </head>
@@ -910,26 +909,25 @@
             <div id="book-content"></div>
         </article>
     
-          <footer class="site-footer">
+       <footer class="site-footer">
         <div class="footer-content">
             <span class="footer-brand">Gaybook.site</span>
             
             <div class="footer-links">
-                <a href="about.html">About</a>
-                <a href="sponsorship.html">Sponsorship</a>
-                <a href="terms.html">Terms Of Use</a>
-                <a href="2257.html">2257 Compliance</a>
-                <a href="dmca.html">DMCA</a>
+                <a href="/about.html" target="_self">About</a>
+                <a href="/sponsorship.html" target="_self">Sponsorship</a>
+                <a href="/terms.html" target="_self">Terms Of Use</a>
+                <a href="/2257" target="_self">2257 Compliance</a>
+                <a href="/dmca" target="_self">DMCA</a>
             </div>
     
             <span class="adult-disclaimer">
                 <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
             </span>
     
-            <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved. | DMCA contact: maroerubasa@gmail.com</p>
+            <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved. | DMCA Contact: dmca@gaybook.site</p>
         </div>
     </footer>
- 
  
      <script src="gaysw.js"></script>
      <script>
@@ -1118,7 +1116,6 @@ async function loadPostPage(slug, chapterNum) {
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
 
-        // Clean slate: Always scroll to top completely fresh on every chapter load
         window.scrollTo(0, 0);
         updateProgress();
     } else {
@@ -1206,7 +1203,6 @@ async function fetchPost(identifier) {
     return data;
 }
 
-// Interstitial fires ONLY when opening a book from gallery
 function navigateToPost(identifier) {
     const postPath = `/${identifier}/1`;
     fireExoclickAd(postPath);
@@ -1303,7 +1299,6 @@ function updateSchemaMarkup(post, chapterNum, chapter) {
     document.head.appendChild(script);
 }
 
-// Interstitial fires ONLY when navigating through chapter buttons
 function renderChapterNavigation(post, currentIdx) {
     const slug = post.slug || post.id;
     const totalChapters = post.chapters.length;
