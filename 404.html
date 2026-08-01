@@ -38,6 +38,7 @@
     --color-button-text: #fff;
     --color-link-footer: #ffcc00;
 }
+
     body {
         font-family: var(--font-body);
         color: var(--color-primary); 
@@ -47,6 +48,7 @@
         -webkit-font-smoothing: antialiased;
     }
 
+    /* --- SPLASH SCREEN STYLES --- */
     #splash-screen {
         position: fixed;
         top: 0;
@@ -593,13 +595,8 @@
         .page-title { font-size: 2.2rem; }
         .gallery-item img { width: 120px !important; min-width: 120px; height: 180px !important; }
     }    
-    .post-paragraph strong, .post-paragraph b { font-weight: 700; color: #fff; }
 
-    .book-container {
-        max-width: var(--max-text-width); 
-        margin: 0 auto; 
-        padding: var(--padding-page); 
-    }
+    .post-paragraph strong, .post-paragraph b { font-weight: 700; color: #fff; }
 
     .image-slot {
         height: 250px;
@@ -682,270 +679,251 @@
     .product-image-wrapper { width: 120px; flex-shrink: 0; margin-right: 15px; }
     .product-image { width: 100%; height: auto; max-height: 100px; object-fit: contain; }
 
-    .site-footer {
-        background: rgba(10, 10, 10, 0.8);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        color: #888;
-        padding: 60px 20px;
-        text-align: center;
-        font-size: 0.9rem;
-        margin-top: 80px;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        position: relative;
-    }
+.site-footer {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    color: #888;
+    padding: 60px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 80px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+}
 
-    .footer-content {
-        max-width: var(--max-text-width);
-        margin: 0 auto;
-    }
+.footer-content {
+    max-width: var(--max-text-width);
+    margin: 0 auto;
+}
 
-    .footer-brand {
-        font-family: var(--font-comic);
-        font-size: 1.5rem;
-        color: #fff;
-        margin-bottom: 20px;
-        display: block;
-        opacity: 0.9;
-    }
+.footer-brand {
+    font-family: var(--font-comic);
+    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 20px;
+    display: block;
+    opacity: 0.9;
+}
 
-    .footer-links {
-        margin: 20px 0;
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
+.footer-links {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
 
-    .site-footer a {
-        color: #bbb;
-        text-decoration: none;
-        transition: color 0.3s ease, transform 0.2s;
-        font-family: var(--font-heading);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 0.75rem;
-    }
+.site-footer a {
+    color: #bbb;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.2s;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+}
 
-    .site-footer a:hover {
-        color: var(--color-link-footer);
-        transform: translateY(-2px);
-    }
+.site-footer a:hover {
+    color: var(--color-link-footer);
+    transform: translateY(-2px);
+}
 
-    .adult-disclaimer {
-        font-weight: 700;
-        color: #ff4d4d;
-        margin: 30px auto 0;
-        display: inline-block;
-        border: 1px solid rgba(255, 77, 77, 0.3);
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        background: rgba(255, 77, 77, 0.05);
-    }
+.adult-disclaimer {
+    font-weight: 700;
+    color: #ff4d4d;
+    margin: 30px auto 0;
+    display: inline-block;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    background: rgba(255, 77, 77, 0.05);
+}
 
-    .copyright-text {
-        margin-top: 30px;
-        font-size: 0.75rem;
-        opacity: 0.5;
-    }
+.copyright-text {
+    margin-top: 30px;
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
     
-    #homePageContainer, #postPage { display: none !important; }
-    #homePageContainer.visible, #postPage.visible { display: block !important; }
+#homePageContainer, #postPage { display: none !important; }
+#homePageContainer.visible, #postPage.visible { display: block !important; }
 </style>      
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gaybook.site</title>
-      
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        
-        <script>
-            if ('scrollRestoration' in history) {
-                history.scrollRestoration = 'manual';
-            }
 
-            // --- FIXED AD TRIGGER FUNCTION ---
-            async function fireExoclickAd(postPath) {
-                console.log(`Firing Interstitial Ad before navigating to: ${postPath}`);
-                let adFired = false;
-                
-                // Ensure window.supabase exists before querying
-                if (window.supabase && window.supabase.createClient) {
-                    try {
-                        // Check if supabase global client is instantiated, or fallback/use it
-                        const client = window.supabaseClient || supabase;
-                        const { data, error } = await client
-                            .from('site_settings')
-                            .select('value')
-                            .eq('key', 'interstitial_ad_script')
-                            .maybeSingle();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaybook.site</title>
+  
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Source+Sans+Pro:wght@300;400;600;700&family=Comic+Neue:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
 
-                        if (data && data.value) {
-                            // Check if ad script element already exists to avoid redundant injection
-                            let adContainer = document.getElementById('exoclick-injected-ad');
-                            if (!adContainer) {
-                                adContainer = document.createElement('div');
-                                adContainer.id = 'exoclick-injected-ad';
-                                document.body.appendChild(adContainer);
-                            }
-                            adContainer.innerHTML = data.value;
-                            
-                            const scripts = adContainer.getElementsByTagName('script');
-                            for (let i = 0; i < scripts.length; i++) {
-                                // If the script src is already present in document, skip appending it again
-                                if (scripts[i].src) {
-                                    const existingScript = document.querySelector(`script[src="${scripts[i].src}"]`);
-                                    if (!existingScript) {
-                                        const newScript = document.createElement('script');
-                                        newScript.src = scripts[i].src;
-                                        document.body.appendChild(newScript);
-                                    }
-                                } else if (scripts[i].textContent) {
-                                    const newScript = document.createElement('script');
-                                    newScript.text = scripts[i].textContent;
-                                    document.body.appendChild(newScript);
-                                }
-                            }
-                            adFired = true;
+        async function fireExoclickAd(postPath) {
+            console.log(`Firing Interstitial Ad before navigating to: ${postPath}`);
+            try {
+                const { data } = await supabase
+                    .from('site_settings')
+                    .select('value')
+                    .eq('key', 'interstitial_ad_script')
+                    .maybeSingle();
+
+                if (data && data.value) {
+                    const adContainer = document.createElement('div');
+                    adContainer.innerHTML = data.value;
+                    document.body.appendChild(adContainer);
+                    
+                    const scripts = adContainer.getElementsByTagName('script');
+                    for (let i = 0; i < scripts.length; i++) {
+                        const newScript = document.createElement('script');
+                        if (scripts[i].src) {
+                            newScript.src = scripts[i].src;
+                        } else {
+                            newScript.text = scripts[i].textContent;
                         }
-                    } catch (err) {
-                        console.error('Failed to fetch/fire dynamic interstitial ad:', err);
+                        document.body.appendChild(newScript);
                     }
                 }
-
-                // Give ad networks adequate time (1200ms) to track impressions before transitioning
-                setTimeout(() => {
-                    window.location.href = postPath;
-                }, adFired ? 1200 : 100); 
+            } catch (err) {
+                console.error('Failed to fetch/fire dynamic interstitial ad:', err);
             }
-        </script>
-    </head>
-    <body>
-    
-        <div id="splash-screen">
-            <div id="splash-bg-container"></div>
-            <div class="splash-glass"></div>
-            <div class="splash-content">
-                <div class="logo-wrapper">
-                    <span class="splash-text-logo">Gaybook</span>
-                    <div class="adult-badge">18+</div>
-                </div>
-                <div class="loading-dots">
-                    Loading<span>.</span><span>.</span><span>.</span>
-                </div>
+
+            setTimeout(() => {
+                if(postPath === '/') { window.history.replaceState({}, '', postPath); }
+                else { window.history.pushState({}, '', postPath); }
+                window.dispatchEvent(new PopStateEvent('popstate')); 
+            }, 300); 
+        }
+    </script>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div id="splash-bg-container"></div>
+        <div class="splash-glass"></div>
+        <div class="splash-content">
+            <div class="logo-wrapper">
+                <span class="splash-text-logo">Gaybook</span>
+                <div class="adult-badge">18+</div>
+            </div>
+            <div class="loading-dots">
+                Loading<span>.</span><span>.</span><span>.</span>
             </div>
         </div>
+    </div>
+
+    <header class="header">
+        <a href="/" class="brand-name" id="brandNameLink">
+            <span class="brand-text">Gaybook.site</span>
+        </a>
+        
+        <div class="search-container" id="searchContainer">
+            <input type="text" class="search-input" id="searchInput" placeholder="search anything...">
+            <button class="search-icon" id="searchIcon"><i class="fas fa-search"></i></button>
+            <div class="coffee-icon-wrapper" id="coffeeBtn"><i class="fas fa-heart"></i></div>
+            <div style="color: #7a9eb1;" class="share-icon-wrapper" id="shareBtn"><i class="fas fa-paper-plane"></i></div>
+            <div class="whatsapp-icon-wrapper" id="whatsappBtn"><i class="fab fa-whatsapp"></i></div>
+            <div class="close-icon-wrapper" id="closeIconWrapper"><i class="fas fa-times close-icon" id="closeIcon"></i></div>
+        </div>
+    </header>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="readingBar">
+            <div class="star-pointer"><i class="fas fa-star"></i></div>
+        </div>
+    </div>
+    <div class="scroll-counter" id="readingCounter">0%</div>
     
-        <header class="header">
-            <a href="/" class="brand-name" id="brandNameLink">
-                <span class="brand-text">Gaybook.site</span>
+    <div class="fly-out-container" id="flyOutContent">
+        <span class="fly-emoji" id="flyEmoji"></span>
+        <span class="fly-text" id="flyText"></span>
+    </div>
+    
+    <div class="whatsapp-modal" id="whatsappModal">
+        <div class="modal-content">
+            <h3>Join our Community</h3>
+            <p>Join our WhatsApp channel for more BL stories and updates.</p>
+            <a href="https://whatsapp.com/channel/0029VbCBehf0Qeakf6S3PG37" target="_blank" class="whatsapp-channel-btn">
+               <i class="fab fa-whatsapp"></i> Join WhatsApp Channel
             </a>
-            
-            <div class="search-container" id="searchContainer">
-                <input type="text" class="search-input" id="searchInput" placeholder="search anything...">
-                <button class="search-icon" id="searchIcon"><i class="fas fa-search"></i></button>
-                <div class="coffee-icon-wrapper" id="coffeeBtn"><i class="fas fa-heart"></i></div>
-                <div style="color: #7a9eb1;" class="share-icon-wrapper" id="shareBtn"><i class="fas fa-paper-plane"></i></div>
-                <div class="whatsapp-icon-wrapper" id="whatsappBtn"><i class="fab fa-whatsapp"></i></div>
-                <div class="close-icon-wrapper" id="closeIconWrapper"><i class="fas fa-times close-icon" id="closeIcon"></i></div>
-            </div>
-        </header>
-    
-        <div class="progress-container">
-            <div class="progress-bar" id="readingBar">
-                <div class="star-pointer"><i class="fas fa-star"></i></div>
-            </div>
+            <br>
+            <button id="closeWhatsappModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
         </div>
-        <div class="scroll-counter" id="readingCounter">0%</div>
-        
-        <div class="fly-out-container" id="flyOutContent">
-            <span class="fly-emoji" id="flyEmoji"></span>
-            <span class="fly-text" id="flyText"></span>
+    </div>
+
+    <div class="coffee-modal" id="coffeeModal">
+        <div class="modal-content">
+            <h3>Support Gaybook.site</h3>
+            <p>Click here ↓ to buy me a cup of coffee.</p>
+            <a href="/support.html" target="_blank" class="buy-coffee-btn">
+               <i class="fas fa-user-secret"></i> Support 
+            </a>
+            <br><br>
+            <button id="closeCoffeeModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
         </div>
-        
-        <div class="whatsapp-modal" id="whatsappModal">
-            <div class="modal-content">
-                <h3>Join our Community</h3>
-                <p>Join our WhatsApp channel for more BL stories and updates.</p>
-                <a href="https://whatsapp.com/channel/0029VbCBehf0Qeakf6S3PG37" target="_blank" class="whatsapp-channel-btn">
-                   <i class="fab fa-whatsapp"></i> Join WhatsApp Channel
-                </a>
-                <br>
-                <button id="closeWhatsappModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-            </div>
+    </div>
+
+    <div class="share-modal" id="shareModal">
+        <div class="modal-content">
+            <h3>Share this book</h3>
+            <p>tell your friends about it.</p>
+            <div class="share-link-box" id="shareLinkDisplay"></div>
+            <button id="copyLinkBtn" class="copy-link-btn"><i class="fas fa-copy"></i> Copy Link</button>
+            <br><br>
+            <button id="closeShareModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
         </div>
-    
-        <div class="coffee-modal" id="coffeeModal">
-            <div class="modal-content">
-                <h3>Support Gaybook.site</h3>
-                <p>Click here ↓ to buy me a cup of coffee.</p>
-                <a href="support.html" target="_blank" class="buy-coffee-btn">
-                   <i class="fas fa-user-secret"></i> Support 
-                </a>
-                <br><br>
-                <button id="closeCoffeeModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-            </div>
+    </div>
+
+    <div id="homePageContainer" class="page-content visible">
+        <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+            <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
+            <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
+        </section>
+
+        <main class="gallery" id="homeGallery"></main>
+        <div class="load-more-container" id="loadMoreContainer" style="display:none;">
+            <button class="load-more-button" id="loadMoreButton">See More↓</button>
         </div>
-    
-        <div class="share-modal" id="shareModal">
-            <div class="modal-content">
-                <h3>Share this book</h3>
-                <p>tell your friends about it.</p>
-                <div class="share-link-box" id="shareLinkDisplay"></div>
-                <button id="copyLinkBtn" class="copy-link-btn"><i class="fas fa-copy"></i> Copy Link</button>
-                <br><br>
-                <button id="closeShareModal" style="background:none; border:none; text-decoration:underline; cursor:pointer; color: #888;">Close</button>
-            </div>
-        </div>
-    
-        <div id="homePageContainer" class="page-content visible">
-            <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-                <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
-                <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
-            </section>
-    
-            <main class="gallery" id="homeGallery"></main>
-            <div class="load-more-container" id="loadMoreContainer" style="display:none;">
-                <button class="load-more-button" id="loadMoreButton">See More↓</button>
-            </div>
-        </div>
-    
-        <article class="book-container page-content" id="postPage">
-            <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-                <p id="seo-text"></p>
-                <img id="seo-image" src="" alt="Post preview image" />
-                <a id="seo-link" href="">Read more</a>
-            </section>
-            <h1 class="page-title" id="postTitle"></h1>
-            <div id="book-content"></div>
-        </article>
-    
-       <footer class="site-footer">
+    </div>
+
+    <article class="book-container page-content" id="postPage">
+        <section id="seo-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+            <p id="seo-text"></p>
+            <img id="seo-image" src="" alt="Post preview image" />
+            <a id="seo-link" href="">Read more</a>
+        </section>
+        <h1 class="page-title" id="postTitle"></h1>
+        <div id="book-content"></div>
+    </article>
+
+   <footer class="site-footer">
         <div class="footer-content">
             <span class="footer-brand">Gaybook.site</span>
             
             <div class="footer-links">
-                <a href="/about.html" target="_self">About</a>
-                <a href="/sponsorship.html" target="_self">Sponsorship</a>
-                <a href="/terms.html" target="_self">Terms Of Use</a>
-                <a href="/2257" target="_self">2257 Compliance</a>
-                <a href="/dmca" target="_self">DMCA</a>
+                <a href="/about.html">About</a>
+                <a href="/sponsorship.html">Sponsorship</a>
+                <a href="/terms.html">Terms Of Use</a>
+                <a href="/2257">2257 Compliance</a>
+                <a href="/dmca">DMCA</a>
             </div>
-    
+
             <span class="adult-disclaimer">
                 <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
             </span>
-    
+
             <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved. | DMCA Contact: dmca@gaybook.site</p>
         </div>
     </footer>
- 
-     <script src="gaysw.js"></script>
+
+     <script src="/gaysw.js"></script>
      <script>
-         
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -958,7 +936,6 @@ const SUPABASE_URL = 'https://jdazvxuxvqrplncmdhzy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYXp2eHV4dnFycGxuY21kaHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjIxNTQsImV4cCI6MjA4MjY5ODE1NH0.wYRXeLZgl-al86GWgwYScv7Psc8LzpaoKhIB-CpV4QE'; 
 
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-window.supabaseClient = supabase; // Explicit reference for safety check
 
 const memory = {
     galleryItems: [],
@@ -970,19 +947,9 @@ const memory = {
     cachedStats: {} 
 };
 
-let dynamicMessages = {};
 let initialLoadDone = false; 
-let hasShownSplashThisSession = false; // Tracks if the initial splash screen has already been displayed in this section/session
 
-const fallbackMessages = {
-    10: { emoji: '😏', text: "Oh? So you’re into this trope too? I see you..." },
-    25: { emoji: '😳', text: "Look at your face—you’re totally blushing right now." },
-    50: { emoji: '🍿', text: "Don't stop now, I need to know what happens next too!" },
-    75: { emoji: '😱', text: "Wait, wait... did he just say that?! *Gasps*" },
-    95: { emoji: '🤐', text: "Are you holding your breath? Because I definitely am." },
-    100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
-};
-
+/* --- UTILITY FUNCTIONS --- */
 function formatCompactNumber(number) {
     if (number === undefined || number === null) return '0';
     return new Intl.NumberFormat('en-US', {
@@ -991,30 +958,21 @@ function formatCompactNumber(number) {
     }).format(number).toLowerCase();
 }
 
+/* --- UI ELEMENTS --- */
 const searchContainer = document.getElementById('searchContainer');
 const searchIcon = document.getElementById('searchIcon');
-const searchIconI = searchIcon.querySelector('i');
-const closeIconWrapper = document.getElementById('closeIconWrapper');
 const searchInput = document.getElementById('searchInput');
 const homePageContainer = document.getElementById('homePageContainer'); 
 const postPage = document.getElementById('postPage');
 const postTitleElement = document.getElementById('postTitle');
 const body = document.body;
 const homeGallery = document.getElementById('homeGallery');
-const brandNameLink = document.getElementById('brandNameLink');
-const loadMoreButton = document.getElementById('loadMoreButton');
 const loadMoreContainer = document.getElementById('loadMoreContainer');
 const bookContent = document.getElementById('book-content');
-const readingBar = document.getElementById('readingBar');
-const readingCounter = document.getElementById('readingCounter');
-const flyOutContent = document.getElementById('flyOutContent');
-const flyEmoji = document.getElementById('flyEmoji');
-const flyText = document.getElementById('flyText');
 
 const ITEMS_PER_LOAD = 12; 
-let currentSearchQuery = '';
-let searchDebounceTimer;
 
+/* --- TRACKING & STATS --- */
 async function logPostView(postId, chapterId = null) {
     try {
         await supabase
@@ -1042,17 +1000,9 @@ async function getPostStats(postId, slug) {
     }
 }
 
-// --- FIXED SPLASH SCREEN HANDLER ---
+/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
-    const splash = document.getElementById('splash-screen');
     const bgContainer = document.getElementById('splash-bg-container');
-    
-    // Skip the splash if it has already been shown during this session/section view
-    if (hasShownSplashThisSession) {
-        if (splash) splash.style.display = 'none';
-        return;
-    }
-
     if (!bgContainer) return;
 
     const backgrounds = [
@@ -1070,34 +1020,29 @@ function initSplashScreen() {
     bgContainer.style.backgroundImage = `url('${backgrounds[randomIdx]}')`;
 }
 
-function hideSplashScreen() {
+async function hideSplashScreen() {
     const splash = document.getElementById('splash-screen');
     const bgContainer = document.getElementById('splash-bg-container');
-    
-    if (hasShownSplashThisSession) {
-        if (splash) splash.style.display = 'none';
-        return;
-    }
+    if (!splash || initialLoadDone) return;
 
     setTimeout(() => {
-        if (splash) splash.classList.add('splash-hidden');
+        splash.classList.add('splash-hidden');
         initialLoadDone = true;
-        hasShownSplashThisSession = true; // Mark that splash has now been displayed
         setTimeout(() => {
             if(bgContainer) bgContainer.style.backgroundImage = 'none';
         }, 1000);
-    }, 1500); // Quick, seamless hide for initial load
+    }, 1500);
+}
+
+/* --- ROUTING & NAVIGATION --- */
+function getRouteInfo() {
+    const path = window.location.pathname;
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length === 0) return { slug: null, chapterNum: 1 };
+    return { slug: segments[0], chapterNum: segments[1] ? parseInt(segments[1]) : 1 };
 }
 
 async function handleRoute() {
-    if (!hasShownSplashThisSession) {
-        initSplashScreen();
-    } else {
-        // Instantly hide splash on subsequent section/route changes
-        const splash = document.getElementById('splash-screen');
-        if (splash) splash.style.display = 'none';
-    }
-
     const route = getRouteInfo();
     const isHome = !route.slug;
     homePageContainer.classList.toggle('visible', isHome);
@@ -1110,10 +1055,6 @@ async function handleRoute() {
             memory.cachedStats = {}; 
             await loadHomePage(searchInput.value, true); 
             document.title = 'Free uncensored Gay & BL Stories';
-            
-            let metaDesc = document.querySelector('meta[name="description"]');
-            if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
-            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature.";
             window.scrollTo(0, 0);
         } else {
             await loadPostPage(route.slug, route.chapterNum);
@@ -1128,7 +1069,6 @@ async function handleRoute() {
 }
 
 async function loadPostPage(slug, chapterNum) {
-    window.renderComplete = false;
     memory.triggeredMilestones.clear(); 
     postTitleElement.innerHTML = '';
     bookContent.innerHTML = '<div class="spa-loader">Hold on... opening the book for you.</div>';
@@ -1138,9 +1078,7 @@ async function loadPostPage(slug, chapterNum) {
         renderPostContent(post, chapterNum);
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
-
         window.scrollTo(0, 0);
-        updateProgress();
     } else {
         window.history.replaceState(null, '', '/');
         handleRoute(); 
@@ -1155,10 +1093,7 @@ async function createGalleryItem(post) {
     
     const calculatedTime = post.read_time || 7; 
     const chapterCount = post.chapters ? post.chapters.length : 0;
-
-    const publishDate = post.created_at 
-        ? new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-        : 'Recent';
+    const publishDate = post.created_at ? new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent';
 
     const stats = await getPostStats(post.id, post.slug);
     const trendingIcon = stats.todayCount > 5 ? `<span style="color: #ff4d4d;"><i class="fas fa-fire"></i></span>` : '';
@@ -1184,20 +1119,6 @@ async function createGalleryItem(post) {
         </div>`;
 }
 
-async function fetchGalleryItems(query = '', offset = 0) {
-    let supabaseQuery = supabase
-        .from('posts')
-        .select('id, title, summary, thumbnail_url, tags, slug, created_at, read_time, chapters(id)') 
-        .eq('is_published', true) 
-        .order('created_at', { ascending: false })
-        .range(offset, offset + ITEMS_PER_LOAD - 1);
-        
-    if (query) { supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,tags.ilike.%${query}%`); }
-    const { data, error } = await supabaseQuery;
-    if (error) return { data: [], hasMore: false };
-    return { data: data || [], hasMore: data?.length === ITEMS_PER_LOAD };
-}
-
 async function fetchPost(identifier) {
     if (memory.postsContent[identifier]) return memory.postsContent[identifier];
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
@@ -1208,8 +1129,9 @@ async function fetchPost(identifier) {
     if (uuidRegex.test(identifier)) query = query.eq('id', identifier);
     else query = query.eq('slug', identifier);
     
-    const { data, error } = await query.single();
-    if (error) return null;
+    const { data } = await query.single();
+    if (!data) return null;
+
     if (memory.libraryProducts.length === 0) {
         const { data: libData } = await supabase.from('affiliate_products').select('*');
         memory.libraryProducts = libData || [];
@@ -1225,258 +1147,112 @@ async function fetchPost(identifier) {
     return data;
 }
 
-function navigateToPost(identifier) {
-    fireExoclickAd(`/${identifier}/1`);
-}
-
-async function renderGallery(items, append = false) {
-    if (!append) homeGallery.innerHTML = '';
-    if (!items || items.length === 0) {
-         if (!append) {
-             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">No books found.</p>';
-             loadMoreContainer.style.display = 'none';
-         }
-         return;
-    }
-    const itemHtmls = await Promise.all(items.map(item => createGalleryItem(item)));
-    const html = itemHtmls.join('');
-    if (append) homeGallery.insertAdjacentHTML('beforeend', html);
-    else homeGallery.innerHTML = html;
+// Interstitial triggers when clicking books or chapter pagination
+function navigateToPost(identifier, chapterNum = 1) {
+    const postPath = `/${identifier}/${chapterNum}`;
+    fireExoclickAd(postPath);
 }
 
 function parseInlineStyling(text) {
     if(!text) return '';
-    let formattedText = text;
-    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-    formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
-    return formattedText;
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
 }
 
-function createProductCard(product) {
-    const imgUrl = product.image_url || 'https://via.placeholder.com/120x100?text=Product+Img';
-    return `
-        <a href="${product.link}" target="_blank" class="product-card">
-            <div class="product-image-wrapper"><img src="${imgUrl}" alt="${product.title}" class="product-image"></div>
-            <div class="product-details">
-                <h4 class="product-title">${product.title}</h4>
-                <p class="product-description">${product.description}</p>
-            </div>
-        </a>
-    `;
-}
-
-function renderComponent(block, library) {
+function renderComponent(block) {
     if(!block) return '';
     switch (block.type) {
         case 'paragraph': 
-            let cleanText = block.text || '';
-            cleanText = cleanText.replace(/class="post-paragraph"/gi, '').replace(/post-paragraph/gi, '');
-            cleanText = cleanText.replace(/<br\s*\/?>/gi, '<br>');
-            return `<p class="post-paragraph">${parseInlineStyling(cleanText)}</p>`;
-            
+            return `<p class="post-paragraph">${parseInlineStyling(block.text || '')}</p>`;
         case 'image': 
-            return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
-            
-        case 'affiliate-cta':
-            const prod = (library || []).find(p => p.product_id === block.product_id);
-            if (prod) return `<div style="margin: 30px 0;">${createProductCard(prod)}</div>`;
-            return '';
-            
-        default: 
+            return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || 'Illustration'}" class="chapter-illustration"></div>`;
+        case 'banner_ad':
+        case 'ad':
+            // In-chapter ad wrapper execution fix
+            const adDiv = document.createElement('div');
+            adDiv.innerHTML = block.content || block.html || '';
+            setTimeout(() => {
+                const scripts = adDiv.getElementsByTagName('script');
+                for (let s of scripts) {
+                    const ns = document.createElement('script');
+                    if (s.src) ns.src = s.src; else ns.text = s.textContent;
+                    document.body.appendChild(ns);
+                }
+            }, 50);
+            return `<div class="chapter-ad-slot" style="margin: 30px 0; text-align:center;">${block.content || block.html || ''}</div>`;
+        default:
             return '';
     }
 }
 
-function updateSEOData(post, chapterNum, chapter) {
-    const seoText = document.getElementById('seo-text');
-    const seoImg = document.getElementById('seo-image');
-    const seoLink = document.getElementById('seo-link');
-    const currentNum = parseInt(chapterNum);
-    if (currentNum === 1) {
-        if(seoText) seoText.textContent = post.summary;
-        if(seoImg) seoImg.src = post.thumbnail_url;
-    } else if (chapter) {
-        const firstParagraph = chapter.content.find(block => block.type === 'paragraph');
-        if(seoText) seoText.textContent = firstParagraph?.text || `Chapter ${chapterNum}`;
-        if(seoImg) seoImg.src = chapter.chapter_image_url || post.thumbnail_url;
+function renderPostContent(post, currentChapterNum) {
+    postTitleElement.innerText = post.title;
+    const chapters = post.chapters || [];
+    const activeIndex = Math.max(0, Math.min(currentChapterNum - 1, chapters.length - 1));
+    const activeChapter = chapters[activeIndex];
+
+    if (!activeChapter) {
+        bookContent.innerHTML = '<p>Chapter not found.</p>';
+        return;
     }
-    if(seoLink) seoLink.href = window.location.href;
-    window.renderComplete = true; 
-}
 
-function updateSchemaMarkup(post, chapterNum, chapter) {
-    const oldSchema = document.getElementById('dynamic-schema');
-    if (oldSchema) oldSchema.remove();
-    const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": `${post.title} - Chapter ${chapterNum}`,
-        "description": post.summary,
-        "image": chapter?.chapter_image_url || post.thumbnail_url,
-        "author": { "@type": "Person", "name": "Maro Alero Erubasa" }
-    };
-    const script = document.createElement('script');
-    script.id = 'dynamic-schema'; script.type = 'application/ld+json'; script.text = JSON.stringify(schemaData);
-    document.head.appendChild(script);
-}
+    let html = `<h2 class="chapter-title">${activeChapter.title}</h2>`;
+    if (activeChapter.chapter_image_url) {
+        html += `<div class="image-slot"><img src="${activeChapter.chapter_image_url}" alt="Chapter illustration" class="chapter-illustration"></div>`;
+    }
+    
+    html += (activeChapter.content || []).map(b => renderComponent(b)).join('');
 
-function renderChapterNavigation(post, currentIdx) {
-    const slug = post.slug || post.id;
-    const totalChapters = post.chapters.length;
-    const chapterButtons = post.chapters.map((_, index) => {
-        const chapterNum = index + 1;
-        const isActive = index === currentIdx;
-        return `<button class="nav-num-btn ${isActive ? 'active' : ''}" onclick="fireExoclickAd('/${slug}/${chapterNum}')" ${isActive ? 'disabled' : ''}>${chapterNum}</button>`;
-    }).join('');
-    return `
+    // Pagination with Exoclick link trigger integration
+    html += `
         <div class="chapter-pagination-container">
-            <button class="nav-icon-btn ${currentIdx === 0 ? 'disabled' : ''}" onclick="fireExoclickAd('/${slug}/${currentIdx}')"><i class="fas fa-chevron-left"></i></button>
-            <div class="chapter-numbers">${chapterButtons}</div>
-            <button class="nav-icon-btn ${currentIdx >= totalChapters - 1 ? 'disabled' : ''}" onclick="fireExoclickAd('/${slug}/${currentIdx + 2}')"><i class="fas fa-chevron-right"></i></button>
+            <button class="nav-icon-btn ${activeIndex === 0 ? 'disabled' : ''}" ${activeIndex > 0 ? `onclick="navigateToPost('${post.slug || post.id}', ${activeIndex})"` : ''}>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="chapter-numbers">
+                ${chapters.map((ch, idx) => `
+                    <button class="nav-num-btn ${idx === activeIndex ? 'active' : ''}" onclick="navigateToPost('${post.slug || post.id}', ${idx + 1})">${idx + 1}</button>
+                `).join('')}
+            </div>
+            <button class="nav-icon-btn ${activeIndex === chapters.length - 1 ? 'disabled' : ''}" ${activeIndex < chapters.length - 1 ? `onclick="navigateToPost('${post.slug || post.id}', ${activeIndex + 2})"` : ''}>
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     `;
-}
 
-function renderPostContent(post, chapterNum) {
-    const chapterIdx = parseInt(chapterNum) - 1;
-    const chapter = post.chapters[chapterIdx];
-    if (!chapter) { bookContent.innerHTML = '<p>Chapter not found.</p>'; return; }
-    
-    if (chapter.commentary && Array.isArray(chapter.commentary) && chapter.commentary.length > 0) {
-        dynamicMessages = chapter.commentary.reduce((acc, item) => { acc[item.percent] = { emoji: item.emoji, text: item.text }; return acc; }, {});
-    } else { dynamicMessages = fallbackMessages; }
-
-    let html = `<section class="chapter"><h2 class="chapter-title">Chapter ${chapterNum}: ${chapter.title}</h2>`;
-    if (chapter.chapter_image_url) html += `<div class="image-slot"><img src="${chapter.chapter_image_url}" class="chapter-illustration"></div>`;
-    if (chapter.content) html += chapter.content.map(block => renderComponent(block, post.affiliate_products)).join('');
-    html += `</section>`;
-    html += renderChapterNavigation(post, chapterIdx);
-    postTitleElement.textContent = post.title;
     bookContent.innerHTML = html;
-    updateSEOData(post, chapterNum, chapter);
-    updateSchemaMarkup(post, chapterNum, chapter);
-}
-
-function triggerFlyOut(milestone) {
-    const data = dynamicMessages[milestone] || fallbackMessages[milestone];
-    if (!data) return;
-    flyEmoji.textContent = data.emoji;
-    flyText.textContent = data.text;
-    flyOutContent.classList.remove('animate');
-    void flyOutContent.offsetWidth; 
-    flyOutContent.classList.add('animate');
-}
-
-function updateProgress() {
-    if (!body.classList.contains('is-post-page')) return;
-    const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
-    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    
-    if (height > 0) {
-        const scrolled = Math.min(100, Math.max(0, Math.round((winScroll / height) * 100)));
-        readingBar.style.width = scrolled + "%";
-        readingCounter.textContent = scrolled + "%";
-
-        const points = Object.keys(dynamicMessages);
-        points.forEach(point => {
-            if (scrolled >= parseInt(point) && !memory.triggeredMilestones.has(point)) {
-                memory.triggeredMilestones.add(point);
-                triggerFlyOut(point);
-            }
-        });
-    }
-}
-
-function getRouteInfo() {
-    const path = window.location.pathname;
-    const pathParts = path.split('/').filter(p => p.length > 0);
-    return { slug: pathParts[0] || null, chapterNum: pathParts[1] || "1" };
 }
 
 async function loadHomePage(query = '', reset = true) {
-    window.renderComplete = false;
-    if (reset && query === '' && memory.galleryItems.length > 0) {
-        renderGallery(memory.galleryItems, false);
-        loadMoreContainer.style.display = memory.hasMore ? 'block' : 'none';
-        window.renderComplete = true;
-        return; 
-    }
     if (reset) {
         memory.currentOffset = 0;
-        homeGallery.innerHTML = '<div class="spa-loader">Summoning the books...</div>';
+        homeGallery.innerHTML = '<div class="spa-loader">Loading gallery...</div>';
     }
     const { data, hasMore } = await fetchGalleryItems(query, memory.currentOffset);
-    if (query === '') {
-        if (reset) memory.galleryItems = data;
-        else memory.galleryItems = [...memory.galleryItems, ...data];
-    }
-    await renderGallery(data, !reset);
     memory.hasMore = hasMore;
-    loadMoreContainer.style.display = hasMore ? 'block' : 'none';
-    if (hasMore && data) memory.currentOffset += data.length;
-    currentSearchQuery = query;
-    window.renderComplete = true;
+    
+    if (reset) homeGallery.innerHTML = '';
+    if (data.length > 0) {
+        const htmls = await Promise.all(data.map(item => createGalleryItem(item)));
+        homeGallery.insertAdjacentHTML('beforeend', htmls.join(''));
+    } else if (reset) {
+        homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">No stories found.</p>';
+    }
+    loadMoreContainer.style.display = memory.hasMore ? 'block' : 'none';
 }
 
-const whatsappBtn = document.getElementById('whatsappBtn');
-const whatsappModal = document.getElementById('whatsappModal');
-const closeWhatsappModal = document.getElementById('closeWhatsappModal');
-const coffeeBtn = document.getElementById('coffeeBtn');
-const coffeeModal = document.getElementById('coffeeModal');
-const closeCoffeeModal = document.getElementById('closeCoffeeModal');
-const shareBtn = document.getElementById('shareBtn');
-const shareModal = document.getElementById('shareModal');
-const closeShareModal = document.getElementById('closeShareModal');
-const shareLinkDisplay = document.getElementById('shareLinkDisplay');
-const copyLinkBtn = document.getElementById('copyLinkBtn');
-
-if(whatsappBtn) whatsappBtn.addEventListener('click', (e) => { e.stopPropagation(); whatsappModal.classList.add('active'); });
-if(closeWhatsappModal) closeWhatsappModal.addEventListener('click', () => { whatsappModal.classList.remove('active'); });
-if(coffeeBtn) coffeeBtn.addEventListener('click', (e) => { e.stopPropagation(); coffeeModal.classList.add('active'); });
-if(closeCoffeeModal) closeCoffeeModal.addEventListener('click', () => { coffeeModal.classList.remove('active'); });
-if(shareBtn) shareBtn.addEventListener('click', (e) => { e.stopPropagation(); if(shareLinkDisplay) shareLinkDisplay.textContent = window.location.href; shareModal.classList.add('active'); });
-if(closeShareModal) closeShareModal.addEventListener('click', () => { shareModal.classList.remove('active'); });
-if(copyLinkBtn) copyLinkBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(shareLinkDisplay.textContent).then(() => { copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copied!'; setTimeout(() => { copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Link'; }, 2000); });
-});
-
-window.addEventListener('popstate', handleRoute); 
-window.addEventListener('scroll', updateProgress, { passive: true });
-
-if(brandNameLink) brandNameLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (window.location.pathname !== '/') { window.history.pushState({}, '', '/'); handleRoute(); }
-});
-
-if(closeIconWrapper) closeIconWrapper.addEventListener('click', () => {
-    const route = getRouteInfo();
-    if (route.slug) { window.history.pushState({}, '', '/'); handleRoute(); }
-    else if (searchContainer.classList.contains('active')) { toggleSearch(false); }
-});
-
-if(searchIcon) searchIcon.addEventListener('click', () => {
-    if (searchInput.value.length > 0) {
-        searchInput.value = '';
-        searchIconI.className = 'fas fa-search';
-        loadHomePage('', true);
-    } else if (!getRouteInfo().slug) { toggleSearch(true); }
-});
-
-function toggleSearch(expand) {
-    searchContainer.classList.toggle('active', expand);
-    if (expand) { setTimeout(() => searchInput.focus(), 150); }
-    else { loadHomePage(''); }
+async function fetchGalleryItems(query = '', offset = 0) {
+    let q = supabase.from('posts').select('id, title, summary, thumbnail_url, tags, slug, created_at, read_time, chapters(id)').eq('is_published', true).order('created_at', { ascending: false }).range(offset, offset + ITEMS_PER_LOAD - 1);
+    if (query) q = q.or(`title.ilike.%${query}%,tags.ilike.%${query}%`);
+    const { data } = await q;
+    return { data: data || [], hasMore: data?.length === ITEMS_PER_LOAD };
 }
 
-if(searchInput) searchInput.addEventListener('input', (e) => {
-    if (e.target.value.length > 0) { searchIconI.className = 'fas fa-times-circle'; }
-    else { searchIconI.className = 'fas fa-search'; }
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => { loadHomePage(e.target.value, true); }, 600);
-});
+window.addEventListener('popstate', handleRoute);
 
-if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
-document.addEventListener('DOMContentLoaded', handleRoute);
+document.addEventListener('DOMContentLoaded', () => {
+    initSplashScreen();
+    handleRoute();
+});
      </script>
-    </body>
-    </html>
+</body>
+</html>
