@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gaybook.site</title>
@@ -44,11 +45,10 @@
                     console.error('Failed to fetch/fire dynamic interstitial ad:', err);
                 }
 
+                // Force actual browser navigation so ad networks can track the click/impression reliably
                 setTimeout(() => {
-                    if(postPath === '/') { window.history.replaceState({}, '', postPath); }
-                    else { window.history.pushState({}, '', postPath); }
-                    window.dispatchEvent(new PopStateEvent('popstate')); 
-                }, 300); 
+                    window.location.href = postPath;
+                }, 400); 
             }
         </script>
     </head>
@@ -132,7 +132,7 @@
     
         <div id="homePageContainer" class="page-content visible">
             <section id="site-meta-description" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-                <h1>The best Uncensored Gay Porn Stories you will ever find on the internet</h1>
+                <h1>Uncensored Gay/bl Porn novellas</h1>
                 <p>Experience the ultimate collection of free gay literature, multi-chapter BL stories, and immersive fictional mythologies. High-quality, mobile-first reading with daily updates.</p>
             </section>
     
@@ -152,26 +152,26 @@
             <div id="book-content"></div>
         </article>
     
-  <footer class="site-footer">
+       <footer class="site-footer">
         <div class="footer-content">
             <span class="footer-brand">Gaybook.site</span>
             
             <div class="footer-links">
-                <a href="about.html">About</a>
-                <a href="sponsorship.html">Sponsorship</a>
-                <a href="terms.html">Terms Of Use</a>
-                <a href="2257.html">2257 Compliance</a>
-                <a href="dmca.html">DMCA</a>
+                <a href="/about.html" target="_self">About</a>
+                <a href="/sponsorship.html" target="_self">Sponsorship</a>
+                <a href="/terms.html" target="_self">Terms Of Use</a>
+                <a href="/2257" target="_self">2257 Compliance</a>
+                <a href="/dmca" target="_self">DMCA</a>
             </div>
     
             <span class="adult-disclaimer">
                 <i class="fas fa-exclamation-triangle"></i> 18+ | READ RESPONSIBLY
             </span>
     
-            <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved. | DMCA Contact: maroerubasa@gmail.com</p>
+            <p class="copyright-text">&copy; 2026 Gaybook.site. All rights reserved. | DMCA Contact: dmca@gaybook.site</p>
         </div>
     </footer>
-    <script src="gayfunctions.js"></script>
+ <script src="gayfunctions.js"></script>
      <script src="gaysw.js"></script>
        </body>
     </html>
