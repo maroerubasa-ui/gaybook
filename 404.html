@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <style>
-        /* ---------------------------------
+    /* ---------------------------------
        1. CSS Root Variables & Global Styles 
     --------------------------------- */
     * {
@@ -24,14 +24,12 @@
     --color-whatsapp: #25d366;
     --color-whatsapp-dark: #128c7e;
     
-    /* Modern digital reading font family (Plus Jakarta Sans with clean geometric curves) */
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --font-heading: 'Source Sans Pro', sans-serif;
     --font-comic: 'Comic Neue', cursive;
     
-    /* Mobile-first base sizing (Bigger text and generous spacing) */
-    --font-size-base: 1.15rem; /* Corrected base font size */
-    --line-height-base: 1.7; /* Balanced line height */
+    --font-size-base: 1.15rem;
+    --line-height-base: 1.7;
     --max-text-width: 740px;
     --padding-page: 32px;
     --gallery-gap: 30px;
@@ -49,7 +47,6 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    /* --- SPLASH SCREEN STYLES (CLEAN SLATE UPDATES) --- */
     #splash-screen {
         position: fixed;
         top: 0;
@@ -156,7 +153,7 @@
 
     .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-.book-container {
+    .book-container {
         max-width: var(--max-text-width); 
         margin: 0 auto; 
         padding-left: var(--padding-page); 
@@ -523,7 +520,6 @@
         overflow: hidden;
     }
 
-    /* --- UPDATED FLEX-GRID SYSTEM FOR METRICS --- */
     .item-stats-container {
         display: flex;
         flex-direction: column;
@@ -686,78 +682,77 @@
     .product-image-wrapper { width: 120px; flex-shrink: 0; margin-right: 15px; }
     .product-image { width: 100%; height: auto; max-height: 100px; object-fit: contain; }
 
-.site-footer {
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    color: #888;
-    padding: 60px 20px;
-    text-align: center;
-    font-size: 0.9rem;
-    margin-top: 80px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    position: relative;
-}
+    .site-footer {
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        color: #888;
+        padding: 60px 20px;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-top: 80px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+    }
 
-.footer-content {
-    max-width: var(--max-text-width);
-    margin: 0 auto;
-}
+    .footer-content {
+        max-width: var(--max-text-width);
+        margin: 0 auto;
+    }
 
-.footer-brand {
-    font-family: var(--font-comic);
-    font-size: 1.5rem;
-    color: #fff;
-    margin-bottom: 20px;
-    display: block;
-    opacity: 0.9;
-}
+    .footer-brand {
+        font-family: var(--font-comic);
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 20px;
+        display: block;
+        opacity: 0.9;
+    }
 
-.footer-links {
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+    .footer-links {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
 
-.site-footer a {
-    color: #bbb;
-    text-decoration: none;
-    transition: color 0.3s ease, transform 0.2s;
-    font-family: var(--font-heading);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.75rem;
-}
+    .site-footer a {
+        color: #bbb;
+        text-decoration: none;
+        transition: color 0.3s ease, transform 0.2s;
+        font-family: var(--font-heading);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.75rem;
+    }
 
-.site-footer a:hover {
-    color: var(--color-link-footer);
-    transform: translateY(-2px);
-}
+    .site-footer a:hover {
+        color: var(--color-link-footer);
+        transform: translateY(-2px);
+    }
 
-.adult-disclaimer {
-    font-weight: 700;
-    color: #ff4d4d;
-    margin: 30px auto 0;
-    display: inline-block;
-    border: 1px solid rgba(255, 77, 77, 0.3);
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    background: rgba(255, 77, 77, 0.05);
-}
+    .adult-disclaimer {
+        font-weight: 700;
+        color: #ff4d4d;
+        margin: 30px auto 0;
+        display: inline-block;
+        border: 1px solid rgba(255, 77, 77, 0.3);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        background: rgba(255, 77, 77, 0.05);
+    }
 
-.copyright-text {
-    margin-top: 30px;
-    font-size: 0.75rem;
-    opacity: 0.5;
-}
+    .copyright-text {
+        margin-top: 30px;
+        font-size: 0.75rem;
+        opacity: 0.5;
+    }
     
     #homePageContainer, #postPage { display: none !important; }
     #homePageContainer.visible, #postPage.visible { display: block !important; }
-
 </style>      
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -768,44 +763,63 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         
         <script>
-            // Disable manual browser scroll restoration to control it smoothly per chapter load
             if ('scrollRestoration' in history) {
                 history.scrollRestoration = 'manual';
             }
 
+            // --- FIXED AD TRIGGER FUNCTION ---
             async function fireExoclickAd(postPath) {
                 console.log(`Firing Interstitial Ad before navigating to: ${postPath}`);
-                try {
-                    const { data, error } = await supabase
-                        .from('site_settings')
-                        .select('value')
-                        .eq('key', 'interstitial_ad_script')
-                        .maybeSingle();
+                let adFired = false;
+                
+                // Ensure window.supabase exists before querying
+                if (window.supabase && window.supabase.createClient) {
+                    try {
+                        // Check if supabase global client is instantiated, or fallback/use it
+                        const client = window.supabaseClient || supabase;
+                        const { data, error } = await client
+                            .from('site_settings')
+                            .select('value')
+                            .eq('key', 'interstitial_ad_script')
+                            .maybeSingle();
 
-                    if (data && data.value) {
-                        const adContainer = document.createElement('div');
-                        adContainer.innerHTML = data.value;
-                        document.body.appendChild(adContainer);
-                        
-                        const scripts = adContainer.getElementsByTagName('script');
-                        for (let i = 0; i < scripts.length; i++) {
-                            const newScript = document.createElement('script');
-                            if (scripts[i].src) {
-                                newScript.src = scripts[i].src;
-                            } else {
-                                newScript.text = scripts[i].textContent;
+                        if (data && data.value) {
+                            // Check if ad script element already exists to avoid redundant injection
+                            let adContainer = document.getElementById('exoclick-injected-ad');
+                            if (!adContainer) {
+                                adContainer = document.createElement('div');
+                                adContainer.id = 'exoclick-injected-ad';
+                                document.body.appendChild(adContainer);
                             }
-                            document.body.appendChild(newScript);
+                            adContainer.innerHTML = data.value;
+                            
+                            const scripts = adContainer.getElementsByTagName('script');
+                            for (let i = 0; i < scripts.length; i++) {
+                                // If the script src is already present in document, skip appending it again
+                                if (scripts[i].src) {
+                                    const existingScript = document.querySelector(`script[src="${scripts[i].src}"]`);
+                                    if (!existingScript) {
+                                        const newScript = document.createElement('script');
+                                        newScript.src = scripts[i].src;
+                                        document.body.appendChild(newScript);
+                                    }
+                                } else if (scripts[i].textContent) {
+                                    const newScript = document.createElement('script');
+                                    newScript.text = scripts[i].textContent;
+                                    document.body.appendChild(newScript);
+                                }
+                            }
+                            adFired = true;
                         }
+                    } catch (err) {
+                        console.error('Failed to fetch/fire dynamic interstitial ad:', err);
                     }
-                } catch (err) {
-                    console.error('Failed to fetch/fire dynamic interstitial ad:', err);
                 }
 
-                // Force actual browser navigation so ad networks can track the click/impression reliably
+                // Give ad networks adequate time (1200ms) to track impressions before transitioning
                 setTimeout(() => {
                     window.location.href = postPath;
-                }, 400); 
+                }, adFired ? 1200 : 100); 
             }
         </script>
     </head>
@@ -944,6 +958,7 @@ const SUPABASE_URL = 'https://jdazvxuxvqrplncmdhzy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkYXp2eHV4dnFycGxuY21kaHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjIxNTQsImV4cCI6MjA4MjY5ODE1NH0.wYRXeLZgl-al86GWgwYScv7Psc8LzpaoKhIB-CpV4QE'; 
 
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabaseClient = supabase; // Explicit reference for safety check
 
 const memory = {
     galleryItems: [],
@@ -957,6 +972,7 @@ const memory = {
 
 let dynamicMessages = {};
 let initialLoadDone = false; 
+let hasShownSplashThisSession = false; // Tracks if the initial splash screen has already been displayed in this section/session
 
 const fallbackMessages = {
     10: { emoji: '😏', text: "Oh? So you’re into this trope too? I see you..." },
@@ -967,8 +983,6 @@ const fallbackMessages = {
     100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
 };
 
-/* --- UTILITY FUNCTIONS --- */
-
 function formatCompactNumber(number) {
     if (number === undefined || number === null) return '0';
     return new Intl.NumberFormat('en-US', {
@@ -977,7 +991,6 @@ function formatCompactNumber(number) {
     }).format(number).toLowerCase();
 }
 
-/* --- UI ELEMENTS --- */
 const searchContainer = document.getElementById('searchContainer');
 const searchIcon = document.getElementById('searchIcon');
 const searchIconI = searchIcon.querySelector('i');
@@ -1002,26 +1015,22 @@ const ITEMS_PER_LOAD = 12;
 let currentSearchQuery = '';
 let searchDebounceTimer;
 
-/* --- TRACKING & STATS --- */
 async function logPostView(postId, chapterId = null) {
     try {
-        const { error } = await supabase
+        await supabase
             .from('post_views')
             .insert([{ post_id: String(postId), chapter_id: chapterId ? parseInt(chapterId) : null }]);
-        if (error) console.error('View tracking error:', error.message);
     } catch (err) { console.error('Analytics failed:', err); }
 }
 
 async function getPostStats(postId, slug) {
     if (memory.cachedStats[postId]) return memory.cachedStats[postId];
     try {
-        const { data: stats, error } = await supabase
+        const { data: stats } = await supabase
             .from('post_stats')
             .select('views_total, views_today')
             .or(`post_id.eq.${postId},slug.eq.${slug}`)
             .maybeSingle();
-
-        if (error) throw error;
 
         const viewCount = stats ? (parseInt(stats.views_total) || 0) : 0;
         const todayCount = stats ? (parseInt(stats.views_today) || 0) : 0;
@@ -1029,14 +1038,21 @@ async function getPostStats(postId, slug) {
         memory.cachedStats[postId] = { viewCount, todayCount };
         return memory.cachedStats[postId];
     } catch (err) {
-        console.error("Stats Fetch Error:", err);
         return { viewCount: 0, todayCount: 0 };
     }
 }
 
-/* --- SPLASH SCREEN HANDLER --- */
+// --- FIXED SPLASH SCREEN HANDLER ---
 function initSplashScreen() {
+    const splash = document.getElementById('splash-screen');
     const bgContainer = document.getElementById('splash-bg-container');
+    
+    // Skip the splash if it has already been shown during this session/section view
+    if (hasShownSplashThisSession) {
+        if (splash) splash.style.display = 'none';
+        return;
+    }
+
     if (!bgContainer) return;
 
     const backgrounds = [
@@ -1051,28 +1067,36 @@ function initSplashScreen() {
     ];
 
     const randomIdx = Math.floor(Math.random() * backgrounds.length);
-    const selectedImg = backgrounds[randomIdx];
-    bgContainer.style.backgroundImage = `url('${selectedImg}')`;
+    bgContainer.style.backgroundImage = `url('${backgrounds[randomIdx]}')`;
 }
 
-async function hideSplashScreen() {
+function hideSplashScreen() {
     const splash = document.getElementById('splash-screen');
     const bgContainer = document.getElementById('splash-bg-container');
-    if (!splash || initialLoadDone) return;
+    
+    if (hasShownSplashThisSession) {
+        if (splash) splash.style.display = 'none';
+        return;
+    }
 
     setTimeout(() => {
-        splash.classList.add('splash-hidden');
+        if (splash) splash.classList.add('splash-hidden');
         initialLoadDone = true;
-        
+        hasShownSplashThisSession = true; // Mark that splash has now been displayed
         setTimeout(() => {
             if(bgContainer) bgContainer.style.backgroundImage = 'none';
         }, 1000);
-    }, 8000);
+    }, 1500); // Quick, seamless hide for initial load
 }
 
-/* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
-    if (!initialLoadDone) initSplashScreen();
+    if (!hasShownSplashThisSession) {
+        initSplashScreen();
+    } else {
+        // Instantly hide splash on subsequent section/route changes
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.style.display = 'none';
+    }
 
     const route = getRouteInfo();
     const isHome = !route.slug;
@@ -1089,15 +1113,14 @@ async function handleRoute() {
             
             let metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
-            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature. Dive into curated narratives and complex fictional worlds.";
+            metaDesc.content = "The ultimate destination for the best uncensored BL stories and gay literature.";
             window.scrollTo(0, 0);
-            
         } else {
             await loadPostPage(route.slug, route.chapterNum);
             searchContainer.classList.remove('active');
         }
     } catch (globalError) {
-        console.error("Routing execution error encountered:", globalError);
+        console.error("Routing error:", globalError);
         window.scrollTo(0, 0);
     } finally {
         hideSplashScreen();
@@ -1124,7 +1147,6 @@ async function loadPostPage(slug, chapterNum) {
     }
 }
 
-/* --- OPTIMIZED GALLERY ITEM LAYOUT --- */
 async function createGalleryItem(post) {
     const identifier = post.slug || post.id;
     const title = post.title || 'Untitled Post';
@@ -1179,13 +1201,13 @@ async function fetchGalleryItems(query = '', offset = 0) {
 async function fetchPost(identifier) {
     if (memory.postsContent[identifier]) return memory.postsContent[identifier];
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
-    const isUuid = uuidRegex.test(identifier);
     let query = supabase.from('posts').select(`
             id, title, thumbnail_url, summary, commentary, slug, created_at,
             chapters:chapters(id, title, chapter_image_url, commentary, order, content_blocks:content_blocks(*))
         `);
-    if (isUuid) query = query.eq('id', identifier);
+    if (uuidRegex.test(identifier)) query = query.eq('id', identifier);
     else query = query.eq('slug', identifier);
+    
     const { data, error } = await query.single();
     if (error) return null;
     if (memory.libraryProducts.length === 0) {
@@ -1204,15 +1226,14 @@ async function fetchPost(identifier) {
 }
 
 function navigateToPost(identifier) {
-    const postPath = `/${identifier}/1`;
-    fireExoclickAd(postPath);
+    fireExoclickAd(`/${identifier}/1`);
 }
 
 async function renderGallery(items, append = false) {
     if (!append) homeGallery.innerHTML = '';
     if (!items || items.length === 0) {
          if (!append) {
-             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">Bestie... not a single book showed up. The audacity. Try something else.</p>';
+             homeGallery.innerHTML = '<p style="text-align:center; padding: 40px;">No books found.</p>';
              loadMoreContainer.style.display = 'none';
          }
          return;
@@ -1382,7 +1403,7 @@ async function loadHomePage(query = '', reset = true) {
     }
     if (reset) {
         memory.currentOffset = 0;
-        homeGallery.innerHTML = '<div class="spa-loader">Summoning the books... they are pretending they did not see you coming....</div>';
+        homeGallery.innerHTML = '<div class="spa-loader">Summoning the books...</div>';
     }
     const { data, hasMore } = await fetchGalleryItems(query, memory.currentOffset);
     if (query === '') {
@@ -1397,7 +1418,6 @@ async function loadHomePage(query = '', reset = true) {
     window.renderComplete = true;
 }
 
-/* --- MODALS & BUTTONS --- */
 const whatsappBtn = document.getElementById('whatsappBtn');
 const whatsappModal = document.getElementById('whatsappModal');
 const closeWhatsappModal = document.getElementById('closeWhatsappModal');
