@@ -1,5 +1,4 @@
-
-     if ('serviceWorker' in navigator) {
+ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('Service Worker registered!'))
@@ -101,7 +100,7 @@ async function getPostStats(postId, slug) {
     }
 }
 
-/* --- SPLASH SCREEN HANDLER WITH LOCALSTORAGE --- */
+/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
@@ -117,14 +116,8 @@ function initSplashScreen() {
         'https://jdazvxuxvqrplncmdhzy.supabase.co/storage/v1/object/public/Assets/yaoi-gif-yaoi-gay-zone-explicit-yaoi-6732980.gif',
     ];
 
-    let lastBg = localStorage.getItem('gaybook_last_splash');
-    let availableBgs = backgrounds.filter(bg => bg !== lastBg);
-    if (availableBgs.length === 0) availableBgs = backgrounds;
-
-    const randomIdx = Math.floor(Math.random() * availableBgs.length);
-    const selectedImg = availableBgs[randomIdx];
-
-    localStorage.setItem('gaybook_last_splash', selectedImg);
+    const randomIdx = Math.floor(Math.random() * backgrounds.length);
+    const selectedImg = backgrounds[randomIdx];
     bgContainer.style.backgroundImage = `url('${selectedImg}')`;
 }
 
@@ -140,7 +133,7 @@ async function hideSplashScreen() {
         setTimeout(() => {
             if(bgContainer) bgContainer.style.backgroundImage = 'none';
         }, 1000);
-    }, 2000); // Reduced delay slightly for snappier load, adjustable if needed
+    }, 8000);
 }
 
 /* --- ROUTING & NAVIGATION --- */
@@ -259,11 +252,8 @@ async function fetchPost(identifier) {
         `);
     if (isUuid) query = query.eq('id', identifier);
     else query = query.eq('slug', identifier);
-    
-    // Use maybeSingle instead of single to prevent uncaught exceptions if row isn't found perfectly
-    const { data, error } = await query.maybeSingle();
-    if (error || !data) return null;
-
+    const { data, error } = await query.single();
+    if (error) return null;
     if (memory.libraryProducts.length === 0) {
         const { data: libData } = await supabase.from('affiliate_products').select('*');
         memory.libraryProducts = libData || [];
@@ -279,7 +269,6 @@ async function fetchPost(identifier) {
     return data;
 }
 
-// Uses replaceState to prevent building a cluttered history stack
 function navigateToPost(identifier) {
     const postPath = `/${identifier}/1`;
     fireExoclickAd(postPath);
@@ -502,16 +491,12 @@ window.addEventListener('scroll', updateProgress, { passive: true });
 
 if(brandNameLink) brandNameLink.addEventListener('click', (e) => {
     e.preventDefault();
-    if (window.location.pathname !== '/') { window.history.replaceState({}, '', '/'); handleRoute(); }
+    if (window.location.pathname !== '/') { window.history.pushState({}, '', '/'); handleRoute(); }
 });
 
 if(closeIconWrapper) closeIconWrapper.addEventListener('click', () => {
     const route = getRouteInfo();
-    if (route.slug) { 
-        // Instantly clear history stack back to home when exiting a book
-        window.history.replaceState({}, '', '/'); 
-        handleRoute(); 
-    }
+    if (route.slug) { window.history.pushState({}, '', '/'); handleRoute(); }
     else if (searchContainer.classList.contains('active')) { toggleSearch(false); }
 });
 
@@ -538,5 +523,4 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 document.addEventListener('DOMContentLoaded', handleRoute);
-
- 
+     
