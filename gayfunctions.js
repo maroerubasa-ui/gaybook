@@ -1,4 +1,4 @@
- if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('Service Worker registered!'))
@@ -32,6 +32,45 @@ const fallbackMessages = {
     95: { emoji: '🤐', text: "Are you holding your breath? Because I definitely am." },
     100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
 };
+
+/* --- DYNAMIC GLOBAL ADS FETCHER --- */
+async function loadGlobalAds() {
+    try {
+        const { data, error } = await supabase
+            .from('site_settings')
+            .select('key, value')
+            .in('key', ['video_slider_ad', 'notification_ad']);
+
+        if (error) {
+            console.error('Error fetching global ads:', error);
+            return;
+        }
+
+        if (data) {
+            data.forEach(adRecord => {
+                if (adRecord.value) {
+                    const adContainer = document.createElement('div');
+                    adContainer.innerHTML = adRecord.value;
+                    document.body.appendChild(adContainer);
+
+                    const scripts = adContainer.getElementsByTagName('script');
+                    for (let i = 0; i < scripts.length; i++) {
+                        const newScript = document.createElement('script');
+                        if (scripts[i].src) {
+                            newScript.src = scripts[i].src;
+                            newScript.async = true;
+                        } else {
+                            newScript.text = scripts[i].textContent;
+                        }
+                        document.body.appendChild(newScript);
+                    }
+                }
+            });
+        }
+    } catch (err) {
+        console.error('Failed to load global ads from Supabase:', err);
+    }
+}
 
 /* --- UTILITY FUNCTIONS --- */
 
@@ -182,6 +221,7 @@ async function loadPostPage(slug, chapterNum) {
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
 
+        // Clean slate: Always scroll to top completely fresh on every chapter load
         window.scrollTo(0, 0);
         updateProgress();
     } else {
@@ -269,6 +309,7 @@ async function fetchPost(identifier) {
     return data;
 }
 
+// Interstitial fires ONLY when opening a book from gallery
 function navigateToPost(identifier) {
     const postPath = `/${identifier}/1`;
     fireExoclickAd(postPath);
@@ -365,6 +406,7 @@ function updateSchemaMarkup(post, chapterNum, chapter) {
     document.head.appendChild(script);
 }
 
+// Interstitial fires ONLY when navigating through chapter buttons
 function renderChapterNavigation(post, currentIdx) {
     const slug = post.slug || post.id;
     const totalChapters = post.chapters.length;
@@ -522,5 +564,10 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 });
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
-document.addEventListener('DOMContentLoaded', handleRoute);
+
+// Initialize routes and fetch global video/notification ads on load
+document.addEventListener('DOMContentLoaded', () => {
+    loadGlobalAds();
+    handleRoute();
+});
      
