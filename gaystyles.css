@@ -1,4 +1,4 @@
-     /* ---------------------------------
+        /* ---------------------------------
        1. CSS Root Variables & Global Styles 
     --------------------------------- */
     * {
@@ -678,9 +678,44 @@
 
     .nav-icon-btn.disabled { opacity: 0.15; cursor: not-allowed; }
 
-    .product-card { display: flex; flex-direction: row; text-decoration: none; color: #fff; background-color: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; padding: 15px; }
-    .product-image-wrapper { width: 120px; flex-shrink: 0; margin-right: 15px; }
-    .product-image { width: 100%; height: auto; max-height: 100px; object-fit: contain; }
+    /* --- REDESIGNED AFFILIATE PRODUCT CARD (FULL WIDTH IMAGE TOP, TEXT BELOW) --- */
+    .product-card { 
+        display: flex; 
+        flex-direction: column; 
+        text-decoration: none; 
+        color: #fff; 
+        background-color: #111; 
+        border: 1px solid #333; 
+        border-radius: 8px; 
+        overflow: hidden; 
+        padding: 0; 
+    }
+    .product-image-wrapper { 
+        width: 100%; 
+        margin-right: 0; 
+        background: #000;
+    }
+    .product-image { 
+        width: 100%; 
+        height: auto; 
+        max-height: none; 
+        object-fit: cover; 
+        display: block;
+    }
+    .product-details {
+        padding: 20px;
+    }
+    .product-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #fff;
+    }
+    .product-description {
+        font-size: 0.9rem;
+        color: #aaa;
+        line-height: 1.5;
+    }
 
 .site-footer {
     background: rgba(10, 10, 10, 0.8);
