@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Full Library System</title>
+    <title>Full Library System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <!-- Mammoth.js for .docx parsing -->
@@ -195,7 +195,7 @@
         .lib-item:hover { border-color: rgba(255,255,255,0.15); }
         .lib-item img { width: 100%; height: 120px; object-fit: cover; border-bottom: 1px solid var(--glass-border); filter: grayscale(30%); }
         .lib-info { padding: 12px; font-size: 12px; }
-        .lib-del { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+        .lib-del { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; }
         .lib-del:hover { background: var(--danger); }
 
         .chapter-box { 
@@ -217,7 +217,6 @@
             border: 1px solid var(--glass-border); 
         }
 
-        .block-type-label { font-size: 9px; font-weight: 600; background: rgba(255,255,255,0.06); color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px; }
         .btn-del { color: var(--text-muted); cursor: pointer; font-size: 14px; transition: color 0.15s; }
         .btn-del:hover { color: var(--danger); }
 
@@ -356,7 +355,6 @@
             border-color: rgba(255,255,255,0.15);
         }
 
-        /* Local storage draft UI styles */
         .draft-deck-card {
             background: rgba(255, 255, 255, 0.02);
             border: 1px dashed rgba(255, 255, 255, 0.15);
@@ -423,7 +421,8 @@
             <div class="nav-tab" onclick="switchView(event, 'scheduled')">Scheduled Queue</div>
             <div class="nav-tab" onclick="switchView(event, 'affiliates')">Affiliate Lib</div>
             <div class="nav-tab" onclick="switchView(event, 'ads')">Ads Lib</div>
-            <div class="nav-tab" onclick="switchView(event, 'interstitial')">Interstitial Ad</div>
+            <div class="nav-tab" onclick="switchView(event, 'banners')">Banner Lib</div>
+            <div class="nav-tab" onclick="switchView(event, 'global-ads')">Global Ads</div>
             <div class="nav-tab" onclick="switchView(event, 'editor')">+ New Story</div>
         </div>
 
@@ -463,21 +462,27 @@
                 <div id="ads-list" class="library-grid"></div>
             </section>
 
-            <section id="view-interstitial" class="view-section">
-                <div class="card">
-                    <h3>Global Interstitial Ad Settings</h3>
-                    <p style="color:var(--text-muted); font-size:13px; margin-top:4px; margin-bottom:15px;">
-                        Configure the dynamic interstitial script fetched by your live site from the <code>site_settings</code> table.
-                    </p>
-                    
-                    <label>Interstitial Script Code (HTML / JavaScript Tag)</label>
-                    <textarea id="interstitial-script-value" placeholder="Paste your script tag here..." style="height: 140px; font-family: monospace; font-size: 13px;"></textarea>
-                    
-                    <label style="margin-top: 10px; display: block;">Description / Notes</label>
-                    <input type="text" id="interstitial-script-desc" placeholder="e.g. Dynamic interstitial ad script fetched from Supabase">
-
-                    <button onclick="saveInterstitialSettings()" class="btn-main" style="margin-top: 15px;">Save Interstitial Script</button>
+            <!-- BANNER TAB -->
+            <section id="view-banners" class="view-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3>Banner Slots Management</h3>
+                    <button onclick="openBannerModal()" style="padding:8px 15px; border-radius:6px; background:var(--accent); border:none; color:white;">+ Add New Banner</button>
                 </div>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">
+                    Manage your site's header, footer, or promotional banners linked to the <code>banner_slots</code> database table.
+                </p>
+                <div id="banners-container"></div>
+            </section>
+
+            <section id="view-global-ads" class="view-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3>Global Ads Management (site_settings)</h3>
+                    <button onclick="openGlobalAdModal()" style="padding:8px 15px; border-radius:6px; background:var(--accent); border:none; color:white;">+ Add New Global Ad</button>
+                </div>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">
+                    Manage global site scripts and ads stored in your Supabase <code>site_settings</code> table.
+                </p>
+                <div id="global-ads-container"></div>
             </section>
 
             <section id="view-editor" class="view-section">
@@ -503,7 +508,6 @@
                     <input type="text" id="post-exoclick" placeholder="Exoclick Interstitial ID">
                     <input type="text" id="post-tags" placeholder="tags, comma, separated">
 
-                    <!-- Scheduled Publishing Controls -->
                     <div style="margin-top: 15px; padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 6px;">
                         <label style="display:block; margin-bottom:6px; color:var(--accent);">Scheduled Release Date & Time</label>
                         <input type="datetime-local" id="post-scheduled-date" style="margin-bottom:0;">
@@ -544,17 +548,62 @@
         <div class="modal-content">
             <h3 id="lib-modal-title">Add Item</h3>
             <div id="affiliate-fields">
-                <input type="text" id="lib-prod-id" placeholder="Unique Product ID">
-                <input type="text" id="lib-title" placeholder="Product Title">
-                <textarea id="lib-desc" placeholder="Brief Description"></textarea>
-                <input type="text" id="lib-img" placeholder="Product Image URL">
-                <input type="text" id="lib-link" placeholder="Affiliate Link">
+                <label>Affiliate Name / Title</label>
+                <input type="text" id="lib-title" placeholder="e.g. Premium Book Collection">
+                
+                <label>Affiliate Link (Image & ID auto-generate)</label>
+                <input type="text" id="lib-link" placeholder="Paste full affiliate URL here..." oninput="autoFillAffiliateData(this.value)">
+                
+                <input type="text" id="lib-prod-id" placeholder="Unique Product ID (Auto-filled or custom)">
+                
+                <input type="hidden" id="lib-desc" value="Affiliate partner product">
+                <input type="hidden" id="lib-img" value="https://via.placeholder.com/150">
             </div>
             <div id="ad-fields" style="display:none;">
                 <input type="text" id="ad-name" placeholder="Ad Name (Internal)">
-                <textarea id="ad-code" placeholder="Paste HTML/JS Ad Code" style="height:150px;"></textarea>
+                <textarea id="ad-code" placeholder="Paste raw HTML/JS Ad Code (e.g. <a href='...'><img src='...'/></a>)" style="height:150px; font-family: monospace; font-size: 13px;"></textarea>
             </div>
             <button onclick="saveLibraryItem()" class="btn-main">Save to Library</button>
+        </div>
+    </div>
+
+    <!-- BANNER MODAL -->
+    <div id="banner-modal" class="modal" onclick="if(event.target==this)this.style.display='none'">
+        <div class="modal-content" style="max-width: 550px;">
+            <h3 id="banner-modal-title" style="margin-bottom: 15px;">Add / Edit Banner Slot</h3>
+            
+            <div style="background: rgba(138, 153, 173, 0.1); border: 1px solid var(--glass-border); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                <strong style="color: #fff; display: block; margin-bottom: 4px;">Instructions:</strong>
+                1. Give this banner a recognizable <b>Name Tag</b> so you can identify it easily.<br>
+                2. Paste your full raw HTML banner links (e.g., <code>&lt;a href="..."&gt;&lt;img src="..."&gt;&lt;/a&gt;</code>) into the field below.<br>
+                3. Toggle active state to control live visibility.
+            </div>
+
+            <label>Banner Name Tag (Identifier)</label>
+            <input type="text" id="banner-name" placeholder="e.g. homepage_top_leaderboard">
+            
+            <label style="margin-top: 10px; display: block;">Full Raw HTML Banner Link / Code</label>
+            <textarea id="banner-html" placeholder="Paste your full HTML banner link code here..." style="height: 140px; font-family: monospace; font-size: 13px;"></textarea>
+            
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
+                <input type="checkbox" id="banner-is-active" checked style="width: 20px; margin: 0;">
+                <label for="banner-is-active" style="margin: 0; color: #fff; font-size: 13px; text-transform: none; cursor: pointer;">Active (Visible to Visitors)</label>
+            </div>
+
+            <button onclick="saveBannerSlot()" class="btn-main" style="margin-top: 10px;">Save Banner Slot</button>
+        </div>
+    </div>
+
+    <div id="global-ad-modal" class="modal" onclick="if(event.target==this)this.style.display='none'">
+        <div class="modal-content" style="max-width: 550px;">
+            <h3 id="global-ad-modal-title" style="margin-bottom: 15px;">Add/Edit Global Ad</h3>
+            <label>Setting Key (Unique Identifier)</label>
+            <input type="text" id="global-ad-key" placeholder="e.g. video_slider_ad">
+            
+            <label style="margin-top: 10px; display: block;">Ad Script Code (HTML / JavaScript Tag)</label>
+            <textarea id="global-ad-value" placeholder="Paste your script tag here..." style="height: 140px; font-family: monospace; font-size: 13px;"></textarea>
+            
+            <button onclick="saveGlobalAdSetting()" class="btn-main" style="margin-top: 15px;">Save Global Ad</button>
         </div>
     </div>
 
@@ -567,10 +616,61 @@
 
     let chapters = [];
     let editId = null;
+    let currentBannerId = null; 
     let currentDraftId = null;
     let libraryType = 'affiliate';
     let cachedAffiliates = [];
     let cachedAds = [];
+
+    // --- RAW HTML TRANSFORMATION HELPERS ---
+    function encodeRawHtml(htmlString) {
+        if (!htmlString) return '';
+        return htmlString
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function decodeRawHtml(encodedString) {
+        if (!encodedString) return '';
+        const txt = document.createElement('textarea');
+        txt.innerHTML = encodedString;
+        return txt.value;
+    }
+    // ----------------------------------------
+
+    async function autoFillAffiliateData(linkValue) {
+        if (!linkValue || !linkValue.startsWith('http')) return;
+        
+        const cleanId = 'aff_' + linkValue.toLowerCase()
+            .replace(/[^a-z0-9]/g, '_')
+            .substring(0, 20) + '_' + Math.floor(Math.random() * 1000);
+        document.getElementById('lib-prod-id').value = cleanId;
+
+        const titleInput = document.getElementById('lib-title');
+        if (!titleInput.value) titleInput.value = "Fetching Product...";
+
+        try {
+            const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(linkValue)}`);
+            const json = await response.json();
+            
+            if (json.status === 'success' && json.data) {
+                if (json.data.title && (!titleInput.value || titleInput.value === "Fetching Product...")) {
+                    titleInput.value = json.data.title;
+                }
+                if (json.data.image && json.data.image.url) {
+                    document.getElementById('lib-img').value = json.data.image.url;
+                }
+            }
+        } catch (err) {
+            console.warn("Could not auto-fetch link preview metadata, using defaults:", err);
+            if (titleInput.value === "Fetching Product...") {
+                titleInput.value = "Affiliate Offer " + Math.floor(Math.random() * 100);
+            }
+        }
+    }
 
     function switchView(event, viewName) {
         document.querySelectorAll('.view-section').forEach(section => {
@@ -588,6 +688,12 @@
         
         if (event && event.currentTarget) {
             event.currentTarget.classList.add('active');
+        }
+
+        if (viewName === 'global-ads') {
+            loadGlobalAdsTable();
+        } else if (viewName === 'banners') {
+            loadBannersTable();
         }
     }
 
@@ -743,7 +849,6 @@
         document.getElementById('admin-panel').style.display = 'block';
         await loadAffiliateLibrary(); 
         await loadAdLibrary();
-        await loadInterstitialSettings();
         checkScheduledReleases();
         loadPosts();
         loadScheduledPosts();
@@ -772,7 +877,11 @@
             };
             await supabase.from('affiliate_products').insert([item]); loadAffiliateLibrary();
         } else {
-            const ad = { name: document.getElementById('ad-name').value, code: document.getElementById('ad-code').value };
+            const rawCodeInput = document.getElementById('ad-code').value;
+            const ad = { 
+                name: document.getElementById('ad-name').value, 
+                code: encodeRawHtml(rawCodeInput) 
+            };
             await supabase.from('ad_inventory').insert([ad]); loadAdLibrary();
         }
         document.getElementById('lib-entry-modal').style.display = 'none';
@@ -796,42 +905,187 @@
         cachedAds = data || [];
         const list = document.getElementById('ads-list');
         document.getElementById('st-ads').innerText = cachedAds.length;
-        list.innerHTML = cachedAds.map((ad) => `
+        
+        list.innerHTML = cachedAds.map((ad) => {
+            const decodedCode = decodeRawHtml(ad.code);
+            const escapedDisplay = decodedCode.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `
             <div class="lib-item" style="padding:10px; background:#f0f0f0; color:#111;">
                 <button class="lib-del" onclick="deleteAd('${ad.id}')">×</button>
-                <div class="lib-info"><b>${ad.name}</b><br><code style="font-size:10px; display:block; height:40px; overflow:hidden;">${ad.code}</code></div>
-            </div>
-        `).join('');
+                <div class="lib-info"><b>${ad.name}</b><br><code style="font-size:10px; display:block; height:40px; overflow:hidden; background:#000; color:#0f0; padding:4px;">${escapedDisplay}</code></div>
+            </div>`;
+        }).join('');
     }
 
-    async function loadInterstitialSettings() {
+    // --- BANNER SLOTS FUNCTIONS ---
+    async function loadBannersTable() {
+        try {
+            const { data, error } = await supabase
+                .from('banner_slots')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error loading banners:", error.message);
+                return;
+            }
+
+            const container = document.getElementById('banners-container');
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); background: var(--glass-card); border-radius: 8px; border: 1px solid var(--glass-border);">No banner slots found in the database.</div>`;
+                return;
+            }
+
+            container.innerHTML = data.map(banner => {
+                const decodedHtml = decodeRawHtml(banner.banner_html);
+                const escapedHtml = decodedHtml.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const statusBadge = banner.is_active 
+                    ? `<span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Active</span>` 
+                    : `<span style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 2px 8px; border-radius: 4px; font-size: 11px;">Inactive</span>`;
+
+                return `
+                <div class="card" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <b style="color: var(--accent); font-size: 15px;">Name Tag: ${banner.name}</b>
+                            ${statusBadge}
+                        </div>
+                        <div>
+                            <button onclick="editBanner('${banner.id}', '${banner.name.replace(/'/g, "\\'")}', ${JSON.stringify(decodedHtml).replace(/"/g, '&quot;')}, ${banner.is_active})" style="padding: 5px 12px; margin-right: 6px; background: rgba(255,255,255,0.08); color: #fff; border: none; border-radius: 4px;">Edit</button>
+                            <button onclick="deleteBanner('${banner.id}')" style="padding: 5px 12px; background: rgba(239, 68, 68, 0.2); color: var(--danger); border: none; border-radius: 4px;">Delete</button>
+                        </div>
+                    </div>
+                    <code style="font-size: 11px; display: block; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; max-height: 80px; overflow-y: auto; color: #a5f3fc;">${escapedHtml}</code>
+                </div>`;
+            }).join('');
+        } catch (err) {
+            console.error("Fault loading banners table:", err);
+        }
+    }
+
+    function openBannerModal(id = null, name = '', html = '', isActive = true) {
+        currentBannerId = id;
+        document.getElementById('banner-name').value = name;
+        document.getElementById('banner-html').value = html;
+        document.getElementById('banner-is-active').checked = isActive;
+        document.getElementById('banner-modal-title').innerText = id ? `Edit Banner: ${name}` : 'Add New Banner Slot';
+        document.getElementById('banner-modal').style.display = 'flex';
+    }
+
+    function editBanner(id, name, html, isActive) {
+        openBannerModal(id, name, html, isActive);
+    }
+
+    async function saveBannerSlot() {
+        const name = document.getElementById('banner-name').value.trim();
+        const rawHtmlInput = document.getElementById('banner-html').value.trim();
+        const is_active = document.getElementById('banner-is-active').checked;
+
+        if (!name || !rawHtmlInput) {
+            alert("Both Banner Name Tag and HTML link code are required.");
+            return;
+        }
+
+        const banner_html = encodeRawHtml(rawHtmlInput);
+
+        try {
+            let error;
+            if (currentBannerId) {
+                const res = await supabase
+                    .from('banner_slots')
+                    .update({ name, banner_html, is_active })
+                    .eq('id', currentBannerId);
+                error = res.error;
+            } else {
+                const res = await supabase
+                    .from('banner_slots')
+                    .insert([{ name, banner_html, is_active }]);
+                error = res.error;
+            }
+
+            if (error) {
+                alert("Failed to save banner slot: " + error.message);
+            } else {
+                alert("Banner slot successfully saved!");
+                document.getElementById('banner-modal').style.display = 'none';
+                loadBannersTable();
+            }
+        } catch (err) {
+            console.error("Save banner slot fault:", err);
+            alert("An error occurred while saving the banner.");
+        }
+    }
+
+    async function deleteBanner(id) {
+        if (!confirm("Are you sure you want to permanently delete this banner slot?")) return;
+        try {
+            const { error } = await supabase.from('banner_slots').delete().eq('id', id);
+            if (error) {
+                alert("Failed to delete banner: " + error.message);
+            } else {
+                loadBannersTable();
+            }
+        } catch (err) {
+            console.error("Delete banner fault:", err);
+        }
+    }
+    // --- END BANNER SLOTS ---
+
+    async function loadGlobalAdsTable() {
         try {
             const { data, error } = await supabase
                 .from('site_settings')
                 .select('*')
-                .eq('key', 'interstitial_ad_script')
-                .single();
+                .order('key');
 
-            if (error && error.code !== 'PGRST116') {
-                console.error("Error loading interstitial settings:", error.message);
+            if (error) {
+                console.error("Error loading global ads:", error.message);
                 return;
             }
 
-            if (data) {
-                document.getElementById('interstitial-script-value').value = data.value || '';
-                document.getElementById('interstitial-script-desc').value = data.description || '';
+            const container = document.getElementById('global-ads-container');
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); background: var(--glass-card); border-radius: 8px; border: 1px solid var(--glass-border);">No global ads or site settings found in the table.</div>`;
+                return;
             }
+
+            container.innerHTML = data.map(setting => {
+                const escapedValue = (setting.value || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                <div class="card" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <b style="color: var(--accent); font-size: 15px;">Key: ${setting.key}</b>
+                        <div>
+                            <button onclick="editGlobalAd('${setting.key}', ${JSON.stringify(setting.value).replace(/"/g, '&quot;')})" style="padding: 5px 12px; margin-right: 6px; background: rgba(255,255,255,0.08); color: #fff; border: none; border-radius: 4px;">Edit</button>
+                            <button onclick="deleteGlobalAd('${setting.key}')" style="padding: 5px 12px; background: rgba(239, 68, 68, 0.2); color: var(--danger); border: none; border-radius: 4px;">Delete</button>
+                        </div>
+                    </div>
+                    <code style="font-size: 11px; display: block; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; max-height: 80px; overflow-y: auto; color: #a5f3fc;">${escapedValue}</code>
+                </div>`;
+            }).join('');
         } catch (err) {
-            console.error("Fault fetching interstitial settings:", err);
+            console.error("Fault loading global ads table:", err);
         }
     }
 
-    async function saveInterstitialSettings() {
-        const value = document.getElementById('interstitial-script-value').value.trim();
-        const description = document.getElementById('interstitial-script-desc').value.trim();
+    function openGlobalAdModal(key = '', value = '') {
+        document.getElementById('global-ad-key').value = key;
+        document.getElementById('global-ad-key').disabled = !!key;
+        document.getElementById('global-ad-value').value = value;
+        document.getElementById('global-ad-modal-title').innerText = key ? `Edit Global Ad: ${key}` : 'Add New Global Ad';
+        document.getElementById('global-ad-modal').style.display = 'flex';
+    }
 
-        if (!value) {
-            alert("The script value cannot be empty.");
+    function editGlobalAd(key, value) {
+        openGlobalAdModal(key, value);
+    }
+
+    async function saveGlobalAdSetting() {
+        const key = document.getElementById('global-ad-key').value.trim();
+        const value = document.getElementById('global-ad-value').value.trim();
+
+        if (!key || !value) {
+            alert("Both Key and Script Value are required.");
             return;
         }
 
@@ -839,20 +1093,34 @@
             const { error } = await supabase
                 .from('site_settings')
                 .upsert({
-                    key: 'interstitial_ad_script',
-                    value: value,
-                    description: description || 'Dynamic interstitial ad script fetched from Supabase',
-                    updated_at: new Date().toISOString()
+                    key: key,
+                    value: value
                 }, { onConflict: 'key' });
 
             if (error) {
-                alert("Failed to save interstitial script: " + error.message);
+                alert("Failed to save global ad: " + error.message);
             } else {
-                alert("Interstitial script successfully updated! Your live site will now fetch the new version.");
+                alert("Global ad successfully saved!");
+                document.getElementById('global-ad-modal').style.display = 'none';
+                loadGlobalAdsTable();
             }
         } catch (err) {
-            console.error("Save fault:", err);
+            console.error("Save global ad fault:", err);
             alert("An error occurred while saving.");
+        }
+    }
+
+    async function deleteGlobalAd(key) {
+        if (!confirm(`Are you sure you want to permanently delete setting '${key}'?`)) return;
+        try {
+            const { error } = await supabase.from('site_settings').delete().eq('key', key);
+            if (error) {
+                alert("Failed to delete: " + error.message);
+            } else {
+                loadGlobalAdsTable();
+            }
+        } catch (err) {
+            console.error("Delete fault:", err);
         }
     }
 
@@ -1131,7 +1399,6 @@
                 </div>
                 <input type="text" placeholder="Chapter Title" value="${chap.title}" oninput="chapters[${cIdx}].title=this.value">
                 
-                <!-- Find & Replace Toolbar -->
                 <div style="margin: 14px 0; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px;">
                     <label style="display:block; margin-bottom:6px; color:var(--accent);">Find & Replace / Block Morph Tool</label>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -1197,16 +1464,21 @@
                 } 
                 else if(block.type === 'affiliate-cta') {
                     html += `
-                    <label>Choose Product</label>
+                    <label>Select Affiliate Product</label>
                     <select onchange="chapters[${cIdx}].blocks[${bIdx}].product_id=this.value">
-                        ${cachedAffiliates.map(a => `<option value="${a.product_id}" ${block.product_id === a.product_id ? 'selected':''}>${a.title}</option>`).join('')}
+                        ${cachedAffiliates.map(a => `<option value="${a.product_id}" ${block.product_id === a.product_id ? 'selected':''}>${a.title} (${a.product_id})</option>`).join('')}
                     </select>
-                    <input type="text" value="${block.text}" placeholder="Button Text" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value">`;
+                    <label style="margin-top:8px; display:block;">Call to Action Button Text</label>
+                    <input type="text" value="${block.text || 'Buy Now'}" placeholder="Button Text" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value">`;
                 } else if(block.type === 'ad-slot') {
                     html += `
                     <label>Choose Ad Slot</label>
                     <select onchange="chapters[${cIdx}].blocks[${bIdx}].text=this.value">
-                        ${cachedAds.map(ad => `<option value="${ad.code}" ${block.text === ad.code ? 'selected':''}>${ad.name}</option>`).join('')}
+                        ${cachedAds.map(ad => {
+                            const decodedAdCode = decodeRawHtml(ad.code);
+                            const optCode = decodedAdCode.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            return `<option value="${ad.code}" ${block.text === ad.code ? 'selected':''}>${ad.name}</option>`;
+                        }).join('')}
                     </select>`;
                 } else if(block.type === 'image') {
                     html += `
