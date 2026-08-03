@@ -33,7 +33,7 @@ const fallbackMessages = {
     100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
 };
 
-/* --- DYNAMIC GLOBAL ADS FETCHER --- */
+/* --- DYNAMIC GLOBAL ADS FETCHER (WITH 5-MINUTE INTERVAL RE-TRIGGER) --- */
 async function loadGlobalAds() {
     try {
         const { data, error } = await supabase
@@ -70,6 +70,14 @@ async function loadGlobalAds() {
     } catch (err) {
         console.error('Failed to load global ads from Supabase:', err);
     }
+}
+
+// Sets up a repeating timer every 5 minutes (300,000ms) to refire ad scripts
+function initAdInterval() {
+    setInterval(() => {
+        console.log('Firing 5-minute recurring global ad check...');
+        loadGlobalAds();
+    }, 300000); // 300,000 ms = 5 minutes
 }
 
 /* --- UTILITY FUNCTIONS --- */
@@ -168,6 +176,10 @@ async function hideSplashScreen() {
     setTimeout(() => {
         splash.classList.add('splash-hidden');
         initialLoadDone = true;
+        
+        // Load and trigger ads ONLY after splash screen fully disappears
+        loadGlobalAds();
+        initAdInterval();
         
         setTimeout(() => {
             if(bgContainer) bgContainer.style.backgroundImage = 'none';
@@ -339,7 +351,7 @@ function parseInlineStyling(text) {
 }
 
 function createProductCard(product) {
-    const imgUrl = product.image_url || 'https://via.placeholder.com/120x100?text=Product+Img';
+    const imgUrl = product.image_url || 'https://via.placeholder.com/600x300?text=Product+Img';
     return `
         <a href="${product.link}" target="_blank" class="product-card">
             <div class="product-image-wrapper"><img src="${imgUrl}" alt="${product.title}" class="product-image"></div>
@@ -565,9 +577,8 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 
-// Initialize routes and fetch global video/notification ads on load
+// Initialize routes on load (ads will initialize only after the splash screen is fully finished)
 document.addEventListener('DOMContentLoaded', () => {
-    loadGlobalAds();
     handleRoute();
 });
      
