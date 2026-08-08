@@ -182,7 +182,7 @@
 
         label { font-weight: 500; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
         
         .lib-item { 
             background: var(--glass-card); 
@@ -191,11 +191,14 @@
             overflow: hidden; 
             position: relative; 
             transition: border-color 0.2s;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .lib-item:hover { border-color: rgba(255,255,255,0.15); }
-        .lib-item img { width: 100%; height: 120px; object-fit: cover; border-bottom: 1px solid var(--glass-border); filter: grayscale(30%); }
-        .lib-info { padding: 12px; font-size: 12px; }
-        .lib-del { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; }
+        .lib-info { font-size: 12px; margin-top: 8px; }
+        .lib-del { position: absolute; top: 8px; right: 8px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; }
         .lib-del:hover { background: var(--danger); }
 
         .chapter-box { 
@@ -274,7 +277,7 @@
             padding: 24px; 
             border-radius: 12px; 
             width: 100%; 
-            max-width: 450px; 
+            max-width: 500px; 
         }
 
         .btn-main { 
@@ -396,6 +399,19 @@
             gap: 8px;
             margin-top: 10px;
         }
+        
+        .script-preview-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            color: #38bdf8;
+        }
     </style>
 </head>
 <body>
@@ -448,9 +464,12 @@
 
             <section id="view-affiliates" class="view-section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3>Affiliate Products</h3>
-                    <button onclick="openLibModal('affiliate')" style="padding:8px 15px; border-radius:6px; background:var(--accent); border:none; color:white;">+ Add Product</button>
+                    <h3>Affiliate Scripts Library</h3>
+                    <button onclick="openAffiliateModal()" style="padding:8px 15px; border-radius:6px; background:var(--accent); border:none; color:white;">+ Add Script Link</button>
                 </div>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">
+                    Manage raw complete code links linked to your Supabase <code>affiliate_scripts</code> table.
+                </p>
                 <div id="affiliate-list" class="library-grid"></div>
             </section>
 
@@ -540,29 +559,37 @@
             <button onclick="addBlock('paragraph')" class="btn-main" style="margin-bottom:10px; background:#f8f9fa; color:#333; border:1px solid #ddd;">Text Paragraph</button>
             <button onclick="addBlock('image')" class="btn-main" style="margin-bottom:10px; background:#f8f9fa; color:#333; border:1px solid #ddd;">Chapter Image</button>
             <button onclick="addBlock('ad-slot')" class="btn-main" style="margin-bottom:10px; background:var(--glass-card); color:#fff;">Saved Ad Slot</button>
-            <button onclick="addBlock('affiliate-cta')" class="btn-main" style="background:var(--accent); color:#fff;">Affiliate Product</button>
+            <button onclick="addBlock('affiliate-cta')" class="btn-main" style="background:var(--accent); color:#fff;">Affiliate Script Block</button>
         </div>
     </div>
 
+    <!-- AFFILIATE SCRIPT MODAL WITH LIVE PREVIEW -->
+    <div id="affiliate-modal" class="modal" onclick="if(event.target==this)this.style.display='none'">
+        <div class="modal-content" style="max-width: 550px;">
+            <h3 id="affiliate-modal-title" style="margin-bottom: 15px;">Add / Edit Affiliate Script Link</h3>
+            
+            <label>Script ID (Unique Identifier)</label>
+            <input type="text" id="aff-script-id" placeholder="e.g. script_main_loader_01">
+            
+            <label style="margin-top: 10px; display: block;">Title / Description Label</label>
+            <input type="text" id="aff-script-title" placeholder="e.g. Main Affiliate Script Bundle">
+            
+            <label style="margin-top: 10px; display: block;">Raw Complete Script Link / Code</label>
+            <textarea id="aff-script-code" placeholder="Paste full script code or raw link here..." style="height: 120px; font-family: monospace; font-size: 13px;" oninput="updateScriptPreview(this.value)"></textarea>
+            
+            <label style="margin-top: 10px; display: block; color: var(--accent);">Live Preview Test Frame</label>
+            <div id="aff-script-preview" class="script-preview-box">Preview will appear here as you type...</div>
+
+            <button onclick="saveAffiliateScript()" class="btn-main" style="margin-top: 15px;">Save Affiliate Script</button>
+        </div>
+    </div>
+
+    <!-- AD LIB MODAL -->
     <div id="lib-entry-modal" class="modal" onclick="if(event.target==this)this.style.display='none'">
         <div class="modal-content">
-            <h3 id="lib-modal-title">Add Item</h3>
-            <div id="affiliate-fields">
-                <label>Affiliate Name / Title</label>
-                <input type="text" id="lib-title" placeholder="e.g. Premium Book Collection">
-                
-                <label>Affiliate Link (Image & ID auto-generate)</label>
-                <input type="text" id="lib-link" placeholder="Paste full affiliate URL here..." oninput="autoFillAffiliateData(this.value)">
-                
-                <input type="text" id="lib-prod-id" placeholder="Unique Product ID (Auto-filled or custom)">
-                
-                <input type="hidden" id="lib-desc" value="Affiliate partner product">
-                <input type="hidden" id="lib-img" value="https://via.placeholder.com/150">
-            </div>
-            <div id="ad-fields" style="display:none;">
-                <input type="text" id="ad-name" placeholder="Ad Name (Internal)">
-                <textarea id="ad-code" placeholder="Paste raw HTML/JS Ad Code (e.g. <a href='...'><img src='...'/></a>)" style="height:150px; font-family: monospace; font-size: 13px;"></textarea>
-            </div>
+            <h3 id="lib-modal-title">Add Ad Slot</h3>
+            <input type="text" id="ad-name" placeholder="Ad Name (Internal)">
+            <textarea id="ad-code" placeholder="Paste raw HTML/JS Ad Code (e.g. <a href='...'><img src='...'/></a>)" style="height:150px; font-family: monospace; font-size: 13px;"></textarea>
             <button onclick="saveLibraryItem()" class="btn-main">Save to Library</button>
         </div>
     </div>
@@ -571,14 +598,6 @@
     <div id="banner-modal" class="modal" onclick="if(event.target==this)this.style.display='none'">
         <div class="modal-content" style="max-width: 550px;">
             <h3 id="banner-modal-title" style="margin-bottom: 15px;">Add / Edit Banner Slot</h3>
-            
-            <div style="background: rgba(138, 153, 173, 0.1); border: 1px solid var(--glass-border); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                <strong style="color: #fff; display: block; margin-bottom: 4px;">Instructions:</strong>
-                1. Give this banner a recognizable <b>Name Tag</b> so you can identify it easily.<br>
-                2. Paste your full raw HTML banner links (e.g., <code>&lt;a href="..."&gt;&lt;img src="..."&gt;&lt;/a&gt;</code>) into the field below.<br>
-                3. Toggle active state to control live visibility.
-            </div>
-
             <label>Banner Name Tag (Identifier)</label>
             <input type="text" id="banner-name" placeholder="e.g. homepage_top_leaderboard">
             
@@ -617,8 +636,9 @@
     let chapters = [];
     let editId = null;
     let currentBannerId = null; 
+    let currentAffiliateId = null;
     let currentDraftId = null;
-    let libraryType = 'affiliate';
+    let libraryType = 'ad';
     let cachedAffiliates = [];
     let cachedAds = [];
 
@@ -641,35 +661,14 @@
     }
     // ----------------------------------------
 
-    async function autoFillAffiliateData(linkValue) {
-        if (!linkValue || !linkValue.startsWith('http')) return;
-        
-        const cleanId = 'aff_' + linkValue.toLowerCase()
-            .replace(/[^a-z0-9]/g, '_')
-            .substring(0, 20) + '_' + Math.floor(Math.random() * 1000);
-        document.getElementById('lib-prod-id').value = cleanId;
-
-        const titleInput = document.getElementById('lib-title');
-        if (!titleInput.value) titleInput.value = "Fetching Product...";
-
-        try {
-            const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(linkValue)}`);
-            const json = await response.json();
-            
-            if (json.status === 'success' && json.data) {
-                if (json.data.title && (!titleInput.value || titleInput.value === "Fetching Product...")) {
-                    titleInput.value = json.data.title;
-                }
-                if (json.data.image && json.data.image.url) {
-                    document.getElementById('lib-img').value = json.data.image.url;
-                }
-            }
-        } catch (err) {
-            console.warn("Could not auto-fetch link preview metadata, using defaults:", err);
-            if (titleInput.value === "Fetching Product...") {
-                titleInput.value = "Affiliate Offer " + Math.floor(Math.random() * 100);
-            }
+    function updateScriptPreview(val) {
+        const previewBox = document.getElementById('aff-script-preview');
+        if (!val || val.trim() === "") {
+            previewBox.innerHTML = "Preview will appear here as you type...";
+            return;
         }
+        const decoded = decodeRawHtml(val);
+        previewBox.innerHTML = decoded;
     }
 
     function switchView(event, viewName) {
@@ -694,6 +693,8 @@
             loadGlobalAdsTable();
         } else if (viewName === 'banners') {
             loadBannersTable();
+        } else if (viewName === 'affiliates') {
+            loadAffiliateLibrary();
         }
     }
 
@@ -762,10 +763,10 @@
     function changeBlockType(cIdx, bIdx, newType) {
         const block = chapters[cIdx].blocks[bIdx];
         block.type = newType;
-        if (newType === 'paragraph') { block.text = block.text || ''; delete block.url; delete block.product_id; }
-        else if (newType === 'ad-slot') { block.text = cachedAds.length > 0 ? cachedAds[0].code : ''; delete block.url; delete block.product_id; }
-        else if (newType === 'affiliate-cta') { block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : ''; block.text = 'Buy Now'; delete block.url; }
-        else if (newType === 'image') { block.url = ''; delete block.product_id; }
+        if (newType === 'paragraph') { block.text = block.text || ''; delete block.url; delete block.script_id; }
+        else if (newType === 'ad-slot') { block.text = cachedAds.length > 0 ? cachedAds[0].code : ''; delete block.url; delete block.script_id; }
+        else if (newType === 'affiliate-cta') { block.script_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].script_id : ''; block.text = ''; delete block.url; }
+        else if (newType === 'image') { block.url = ''; delete block.script_id; }
         renderEditor();
     }
 
@@ -790,8 +791,8 @@
                         if (targetTypeSelect === 'ad-slot') {
                             block.text = cachedAds.length > 0 ? cachedAds[0].code : '';
                         } else if (targetTypeSelect === 'affiliate-cta') {
-                            block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : '';
-                            block.text = 'Buy Now';
+                            block.script_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].script_id : '';
+                            block.text = '';
                         } else if (targetTypeSelect === 'image') {
                             block.url = '';
                         }
@@ -863,41 +864,100 @@
 
     function openLibModal(type) {
         libraryType = type;
-        document.getElementById('lib-modal-title').innerText = type === 'affiliate' ? 'Add Affiliate Product' : 'Add Ad Slot';
-        document.getElementById('affiliate-fields').style.display = type === 'affiliate' ? 'block' : 'none';
-        document.getElementById('ad-fields').style.display = type === 'ad' ? 'block' : 'none';
+        document.getElementById('lib-modal-title').innerText = 'Add Ad Slot';
         document.getElementById('lib-entry-modal').style.display = 'flex';
     }
 
-    async function saveLibraryItem() {
-        if(libraryType === 'affiliate') {
-            const item = {
-                product_id: document.getElementById('lib-prod-id').value, title: document.getElementById('lib-title').value,
-                description: document.getElementById('lib-desc').value, image_url: document.getElementById('lib-img').value, link: document.getElementById('lib-link').value
-            };
-            await supabase.from('affiliate_products').insert([item]); loadAffiliateLibrary();
-        } else {
-            const rawCodeInput = document.getElementById('ad-code').value;
-            const ad = { 
-                name: document.getElementById('ad-name').value, 
-                code: encodeRawHtml(rawCodeInput) 
-            };
-            await supabase.from('ad_inventory').insert([ad]); loadAdLibrary();
+    function openAffiliateModal(id = null, scriptId = '', title = '', scriptCode = '') {
+        currentAffiliateId = id;
+        document.getElementById('aff-script-id').value = scriptId || ('script_' + Math.floor(Math.random() * 100000));
+        document.getElementById('aff-script-title').value = title;
+        const decoded = decodeRawHtml(scriptCode);
+        document.getElementById('aff-script-code').value = decoded;
+        updateScriptPreview(decoded);
+        document.getElementById('affiliate-modal-title').innerText = id ? 'Edit Affiliate Script' : 'Add Affiliate Script Link';
+        document.getElementById('affiliate-modal').style.display = 'flex';
+    }
+
+    function editAffiliateScript(id, scriptId, title, scriptCode) {
+        openAffiliateModal(id, scriptId, title, scriptCode);
+    }
+
+    async function saveAffiliateScript() {
+        const script_id = document.getElementById('aff-script-id').value.trim();
+        const title = document.getElementById('aff-script-title').value.trim();
+        const rawCode = document.getElementById('aff-script-code').value.trim();
+
+        if (!script_id || !rawCode) {
+            alert("Script ID and Script Code are required.");
+            return;
         }
+
+        const script_code = encodeRawHtml(rawCode);
+
+        try {
+            let error;
+            if (currentAffiliateId) {
+                const res = await supabase.from('affiliate_scripts').update({ script_id, title, script_code }).eq('id', currentAffiliateId);
+                error = res.error;
+            } else {
+                const res = await supabase.from('affiliate_scripts').insert([{ script_id, title, script_code }]);
+                error = res.error;
+            }
+
+            if (error) {
+                alert("Failed to save affiliate script: " + error.message);
+            } else {
+                alert("Affiliate script successfully saved!");
+                document.getElementById('affiliate-modal').style.display = 'none';
+                loadAffiliateLibrary();
+            }
+        } catch (err) {
+            console.error("Save affiliate script fault:", err);
+            alert("An error occurred while saving.");
+        }
+    }
+
+    async function saveLibraryItem() {
+        const rawCodeInput = document.getElementById('ad-code').value;
+        const ad = { 
+            name: document.getElementById('ad-name').value, 
+            code: encodeRawHtml(rawCodeInput) 
+        };
+        await supabase.from('ad_inventory').insert([ad]); 
+        loadAdLibrary();
         document.getElementById('lib-entry-modal').style.display = 'none';
     }
 
     async function loadAffiliateLibrary() {
-        const { data } = await supabase.from('affiliate_products').select('*');
+        const { data } = await supabase.from('affiliate_scripts').select('*').order('created_at', { ascending: false });
         cachedAffiliates = data || [];
         const list = document.getElementById('affiliate-list');
-        list.innerHTML = cachedAffiliates.map(item => `
+        
+        if (!cachedAffiliates || cachedAffiliates.length === 0) {
+            list.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted); background: var(--glass-card); border-radius: 8px; border: 1px solid var(--glass-border); grid-column: 1 / -1;">No affiliate scripts found in the table.</div>`;
+            return;
+        }
+
+        list.innerHTML = cachedAffiliates.map(item => {
+            const decodedCode = decodeRawHtml(item.script_code);
+            return `
             <div class="lib-item">
                 <button class="lib-del" onclick="deleteAffiliate('${item.id}')">×</button>
-                <img src="${item.image_url || 'https://via.placeholder.com/150'}">
-                <div class="lib-info"><b>${item.title}</b><br><small>ID: ${item.product_id}</small></div>
+                <div class="lib-info" style="width: 100%;">
+                    <b style="font-size: 14px; color: #fff; display: block; margin-bottom: 4px;">${item.title || 'Untitled Script'}</b>
+                    <small style="color: var(--accent); display: block; margin-bottom: 8px;">ID: ${item.script_id}</small>
+                    <!-- Live HTML Preview Render -->
+                    <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-bottom: 8px; overflow: hidden;">
+                        ${decodedCode}
+                    </div>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 6px;">
+                    <button onclick="editAffiliateScript('${item.id}', '${item.script_id}', '${(item.title || '').replace(/'/g, "\\'")}', ${JSON.stringify(decodedCode).replace(/"/g, '&quot;')})" style="flex: 1; padding: 4px; font-size: 11px; background: rgba(255,255,255,0.08); color: #fff; border: none; border-radius: 4px;">Edit</button>
+                </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     async function loadAdLibrary() {
@@ -910,9 +970,12 @@
             const decodedCode = decodeRawHtml(ad.code);
             const escapedDisplay = decodedCode.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             return `
-            <div class="lib-item" style="padding:10px; background:#f0f0f0; color:#111;">
+            <div class="lib-item">
                 <button class="lib-del" onclick="deleteAd('${ad.id}')">×</button>
-                <div class="lib-info"><b>${ad.name}</b><br><code style="font-size:10px; display:block; height:40px; overflow:hidden; background:#000; color:#0f0; padding:4px;">${escapedDisplay}</code></div>
+                <div class="lib-info" style="width: 100%;">
+                    <b style="font-size: 14px; color: #fff; display: block; margin-bottom: 4px;">${ad.name}</b>
+                    <code style="font-size: 10px; display: block; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 4px; max-height: 50px; overflow: hidden; color: #0f0;">${escapedDisplay}</code>
+                </div>
             </div>`;
         }).join('');
     }
@@ -991,15 +1054,10 @@
         try {
             let error;
             if (currentBannerId) {
-                const res = await supabase
-                    .from('banner_slots')
-                    .update({ name, banner_html, is_active })
-                    .eq('id', currentBannerId);
+                const res = await supabase.from('banner_slots').update({ name, banner_html, is_active }).eq('id', currentBannerId);
                 error = res.error;
             } else {
-                const res = await supabase
-                    .from('banner_slots')
-                    .insert([{ name, banner_html, is_active }]);
+                const res = await supabase.from('banner_slots').insert([{ name, banner_html, is_active }]);
                 error = res.error;
             }
 
@@ -1033,10 +1091,7 @@
 
     async function loadGlobalAdsTable() {
         try {
-            const { data, error } = await supabase
-                .from('site_settings')
-                .select('*')
-                .order('key');
+            const { data, error } = await supabase.from('site_settings').select('*').order('key');
 
             if (error) {
                 console.error("Error loading global ads:", error.message);
@@ -1090,12 +1145,7 @@
         }
 
         try {
-            const { error } = await supabase
-                .from('site_settings')
-                .upsert({
-                    key: key,
-                    value: value
-                }, { onConflict: 'key' });
+            const { error } = await supabase.from('site_settings').upsert({ key: key, value: value }, { onConflict: 'key' });
 
             if (error) {
                 alert("Failed to save global ad: " + error.message);
@@ -1124,7 +1174,7 @@
         }
     }
 
-    async function deleteAffiliate(id) { if(confirm("Delete affiliate product?")) { await supabase.from('affiliate_products').delete().eq('id', id); loadAffiliateLibrary(); } }
+    async function deleteAffiliate(id) { if(confirm("Delete affiliate script?")) { await supabase.from('affiliate_scripts').delete().eq('id', id); loadAffiliateLibrary(); } }
     async function deleteAd(id) { if(confirm("Delete this ad slot?")) { await supabase.from('ad_inventory').delete().eq('id', id); loadAdLibrary(); } }
 
     function addChapter() { chapters.push({ title: '', image_url: '', commentary: [], blocks: [] }); renderEditor(); }
@@ -1142,7 +1192,7 @@
         const block = { type, id: Date.now() + Math.random() };
         if(type==='paragraph') block.text = '';
         if(type==='ad-slot') block.text = cachedAds.length > 0 ? cachedAds[0].code : '';
-        if(type==='affiliate-cta') { block.product_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].product_id : ''; block.text = 'Buy Now'; }
+        if(type==='affiliate-cta') { block.script_id = cachedAffiliates.length > 0 ? cachedAffiliates[0].script_id : ''; block.text = ''; }
         if(type==='image') block.url = '';
         chapters[idx].blocks.push(block);
         document.getElementById('block-modal').style.display = 'none';
@@ -1407,7 +1457,7 @@
                         <select id="replace-type-select-${cIdx}" style="width: 140px; margin-bottom: 0;">
                             <option value="paragraph">Keep Paragraph</option>
                             <option value="ad-slot">Change to Ad Slot</option>
-                            <option value="affiliate-cta">Change to Affiliate</option>
+                            <option value="affiliate-cta">Change to Affiliate Script</option>
                             <option value="image">Change to Image</option>
                         </select>
                         <button onclick="executeFindAndReplace(${cIdx})" style="background:var(--accent); color:#fff; border:none; padding: 0 16px; border-radius: 6px; font-weight:600;">Run</button>
@@ -1449,7 +1499,7 @@
                             <select onchange="changeBlockType(${cIdx}, ${bIdx}, this.value)" style="padding: 2px 6px; font-size: 10px; margin: 0; width: auto; background: rgba(255,255,255,0.06); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;">
                                 <option value="paragraph" ${block.type === 'paragraph' ? 'selected' : ''}>Paragraph</option>
                                 <option value="ad-slot" ${block.type === 'ad-slot' ? 'selected' : ''}>Ad Slot</option>
-                                <option value="affiliate-cta" ${block.type === 'affiliate-cta' ? 'selected' : ''}>Affiliate CTA</option>
+                                <option value="affiliate-cta" ${block.type === 'affiliate-cta' ? 'selected' : ''}>Affiliate Script</option>
                                 <option value="image" ${block.type === 'image' ? 'selected' : ''}>Image</option>
                             </select>
                         </div>
@@ -1459,18 +1509,23 @@
                             <i class="fas fa-trash btn-del" onclick="handleBlockDelete(${cIdx}, ${bIdx})"></i>
                         </div>
                     </div>`;
+                
                 if(block.type === 'paragraph') { 
                     html += `<textarea class="reader-text-engine" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value" placeholder="Write story text here...">${block.text || ''}</textarea>`; 
                 } 
                 else if(block.type === 'affiliate-cta') {
+                    const currentScript = cachedAffiliates.find(a => a.script_id === block.script_id) || cachedAffiliates[0];
+                    const rawCode = currentScript ? decodeRawHtml(currentScript.script_code) : 'No script found';
+
                     html += `
-                    <label>Select Affiliate Product</label>
-                    <select onchange="chapters[${cIdx}].blocks[${bIdx}].product_id=this.value">
-                        ${cachedAffiliates.map(a => `<option value="${a.product_id}" ${block.product_id === a.product_id ? 'selected':''}>${a.title} (${a.product_id})</option>`).join('')}
+                    <label>Select Affiliate Script</label>
+                    <select onchange="chapters[${cIdx}].blocks[${bIdx}].script_id=this.value; renderEditor();">
+                        ${cachedAffiliates.map(a => `<option value="${a.script_id}" ${block.script_id === a.script_id ? 'selected':''}>${a.title || a.script_id} (${a.script_id})</option>`).join('')}
                     </select>
-                    <label style="margin-top:8px; display:block;">Call to Action Button Text</label>
-                    <input type="text" value="${block.text || 'Buy Now'}" placeholder="Button Text" oninput="chapters[${cIdx}].blocks[${bIdx}].text=this.value">`;
-                } else if(block.type === 'ad-slot') {
+                    <label style="margin-top: 8px; display: block; color: var(--accent);">Rendered Card Live Preview</label>
+                    <div class="script-preview-box" style="max-height: none; overflow: visible;">${rawCode}</div>`;
+                } 
+                else if(block.type === 'ad-slot') {
                     html += `
                     <label>Choose Ad Slot</label>
                     <select onchange="chapters[${cIdx}].blocks[${bIdx}].text=this.value">
@@ -1480,7 +1535,8 @@
                             return `<option value="${ad.code}" ${block.text === ad.code ? 'selected':''}>${ad.name}</option>`;
                         }).join('')}
                     </select>`;
-                } else if(block.type === 'image') {
+                } 
+                else if(block.type === 'image') {
                     html += `
                     <div style="display:flex; gap:5px; align-items:flex-start;">
                         <input type="text" placeholder="Image URL" value="${block.url||''}" oninput="chapters[${cIdx}].blocks[${bIdx}].url=this.value">
@@ -1580,7 +1636,7 @@
                             type: b.type, 
                             text: formattedText, 
                             url: b.url || '', 
-                            product_id: b.product_id || null, 
+                            product_id: b.script_id || null, 
                             order: j + 1 
                         }]);
 
@@ -1614,10 +1670,7 @@
             if (error || !duePosts || duePosts.length === 0) return;
 
             for (const post of duePosts) {
-                await supabase
-                    .from('posts')
-                    .update({ is_published: true })
-                    .eq('id', post.id);
+                await supabase.from('posts').update({ is_published: true }).eq('id', post.id);
             }
         } catch (err) {
             console.error("Background auto-publish dispatcher check fault:", err);
@@ -1744,7 +1797,7 @@
                     processedText = processedText.replace(/<br\s*\/?>/gi, '\n');
                     processedText = processedText.trim().replace(/\n{3,}/g, '\n\n');
                 }
-                return { ...b, text: processedText };
+                return { ...b, script_id: b.product_id, text: processedText };
             })
         }));
         switchView(null, 'editor'); renderEditor();
