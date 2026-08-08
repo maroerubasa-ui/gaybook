@@ -1,3 +1,4 @@
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -16,13 +17,14 @@ const memory = {
     postsContent: {},
     currentOffset: 0,
     hasMore: true,
-    libraryProducts: [],
+    libraryScripts: [],
     triggeredMilestones: new Set(),
     cachedStats: {} 
 };
 
 let dynamicMessages = {};
 let initialLoadDone = false; 
+let globalAdsLoaded = false;
 
 const fallbackMessages = {
     10: { emoji: '😏', text: "Oh? So you’re into this trope too? I see you..." },
@@ -33,8 +35,10 @@ const fallbackMessages = {
     100: { emoji: '👄', text: "Hi, I love reading erotic gaybook.site stories, do you love them too?" }
 };
 
-/* --- DYNAMIC GLOBAL ADS FETCHER (WITH 5-MINUTE INTERVAL RE-TRIGGER) --- */
 async function loadGlobalAds() {
+    if (globalAdsLoaded) return;
+    globalAdsLoaded = true;
+
     try {
         const { data, error } = await supabase
             .from('site_settings')
@@ -72,15 +76,11 @@ async function loadGlobalAds() {
     }
 }
 
-// Sets up a repeating timer every 5 minutes (300,000ms) to refire ad scripts
 function initAdInterval() {
     setInterval(() => {
-        console.log('Firing 5-minute recurring global ad check...');
-        loadGlobalAds();
-    }, 300000); // 300,000 ms = 5 minutes
+        console.log('Periodic ad health check...');
+    }, 300000); 
 }
-
-/* --- UTILITY FUNCTIONS --- */
 
 function formatCompactNumber(number) {
     if (number === undefined || number === null) return '0';
@@ -90,7 +90,6 @@ function formatCompactNumber(number) {
     }).format(number).toLowerCase();
 }
 
-/* --- UI ELEMENTS --- */
 const searchContainer = document.getElementById('searchContainer');
 const searchIcon = document.getElementById('searchIcon');
 const searchIconI = searchIcon.querySelector('i');
@@ -115,7 +114,6 @@ const ITEMS_PER_LOAD = 12;
 let currentSearchQuery = '';
 let searchDebounceTimer;
 
-/* --- TRACKING & STATS --- */
 async function logPostView(postId, chapterId = null) {
     try {
         const { error } = await supabase
@@ -147,7 +145,6 @@ async function getPostStats(postId, slug) {
     }
 }
 
-/* --- SPLASH SCREEN HANDLER --- */
 function initSplashScreen() {
     const bgContainer = document.getElementById('splash-bg-container');
     if (!bgContainer) return;
@@ -164,8 +161,7 @@ function initSplashScreen() {
     ];
 
     const randomIdx = Math.floor(Math.random() * backgrounds.length);
-    const selectedImg = backgrounds[randomIdx];
-    bgContainer.style.backgroundImage = `url('${selectedImg}')`;
+    bgContainer.style.backgroundImage = `url('${backgrounds[randomIdx]}')`;
 }
 
 async function hideSplashScreen() {
@@ -177,7 +173,6 @@ async function hideSplashScreen() {
         splash.classList.add('splash-hidden');
         initialLoadDone = true;
         
-        // Load and trigger ads ONLY after splash screen fully disappears
         loadGlobalAds();
         initAdInterval();
         
@@ -187,7 +182,6 @@ async function hideSplashScreen() {
     }, 8000);
 }
 
-/* --- ROUTING & NAVIGATION --- */
 async function handleRoute() {
     if (!initialLoadDone) initSplashScreen();
 
@@ -233,7 +227,6 @@ async function loadPostPage(slug, chapterNum) {
         document.title = `${post.title} - Chapter ${chapterNum}`;
         logPostView(post.id, post.chapters[parseInt(chapterNum)-1]?.id);
 
-        // Clean slate: Always scroll to top completely fresh on every chapter load
         window.scrollTo(0, 0);
         updateProgress();
     } else {
@@ -242,7 +235,6 @@ async function loadPostPage(slug, chapterNum) {
     }
 }
 
-/* --- OPTIMIZED GALLERY ITEM LAYOUT --- */
 async function createGalleryItem(post) {
     const identifier = post.slug || post.id;
     const title = post.title || 'Untitled Post';
@@ -295,33 +287,41 @@ async function fetchGalleryItems(query = '', offset = 0) {
 }
 
 async function fetchPost(identifier) {
-    if (memory.postsContent[identifier]) return memory.postsContent[identifier];
+    if (memory.postsContent[identifier]) {
+        // Ensure cached post always has the latest library attached
+        memory.postsContent[identifier].affiliate_scripts = memory.libraryScripts || [];
+        return memory.postsContent[identifier];
+    }
+    
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; 
     const isUuid = uuidRegex.test(identifier);
+    
     let query = supabase.from('posts').select(`
             id, title, thumbnail_url, summary, commentary, slug, created_at,
             chapters:chapters(id, title, chapter_image_url, commentary, order, content_blocks:content_blocks(*))
         `);
+        
     if (isUuid) query = query.eq('id', identifier);
     else query = query.eq('slug', identifier);
+    
     const { data, error } = await query.single();
     if (error) return null;
-    if (memory.libraryProducts.length === 0) {
-        const { data: libData } = await supabase.from('affiliate_products').select('*');
-        memory.libraryProducts = libData || [];
-    }
-    data.affiliate_products = memory.libraryProducts;
+
+    // Attach the pre-fetched library directly
+    data.affiliate_scripts = memory.libraryScripts || [];
+
     if (data && data.chapters) {
         data.chapters.sort((a,b) => (a.order || 0) - (b.order || 0));
         data.chapters.forEach(chapter => {
             chapter.content = (chapter.content_blocks || []).sort((a, b) => (a.order || 0) - (b.order || 0));
         });
     }
+    
     memory.postsContent[identifier] = data;
     return data;
 }
 
-// Interstitial fires ONLY when opening a book from gallery
+
 function navigateToPost(identifier) {
     const postPath = `/${identifier}/1`;
     fireExoclickAd(postPath);
@@ -350,17 +350,53 @@ function parseInlineStyling(text) {
     return formattedText;
 }
 
-function createProductCard(product) {
-    const imgUrl = product.image_url || 'https://via.placeholder.com/600x300?text=Product+Img';
+function decodeHtmlEntities(str) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+}
+
+function renderAffiliateScript(scriptRecord) {
+    if (!scriptRecord) return '';
+    
+    const rawCode = String(scriptRecord.script_code || '').trim();
+    
+    if (!rawCode) return '';
+    
+    const code = decodeHtmlEntities(rawCode);
+    
     return `
-        <a href="${product.link}" target="_blank" class="product-card">
-            <div class="product-image-wrapper"><img src="${imgUrl}" alt="${product.title}" class="product-image"></div>
-            <div class="product-details">
-                <h4 class="product-title">${product.title}</h4>
-                <p class="product-description">${product.description}</p>
-            </div>
-        </a>
+        <div class="affiliate-script-container" data-processed="false">
+            ${code}
+        </div>
     `;
+}
+function executeInjectedScripts(containerElement) {
+    setTimeout(() => {
+        const containers = containerElement.querySelectorAll('.affiliate-script-container');
+        
+        containers.forEach(container => {
+            const scripts = container.getElementsByTagName('script');
+            
+            Array.from(scripts).forEach(oldScript => {
+                const newScript = document.createElement('script');
+                
+                for (let j = 0; j < oldScript.attributes.length; j++) {
+                    const attr = oldScript.attributes[j];
+                    newScript.setAttribute(attr.name, attr.value);
+                }
+                
+                if (oldScript.src) {
+                    newScript.src = oldScript.src;
+                    newScript.async = true;
+                } else {
+                    newScript.text = oldScript.textContent || oldScript.innerText || '';
+                }
+                
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        });
+    }, 100);
 }
 
 function renderComponent(block, library) {
@@ -376,14 +412,32 @@ function renderComponent(block, library) {
             return `<div class="image-slot"><img src="${block.url}" alt="${block.caption || ''}" class="chapter-illustration"></div>`;
             
         case 'affiliate-cta':
-            const prod = (library || []).find(p => p.product_id === block.product_id);
-            if (prod) return `<div style="margin: 30px 0;">${createProductCard(prod)}</div>`;
-            return '';
+            // Check all possible identifiers from content_blocks and affiliate_scripts
+            const targetId = String(block.script_id || block.product_id || block.id || '').trim();
+            
+            const scriptRec = (library || []).find(p => {
+                const pScriptId = String(p.script_id || '').trim();
+                const pId = String(p.id || '').trim();
+                return pScriptId === targetId || pId === targetId;
+            });
+            
+            if (scriptRec) {
+                return renderAffiliateScript(scriptRec);
+            }
+            
+            // This will now clearly scream the exact block and ID it's failing on if anything is off
+            return `<div style="border: 2px dashed #ff4d4d; background: rgba(255,77,77,0.1); padding: 15px; text-align: center; color: #ff4d4d; font-size: 0.85rem; margin: 20px 0; font-family: monospace;">
+                <strong>[AFFILIATE SCRIPT MATCH FAILED]</strong><br>
+                Content block tried to look up ID: <u>"${targetId || 'EMPTY/NULL'}"</u><br>
+                Available IDs in table: ${(library || []).map(p => p.script_id).join(', ') || 'None loaded'}
+            </div>`;
             
         default: 
             return '';
     }
 }
+
+
 
 function updateSEOData(post, chapterNum, chapter) {
     const seoText = document.getElementById('seo-text');
@@ -418,7 +472,6 @@ function updateSchemaMarkup(post, chapterNum, chapter) {
     document.head.appendChild(script);
 }
 
-// Interstitial fires ONLY when navigating through chapter buttons
 function renderChapterNavigation(post, currentIdx) {
     const slug = post.slug || post.id;
     const totalChapters = post.chapters.length;
@@ -447,11 +500,15 @@ function renderPostContent(post, chapterNum) {
 
     let html = `<section class="chapter"><h2 class="chapter-title">Chapter ${chapterNum}: ${chapter.title}</h2>`;
     if (chapter.chapter_image_url) html += `<div class="image-slot"><img src="${chapter.chapter_image_url}" class="chapter-illustration"></div>`;
-    if (chapter.content) html += chapter.content.map(block => renderComponent(block, post.affiliate_products)).join('');
+    if (chapter.content) html += chapter.content.map(block => renderComponent(block, post.affiliate_scripts)).join('');
     html += `</section>`;
     html += renderChapterNavigation(post, chapterIdx);
+    
     postTitleElement.textContent = post.title;
     bookContent.innerHTML = html;
+    
+    executeInjectedScripts(bookContent);
+
     updateSEOData(post, chapterNum, chapter);
     updateSchemaMarkup(post, chapterNum, chapter);
 }
@@ -517,7 +574,6 @@ async function loadHomePage(query = '', reset = true) {
     window.renderComplete = true;
 }
 
-/* --- MODALS & BUTTONS --- */
 const whatsappBtn = document.getElementById('whatsappBtn');
 const whatsappModal = document.getElementById('whatsappModal');
 const closeWhatsappModal = document.getElementById('closeWhatsappModal');
@@ -577,8 +633,18 @@ if(searchInput) searchInput.addEventListener('input', (e) => {
 
 if(loadMoreButton) loadMoreButton.addEventListener('click', () => loadHomePage(currentSearchQuery, false));
 
-// Initialize routes on load (ads will initialize only after the splash screen is fully finished)
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Fetch affiliate scripts globally first so they are always ready
+    try {
+        const { data: scriptData, error: scriptError } = await supabase.from('affiliate_scripts').select('*');
+        if (!scriptError && scriptData) {
+            memory.libraryScripts = scriptData;
+        }
+    } catch (err) {
+        console.error('Failed to load global script library:', err);
+    }
+    
     handleRoute();
 });
+
      
