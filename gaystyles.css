@@ -1,4 +1,5 @@
-        /* ---------------------------------
+
+    /* ---------------------------------
        1. CSS Root Variables & Global Styles 
     --------------------------------- */
     * {
@@ -20,14 +21,12 @@
     --color-whatsapp: #25d366;
     --color-whatsapp-dark: #128c7e;
     
-    /* Modern digital reading font family (Plus Jakarta Sans with clean geometric curves) */
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --font-heading: 'Source Sans Pro', sans-serif;
     --font-comic: 'Comic Neue', cursive;
     
-    /* Mobile-first base sizing (Bigger text and generous spacing) */
-    --font-size-base: 1.15rem; /* Corrected base font size */
-    --line-height-base: 1.7; /* Balanced line height */
+    --font-size-base: 1.15rem;
+    --line-height-base: 1.7;
     --max-text-width: 740px;
     --padding-page: 32px;
     --gallery-gap: 30px;
@@ -45,7 +44,6 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    /* --- SPLASH SCREEN STYLES (CLEAN SLATE UPDATES) --- */
     #splash-screen {
         position: fixed;
         top: 0;
@@ -152,7 +150,7 @@
 
     .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-.book-container {
+    .book-container {
         max-width: var(--max-text-width); 
         margin: 0 auto; 
         padding-left: var(--padding-page); 
@@ -519,7 +517,6 @@
         overflow: hidden;
     }
 
-    /* --- UPDATED FLEX-GRID SYSTEM FOR METRICS --- */
     .item-stats-container {
         display: flex;
         flex-direction: column;
@@ -583,6 +580,22 @@
         padding: 0; 
         line-height: var(--line-height-base); 
         color: var(--color-primary); 
+    }
+
+    .affiliate-script-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin: 20px auto;
+        text-align: center;
+    }
+
+    .affiliate-script-container > * {
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     @media (max-width: 768px) { 
@@ -678,113 +691,74 @@
 
     .nav-icon-btn.disabled { opacity: 0.15; cursor: not-allowed; }
 
-    /* --- REDESIGNED AFFILIATE PRODUCT CARD (FULL WIDTH IMAGE TOP, TEXT BELOW) --- */
-    .product-card { 
-        display: flex; 
-        flex-direction: column; 
-        text-decoration: none; 
-        color: #fff; 
-        background-color: #111; 
-        border: 1px solid #333; 
-        border-radius: 8px; 
-        overflow: hidden; 
-        padding: 0; 
-    }
-    .product-image-wrapper { 
-        width: 100%; 
-        margin-right: 0; 
-        background: #000;
-    }
-    .product-image { 
-        width: 100%; 
-        height: auto; 
-        max-height: none; 
-        object-fit: cover; 
-        display: block;
-    }
-    .product-details {
-        padding: 20px;
-    }
-    .product-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #fff;
-    }
-    .product-description {
+    .site-footer {
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        color: #888;
+        padding: 60px 20px;
+        text-align: center;
         font-size: 0.9rem;
-        color: #aaa;
-        line-height: 1.5;
+        margin-top: 80px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
     }
 
-.site-footer {
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    color: #888;
-    padding: 60px 20px;
-    text-align: center;
-    font-size: 0.9rem;
-    margin-top: 80px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    position: relative;
-}
+    .footer-content {
+        max-width: var(--max-text-width);
+        margin: 0 auto;
+    }
 
-.footer-content {
-    max-width: var(--max-text-width);
-    margin: 0 auto;
-}
+    .footer-brand {
+        font-family: var(--font-comic);
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 20px;
+        display: block;
+        opacity: 0.9;
+    }
 
-.footer-brand {
-    font-family: var(--font-comic);
-    font-size: 1.5rem;
-    color: #fff;
-    margin-bottom: 20px;
-    display: block;
-    opacity: 0.9;
-}
+    .footer-links {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
 
-.footer-links {
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+    .site-footer a {
+        color: #bbb;
+        text-decoration: none;
+        transition: color 0.3s ease, transform 0.2s;
+        font-family: var(--font-heading);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.75rem;
+    }
 
-.site-footer a {
-    color: #bbb;
-    text-decoration: none;
-    transition: color 0.3s ease, transform 0.2s;
-    font-family: var(--font-heading);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.75rem;
-}
+    .site-footer a:hover {
+        color: var(--color-link-footer);
+        transform: translateY(-2px);
+    }
 
-.site-footer a:hover {
-    color: var(--color-link-footer);
-    transform: translateY(-2px);
-}
+    .adult-disclaimer {
+        font-weight: 700;
+        color: #ff4d4d;
+        margin: 30px auto 0;
+        display: inline-block;
+        border: 1px solid rgba(255, 77, 77, 0.3);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        background: rgba(255, 77, 77, 0.05);
+    }
 
-.adult-disclaimer {
-    font-weight: 700;
-    color: #ff4d4d;
-    margin: 30px auto 0;
-    display: inline-block;
-    border: 1px solid rgba(255, 77, 77, 0.3);
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    background: rgba(255, 77, 77, 0.05);
-}
-
-.copyright-text {
-    margin-top: 30px;
-    font-size: 0.75rem;
-    opacity: 0.5;
-}
+    .copyright-text {
+        margin-top: 30px;
+        font-size: 0.75rem;
+        opacity: 0.5;
+    }
     
     #homePageContainer, #postPage { display: none !important; }
     #homePageContainer.visible, #postPage.visible { display: block !important; }
