@@ -531,6 +531,16 @@
                         <label style="display:block; margin-bottom:6px; color:var(--accent);">Scheduled Release Date & Time</label>
                         <input type="datetime-local" id="post-scheduled-date" style="margin-bottom:0;">
                     </div>
+
+                    <!-- Auto Affiliate Script Toggle -->
+                    <div style="margin-top: 15px; padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="auto-affiliate-toggle" style="width: 20px; margin: 0;" onchange="handleAutoAffiliateToggle(this)">
+                            <label for="auto-affiliate-toggle" style="margin: 0; color: #fff; font-size: 13px; text-transform: none; cursor: pointer;">
+                                Automatically inject random affiliate script block every 400 words
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div id="chapters-canvas"></div>
                 <div style="text-align: center; margin-top: 20px;">
@@ -803,6 +813,64 @@
 
         renderEditor();
         alert(`Scan complete! Replaced occurrences across ${matchCount} block(s).`);
+    }
+
+    function handleAutoAffiliateToggle(checkbox) {
+        if (chapters.length === 0) {
+            if (checkbox.checked) {
+                alert("Please add at least one chapter first!");
+                checkbox.checked = false;
+            }
+            return;
+        }
+
+        if (checkbox.checked) {
+            if (!cachedAffiliates || cachedAffiliates.length === 0) {
+                alert("Affiliate library is empty. Please add affiliate scripts first.");
+                checkbox.checked = false;
+                return;
+            }
+
+            chapters.forEach(chap => {
+                let newBlocks = [];
+                let wordCount = 0;
+
+                (chap.blocks || []).forEach(block => {
+                    // Skip previously auto-injected ones if re-toggled
+                    if (block.isAutoAffiliate) return;
+
+                    newBlocks.push(block);
+
+                    if (block.type === 'paragraph' && block.text) {
+                        const words = block.text.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean);
+                        wordCount += words.length;
+
+                        if (wordCount >= 400) {
+                            // Pick a random affiliate script
+                            const randomAffiliate = cachedAffiliates[Math.floor(Math.random() * cachedAffiliates.length)];
+                            
+                            newBlocks.push({
+                                type: 'affiliate-cta',
+                                id: Date.now() + Math.random(),
+                                script_id: randomAffiliate.script_id,
+                                text: '',
+                                isAutoAffiliate: true
+                            });
+
+                            wordCount = 0;
+                        }
+                    }
+                });
+                chap.blocks = newBlocks;
+            });
+        } else {
+            // Remove auto-injected blocks when unchecked
+            chapters.forEach(chap => {
+                chap.blocks = (chap.blocks || []).filter(b => !b.isAutoAffiliate);
+            });
+        }
+
+        renderEditor();
     }
 
     function initDraggable() {
@@ -1520,7 +1588,8 @@
                     html += `
                     <label>Select Affiliate Script</label>
                     <select onchange="chapters[${cIdx}].blocks[${bIdx}].script_id=this.value; renderEditor();">
-                        ${cachedAffiliates.map(a => `<option value="${a.script_id}" ${block.script_id === a.script_id ? 'selected':''}>${a.title || a.script_id} (${a.script_id})</option>`).join('')}
+                        ${cachedAffiliates.map(a => `<option value="${a.script_id}" ${block.script_id === a.script_id ? 'selected':''}>${a.title || a.script_id}
+ (${a.script_id})</option>`).join('')}
                     </select>
                     <label style="margin-top: 8px; display: block; color: var(--accent);">Rendered Card Live Preview</label>
                     <div class="script-preview-box" style="max-height: none; overflow: visible;">${rawCode}</div>`;
